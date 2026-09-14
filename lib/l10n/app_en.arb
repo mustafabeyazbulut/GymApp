@@ -22,6 +22,7 @@
   "homeActivePackageLabel": "Your Active Package",
   "homeDaysLeft": "{count} days left",
   "homeNextClassLabel": "Next Class",
+  "homeNextClassTrainerLabel": "Trainer: {trainerName}",
   "homeReservationButton": "Reservation",
   "homeCheckInButton": "Check In",
   "homeWeeklyAttendanceLabel": "This Week's Attendance",

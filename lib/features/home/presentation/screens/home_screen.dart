@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -16,7 +17,7 @@ class HomeScreen extends ConsumerWidget {
     final summaryAsync = ref.watch(homeSummaryProvider);
 
     return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false, title: const Text('GymApp')),
+      appBar: AppBar(automaticallyImplyLeading: false, title: Text(l10n.appTitle)),
       body: summaryAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
@@ -69,7 +70,13 @@ class _HomeContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.homeActivePackageLabel, style: textTheme.labelSmall),
+                Row(
+                  children: [
+                    const Icon(Icons.inventory_2_outlined, size: 14, color: AppColors.onBackgroundFaint),
+                    const SizedBox(width: AppSpacing.xs),
+                    Text(l10n.homeActivePackageLabel, style: textTheme.labelSmall),
+                  ],
+                ),
                 const SizedBox(height: AppSpacing.sm),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -89,14 +96,23 @@ class _HomeContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.homeNextClassLabel, style: textTheme.labelSmall),
+                Row(
+                  children: [
+                    const Icon(Icons.calendar_month_outlined, size: 14, color: AppColors.onBackgroundFaint),
+                    const SizedBox(width: AppSpacing.xs),
+                    Text(l10n.homeNextClassLabel, style: textTheme.labelSmall),
+                  ],
+                ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   '${summary.nextClassName} · ${summary.nextClassTime}',
                   style: textTheme.titleMedium,
                 ),
                 const SizedBox(height: AppSpacing.xs),
-                Text('Eğitmen: ${summary.nextClassTrainer}', style: textTheme.bodyMedium),
+                Text(
+                  l10n.homeNextClassTrainerLabel(summary.nextClassTrainer),
+                  style: textTheme.bodyMedium,
+                ),
               ],
             ),
           ),
@@ -106,13 +122,18 @@ class _HomeContent extends StatelessWidget {
           children: [
             Expanded(
               child: ElevatedButton(
-                onPressed: () {},
+                // Branch index 1 = Dersler, per Task 16's StatefulShellRoute
+                // branch order (home, classes, progress, membership).
+                onPressed: () => StatefulNavigationShell.of(context).goBranch(1),
                 child: Text(l10n.homeReservationButton),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: OutlinedButton(
+                // Deliberately a no-op — Faz 2 door-access check-in, not
+                // built yet. Per spec, unlike Reservation, this one stays
+                // silent for now.
                 onPressed: () {},
                 child: Text(l10n.homeCheckInButton),
               ),

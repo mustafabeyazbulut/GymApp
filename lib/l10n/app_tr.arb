@@ -45,6 +45,10 @@
   },
   "homeNextClassLabel": "Sıradaki Ders",
   "@homeNextClassLabel": {},
+  "homeNextClassTrainerLabel": "Eğitmen: {trainerName}",
+  "@homeNextClassTrainerLabel": {
+    "placeholders": { "trainerName": { "type": "String" } }
+  },
   "homeReservationButton": "Rezervasyon",
   "@homeReservationButton": {},
   "homeCheckInButton": "Salona Giriş",
