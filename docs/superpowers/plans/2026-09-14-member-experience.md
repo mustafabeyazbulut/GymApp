@@ -1615,6 +1615,8 @@ git commit -m "Add class session domain, fake repository with reservation mutati
 
 Category filtering happens client-side in the screen (a local `ConsumerState` field), not in the repository — the spec's "Tümü/BJJ/Fitness" chips filter the already-loaded list, they don't trigger a new fetch. The date strip is decorative in this scope (selecting a different day does not change which sessions are shown — the spec calls this out explicitly as a deliberate simplification, not a missing feature).
 
+**Post-review update (folded in before this task was first implemented, so the plan stays accurate):** Task 9's code-quality review traced `FakeClassRepository.reserveSpot`'s async structure and confirmed it's genuinely race-safe for concurrent taps — but also pointed out that the `StateError` it throws (when a session is already full/reserved — realistically reachable via a fast double-tap before the button's disabled state has rendered a frame) was uncaught anywhere in this screen's original `_reserve` method, meaning it would become a silent, invisible-to-the-user unhandled Future rejection. The code block below already adds a `catch` with a `SnackBar` — implement this version.
+
 - [ ] **Step 1: Write `ClassesScreen`**
 
 ```dart
@@ -1648,6 +1650,16 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
     setState(() => _reservingId = classId);
     try {
       await ref.read(classListProvider.notifier).reserveSpot(classId);
+    } catch (_) {
+      // Realistically only reachable via a fast double-tap before this
+      // button's disabled state has rendered a frame (the repository
+      // throws StateError for an already-full/already-reserved session) —
+      // still needs to surface to the user rather than fail silently.
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.commonError)),
+      );
     } finally {
       if (mounted) setState(() => _reservingId = -1);
     }
