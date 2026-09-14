@@ -1612,10 +1612,41 @@ git commit -m "Add class session domain, fake repository with reservation mutati
 
 **Files:**
 - Create: `lib/features/classes/presentation/screens/classes_screen.dart`
+- Modify: `lib/core/theme/app_theme.dart` (add `chipTheme` — see post-review update below)
+- Modify: `lib/l10n/app_tr.arb`, `lib/l10n/app_en.arb` (add `classesEmptyFilterMessage`)
 
 Category filtering happens client-side in the screen (a local `ConsumerState` field), not in the repository — the spec's "Tümü/BJJ/Fitness" chips filter the already-loaded list, they don't trigger a new fetch. The date strip is decorative in this scope (selecting a different day does not change which sessions are shown — the spec calls this out explicitly as a deliberate simplification, not a missing feature).
 
-**Post-review update (folded in before this task was first implemented, so the plan stays accurate):** Task 9's code-quality review traced `FakeClassRepository.reserveSpot`'s async structure and confirmed it's genuinely race-safe for concurrent taps — but also pointed out that the `StateError` it throws (when a session is already full/reserved — realistically reachable via a fast double-tap before the button's disabled state has rendered a frame) was uncaught anywhere in this screen's original `_reserve` method, meaning it would become a silent, invisible-to-the-user unhandled Future rejection. The code block below already adds a `catch` with a `SnackBar` — implement this version.
+**Post-review update 1 (folded in before this task was first implemented, so the plan stays accurate):** Task 9's code-quality review traced `FakeClassRepository.reserveSpot`'s async structure and confirmed it's genuinely race-safe for concurrent taps — but also pointed out that the `StateError` it throws (when a session is already full/reserved — realistically reachable via a fast double-tap before the button's disabled state has rendered a frame) was uncaught anywhere in this screen's original `_reserve` method, meaning it would become a silent, invisible-to-the-user unhandled Future rejection. The code block below already adds a `catch` with a `SnackBar` — implement this version.
+
+**Post-review update 2 (folded in after this task's first implementation pass):** a code-quality review found this screen's `ChoiceChip`s (Step 1's code) render with Flutter's stock Material 3 defaults — verified against the actual Flutter 3.47.4 SDK source: `ColorScheme.dark(...)` in `app_theme.dart` never overrides `secondaryContainer`/`onSecondaryContainer`/`surfaceContainerLow`/`onSurfaceVariant`, so the chips fall back to Material 3's baseline dark-theme purple/mauve tones — completely unrelated to this app's lime/teal brand, and a real violation of the checked-in "no generic Material-default placeholder" design-quality bar. Also found: the filtered-sessions list has no empty-state fallback when a category filter matches zero sessions (currently unreachable with the 3-item fixed mock data, but a live gap). Both fixes are folded into the code below — implement this version, not an earlier one.
+
+Add a `chipTheme` to `AppTheme.dark` in `lib/core/theme/app_theme.dart`, inside the same `base.copyWith(...)` block as the existing `cardTheme`/`elevatedButtonTheme`/etc. (add it as one more named argument to that same `copyWith` call, anywhere among the existing ones):
+```dart
+      chipTheme: ChipThemeData(
+        backgroundColor: AppColors.surface,
+        selectedColor: AppColors.successSurface,
+        disabledColor: AppColors.surface,
+        labelStyle: AppTypography.textTheme.labelSmall?.copyWith(color: AppColors.onBackground),
+        side: const BorderSide(color: AppColors.border),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusPill)),
+        showCheckmark: false,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+      ),
+```
+
+Add this new ARB key to **both** `lib/l10n/app_tr.arb` and `lib/l10n/app_en.arb`, right after the existing `classesWaitlistButton` key:
+
+`app_tr.arb`:
+```json
+  "classesEmptyFilterMessage": "Bu filtreye uygun ders bulunamadı.",
+  "@classesEmptyFilterMessage": {},
+```
+
+`app_en.arb`:
+```json
+  "classesEmptyFilterMessage": "No classes match this filter.",
+```
 
 - [ ] **Step 1: Write `ClassesScreen`**
 
@@ -1771,17 +1802,39 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                 ),
               ),
               Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  itemCount: filtered.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
-                  itemBuilder: (context, index) => _ClassCard(
-                    session: filtered[index],
-                    isReserving: _reservingId == filtered[index].id,
-                    onReserve: () => _reserve(filtered[index].id),
-                    l10n: l10n,
-                  ),
-                ),
+                child: filtered.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.xl),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.event_busy_outlined,
+                                size: 40,
+                                color: AppColors.onBackgroundFaint,
+                              ),
+                              const SizedBox(height: AppSpacing.md),
+                              Text(
+                                l10n.classesEmptyFilterMessage,
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+                        itemBuilder: (context, index) => _ClassCard(
+                          session: filtered[index],
+                          isReserving: _reservingId == filtered[index].id,
+                          onReserve: () => _reserve(filtered[index].id),
+                          l10n: l10n,
+                        ),
+                      ),
               ),
             ],
           );
