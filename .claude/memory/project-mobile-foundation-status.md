@@ -1,0 +1,72 @@
+---
+name: project-mobile-foundation-status
+description: GymApp Flutter mobile — where things stand after the design/brainstorming session that set up the dev environment and wrote the Mobile Foundation spec. Read this first if resuming, especially in a new session/account.
+metadata:
+  type: project
+---
+
+# GymApp Mobile — Status
+
+**Spec:** `docs/superpowers/specs/2026-09-14-mobile-foundation-design.md` (in this repo) — read it in full before doing anything. It covers architecture (Riverpod, go_router, Dio, feature-first folders), the visual design system (dark + lime green theme, approximated from a user-provided screenshot of a ChatGPT-generated mockup for a placeholder brand "MAT & MOVE"), and the exact scope (project skeleton + localization + a Branch list/create screen proving the stack end-to-end — no auth, no other screens yet).
+
+**Status as of this memory's writing: design approved by user, spec written and committed (`6c4c169`), dev environment fully set up — but `flutter create` / actual project scaffolding has NOT happened yet.** The user explicitly asked to stop here ("onayladım ama önce bir kaydet, ben seni git'e aktarıcam ordan devam edicez" — approved, but save first, I'll transfer this to git and continue from there) — meaning they intend to push this repo to a remote and continue implementation from a different session/machine/account. **Do not assume implementation has started. Check `lib/` — if it doesn't exist yet, the writing-plans step (superpowers:writing-plans, which turns the approved spec into a task-by-task implementation plan) has not been invoked yet either.**
+
+## Why this scope (context for a fresh session)
+
+The backend (`GymAppApi`, sibling project at `C:\Users\MBEYAZBULUT\Desktop\GymAppApi` on the original machine — may not exist at that path in a new environment) only has one working, unauthenticated endpoint pair: `GET/POST /api/branches`. No Auth/JWT/OTP yet. That's why this first mobile slice is scoped to just prove the stack works end-to-end against that one real endpoint, not to build login or any of the richer screens (Dersler/Gelişimim/Üyeliğim) shown in the user's reference screenshot — those need backends that don't exist yet.
+
+The full product design (all roles, all phases, full data model) lives in the backend repo at `2026-09-09-gym-yonetim-sistemi-design.md` — worth reading for product context, but not required to execute this specific mobile-foundation plan.
+
+## Dev environment (set up 2026-09-14, on the original Windows machine — may need to be redone on a different machine)
+
+- **Flutter SDK 3.47.4 (stable)** installed via `git clone https://github.com/flutter/flutter.git -b stable --depth 1` into `C:\src\flutter`. Added to **user-level** PATH permanently.
+- **Android SDK**: pre-existing at `%LOCALAPPDATA%\Android\Sdk` (shared with other projects on this machine). Had to add the missing `cmdline-tools` (downloaded `commandlinetools-win-11076708_latest.zip` from Google, extracted into `Sdk/cmdline-tools/latest/`), install `platforms;android-36` and `build-tools;36.0.0` via `sdkmanager`, and accept all licenses (`flutter doctor --android-licenses`).
+- **`ANDROID_HOME`/`ANDROID_SDK_ROOT`**: set at user level to `%LOCALAPPDATA%\Android\Sdk`.
+- **`JAVA_HOME` bug fixed**: was pointing (both User and Machine level, but I only touched User level) at a stale/uninstalled JDK path (`jdk-21.0.11.10-hotspot`) — corrected to the actually-installed `C:\Program Files\Microsoft\jdk-21.0.12.101-hotspot`. If Android builds fail with a JAVA_HOME error on this machine again, check this hasn't regressed (e.g. after a JDK auto-update).
+- **Existing Android emulators (AVDs)** already present on this machine (not created by this session, pre-existing from other work): `Cnc_Tablet_8in` (Android 14/API 34), `pixel_2_pie_9_0_-_api_28`, `pixel_5_-_api_33` (this last one showed a "system image is null" error in `avdmanager list avd` — may need its system image reinstalled if you try to use it; the other two worked fine).
+- `flutter doctor` final state: Flutter ✓, Windows ✓, Android toolchain ✓, Chrome ✓, Connected devices ✓. Only Visual Studio (Windows desktop C++ target) is flagged missing — irrelevant, this is a mobile-only (Android/iOS) app per the product design, Windows desktop was never a target.
+- **iOS**: cannot be built/tested on this machine (no Mac/Xcode). Deferred to CI or a Mac per the product design's CI/CD section.
+
+## Backend connectivity (for when implementation starts)
+
+- Backend runs locally via `dotnet run --project Presentation/GymAppApi.WebApi` from the `GymAppApi` repo → `http://localhost:5195`.
+- From an Android emulator, the host machine's `localhost` is reached via the special address `10.0.2.2`, not `localhost` — this must be handled in the Dio client's base URL config (platform-conditional), per the spec.
+- Backend has a real local Postgres database now (`gymapp_dev`, in a shared Docker container also used by another project called `appointly` — see the GymAppApi repo's own progress memory for details) with the `Branches`/`Companies` tables migrated but currently **empty** (no seed data) — so a freshly-built Branch list screen will show an empty list until a Company + Branch are created (there's no UI yet to create a Company at all — that's Super Admin Tenant Onboarding, a separate future backend+mobile plan).
+
+## Resume checkpoint — 2026-09-14 (new session/profile, repo pushed to GitHub)
+
+Repo is now at `C:\Users\MBEYAZBULUT\Documents\GitHub\GymApp` (moved from the original `Desktop\GymApp` path) with `origin` set to `https://github.com/mustafabeyazbulut/GymApp.git` — **but 0 commits exist yet** (`git log` reports "does not have any commits yet"), and only `.claude/` and `docs/` are present — **`lib/` still does not exist, `flutter create` has not run.** So despite the remote being configured, nothing has actually been pushed/scaffolded — this session is starting implementation from the same point the previous session left off, not further along.
+
+Flutter/Android dev environment from the "Dev environment" section below is confirmed still working on this machine (`flutter doctor`: Flutter ✓, Windows ✓, Android toolchain ✓, Chrome ✓, Connected devices ✓ — only Visual Studio C++ desktop workload missing, irrelevant to this mobile-only app).
+
+User re-shared the same reference screenshot (ChatGPT-generated "MAT & MOVE" mockup: Ana Sayfa, Dersler, Gelişimim, Üyeliğim screens, dark background + lime-green accent) and said "tasarımımız bu olacak" (this will be our design) — confirms, does not change, the visual design system already locked into the spec's "Görsel Tasarım Sistemi" section (`#0D0D0F` background, `#C6FF3D` primary accent, etc.). No new design decision to record here.
+
+Companion backend repo also moved: now `C:\Users\MBEYAZBULUT\Documents\GitHub\GymAppApi` (was `Desktop\GymAppApi`), also on GitHub (`origin` → `mustafabeyazbulut/GymAppApi`), Backend Foundation plan fully complete there (see that repo's own memory) — update any old `Desktop\...` path references you encounter to the `Documents\GitHub\...` paths above.
+
+## Plan execution — 2026-09-14 (subagent-driven-development, same session as the checkpoint above)
+
+**Plan:** `docs/superpowers/plans/2026-09-14-mobile-foundation.md` (10 tasks) — written this session via superpowers:writing-plans after the user demanded the design match the reference mockup's craft level exactly (see [[feedback-design-quality-bar]]), not just its two accent colors. User chose **Subagent-Driven Development** (fresh implementer + spec reviewer + code-quality reviewer per task, same pattern as the backend build) over inline execution. Working directly on `main`, no worktree — matches the backend project's own precedent, and this repo had zero commits at the time so there was nothing to isolate from.
+
+**Backend contract note baked into the plan:** confirmed directly from `GymAppApi` source (not assumed) that success responses are camelCase but `ExceptionMiddleware`'s error responses are PascalCase (`{"Status":..,"Errors":[..]}`) — the plan's `ApiException.fromDioException` must read `Status`/`Errors`, and this is explicitly tested.
+
+**Tooling note for future task dispatches in this repo:** the Bash (Git Bash) tool fails to invoke `flutter`/`dart` CLI commands correctly in this environment (`Set-Content : Stream was not readable` from a PowerShell script Flutter's tooling shells out to) — use the **PowerShell tool** for all `flutter`/`dart` commands here; plain `git`/`ls` work fine via either.
+
+### Task checklist
+
+- [x] Task 1 — Flutter Project Skeleton & Dependencies — Last commit: `4fd09b5` "Scaffold Flutter project skeleton with core dependencies" (spec ✅, code-quality ✅ "Ready to merge: Yes"). This is the repo's first-ever commit. One harmless plan/reality mismatch noted and confirmed by both reviewers independently: Flutter 3.47.4's `--empty` template never generates `test/widget_test.dart` at all, so the plan's "delete it" step was a no-op — desired end state (no counter-app test) was already satisfied either way.
+- [ ] Task 2 — Core Theme: Design Tokens + Locally-Vendored Inter Font
+- [ ] Task 3 — Core Network: ApiConfig, ApiException, Dio Client
+- [ ] Task 4 — Core Router: go_router + Bottom-Nav App Shell
+- [ ] Task 5 — Localization: ARB Files + Codegen Setup
+- [ ] Task 6 — Branch Feature: Domain Layer
+- [ ] Task 7 — Branch Feature: Data Layer (DTO + Dio Repository)
+- [ ] Task 8 — Branch Feature: Presentation List Provider + List Screen
+- [ ] Task 9 — Branch Feature: Create Form Screen + Wire main.dart
+- [ ] Task 10 — Manual End-to-End Smoke Test Against the Real Backend
+
+## Next action if resuming
+
+1. Read this file's "Plan execution" section above and `docs/superpowers/plans/2026-09-14-mobile-foundation.md` in full.
+2. Run `git log --oneline` in `C:\Users\MBEYAZBULUT\Documents\GitHub\GymApp` to confirm which tasks actually landed — trust git over this file if they disagree.
+3. Continue subagent-driven-development (implementer → spec reviewer → code-quality reviewer, fix-and-re-review loop on any issues) from the first unchecked task above. Remember the PowerShell-not-Bash tooling note.
+4. Update this checklist + commit SHA after every task's code-quality review passes.
