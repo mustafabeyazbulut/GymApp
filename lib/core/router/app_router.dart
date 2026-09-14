@@ -1,8 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../widgets/app_shell.dart';
-import '../../features/branches/presentation/screens/branch_form_screen.dart';
-import '../../features/branches/presentation/screens/branch_list_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -13,11 +11,9 @@ GoRouter appRouter(Ref ref) {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => const AppShell(child: BranchListScreen()),
-      ),
-      GoRoute(
-        path: '/branches/new',
-        builder: (context, state) => const BranchFormScreen(),
+        builder: (context, state) => const Scaffold(
+          body: Center(child: Text('Member Experience — under construction')),
+        ),
       ),
     ],
   );
