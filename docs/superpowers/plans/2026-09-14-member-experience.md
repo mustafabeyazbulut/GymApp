@@ -2870,12 +2870,26 @@ The nav bar is wrapped in `Padding` + `ClipRRect` to render as a floating, round
 
 **Icon note:** `Icons.home`/`Icons.home_outlined`, `Icons.calendar_month`/`Icons.calendar_month_outlined`, `Icons.show_chart`/`Icons.show_chart_outlined`, and `Icons.person`/`Icons.person_outline` (not `person_outlined` — this one is an irregular older Material Icons name, unlike the newer `_outlined` suffix convention) are the icons used below. If `flutter analyze` reports any of these as undefined for the installed Flutter SDK version, substitute the closest valid icon with the same outlined/filled pairing — this is a cosmetic substitution, not a design decision to escalate.
 
-- [ ] **Step 1: Rewrite `AppShell`**
+**Post-review update:** code-quality review (with source-verified findings, not just visual opinion) found three real issues with the first version of this widget, given this is the app's most visible piece of chrome and the project has specific prior history of nav-bar quality complaints: (1) `AppSpacing.md` (12px) as the floating bar's edge gap is inconsistent with every content screen's `AppSpacing.lg` (16px) edge margin; (2) `NavigationBar`'s own internal `SafeArea` pads its fixed-height content, so on a device with a gesture home indicator the icon/label row sits visibly off-center (top-heavy) inside the pill instead of centered — fixed by stripping the internal safe area and folding the device's bottom inset into the outer `Padding` instead; (3) there's no `border`/outline reinforcing the pill's separation from the background (every other "surface" in this app — cards — uses `AppColors.border` for exactly this), and the 22px corner radius was a hardcoded magic number not sourced from `AppSpacing`. All four fixes (including a new `AppSpacing.radiusXl = 22.0` token) are folded into the code below — implement this version, not the earlier one.
+
+- [ ] **Step 1: Add `radiusXl` to `AppSpacing`**
+
+In `lib/core/theme/app_spacing.dart`, add a new radius token alongside the existing ones:
+
+```dart
+  static const radiusMd = 12.0;
+  static const radiusLg = 16.0;
+  static const radiusXl = 22.0;
+  static const radiusPill = 999.0;
+```
+
+- [ ] **Step 2: Rewrite `AppShell`**
 
 ```dart
 // lib/core/widgets/app_shell.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../../l10n/generated/app_localizations.dart';
 
@@ -2887,41 +2901,57 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
       body: SafeArea(child: navigationShell),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(22),
-          child: NavigationBar(
-            selectedIndex: navigationShell.currentIndex,
-            onDestinationSelected: (index) => navigationShell.goBranch(
-              index,
-              initialLocation: index == navigationShell.currentIndex,
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          0,
+          AppSpacing.lg,
+          AppSpacing.lg + bottomInset,
+        ),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+            child: MediaQuery.removePadding(
+              context: context,
+              removeBottom: true,
+              child: NavigationBar(
+                selectedIndex: navigationShell.currentIndex,
+                onDestinationSelected: (index) => navigationShell.goBranch(
+                  index,
+                  initialLocation: index == navigationShell.currentIndex,
+                ),
+                destinations: [
+                  NavigationDestination(
+                    icon: const Icon(Icons.home_outlined),
+                    selectedIcon: const Icon(Icons.home),
+                    label: l10n.navHome,
+                  ),
+                  NavigationDestination(
+                    icon: const Icon(Icons.calendar_month_outlined),
+                    selectedIcon: const Icon(Icons.calendar_month),
+                    label: l10n.navClasses,
+                  ),
+                  NavigationDestination(
+                    icon: const Icon(Icons.show_chart_outlined),
+                    selectedIcon: const Icon(Icons.show_chart),
+                    label: l10n.navProgress,
+                  ),
+                  NavigationDestination(
+                    icon: const Icon(Icons.person_outline),
+                    selectedIcon: const Icon(Icons.person),
+                    label: l10n.navMembership,
+                  ),
+                ],
+              ),
             ),
-            destinations: [
-              NavigationDestination(
-                icon: const Icon(Icons.home_outlined),
-                selectedIcon: const Icon(Icons.home),
-                label: l10n.navHome,
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.calendar_month_outlined),
-                selectedIcon: const Icon(Icons.calendar_month),
-                label: l10n.navClasses,
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.show_chart_outlined),
-                selectedIcon: const Icon(Icons.show_chart),
-                label: l10n.navProgress,
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.person_outline),
-                selectedIcon: const Icon(Icons.person),
-                label: l10n.navMembership,
-              ),
-            ],
           ),
         ),
       ),
@@ -2930,12 +2960,12 @@ class AppShell extends StatelessWidget {
 }
 ```
 
-- [ ] **Step 2: Verify and commit**
+- [ ] **Step 3: Verify and commit**
 
-This file alone won't fully analyze clean yet — it references nothing outside itself except already-existing l10n keys, so it should be fine on its own, but the whole-project `flutter analyze` still fails until Task 16 rewrites the router to actually construct `AppShell` with a `navigationShell`. Run: `flutter analyze lib/core/widgets/app_shell.dart` and confirm no issues in this file specifically.
+This file alone won't fully analyze clean yet — it references nothing outside itself except already-existing l10n keys, so it should be fine on its own, but the whole-project `flutter analyze` still fails until Task 16 rewrites the router to actually construct `AppShell` with a `navigationShell`. Run: `flutter analyze lib/core/widgets/app_shell.dart lib/core/theme/app_spacing.dart` and confirm no issues in either file.
 
 ```bash
-git add lib/core/widgets/app_shell.dart
+git add lib/core/widgets/app_shell.dart lib/core/theme/app_spacing.dart
 git commit -m "Rewrite AppShell for StatefulShellRoute 4-tab navigation"
 ```
 
