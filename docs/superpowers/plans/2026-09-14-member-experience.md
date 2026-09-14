@@ -2655,6 +2655,8 @@ git commit -m "Add membership domain, fake repository with freeze mutation, and 
 **Files:**
 - Create: `lib/features/membership/presentation/screens/membership_screen.dart`
 
+**Post-review update:** code-quality review found that once `summary.status == MembershipStatus.frozen`, the freeze button disables but keeps showing `l10n.membershipFreezeButton` ("Üyeliği Dondur") — an actionable-looking CTA with no visible confirmation the freeze happened, unlike `classes_screen.dart`'s reserve button which swaps to a state-naming label (`classesReservedButton`) once reserved. Fixed by adding a `membershipFrozenButton` ARB key ("Üyeliğiniz Donduruldu" / "Membership Frozen") and branching the button's label on `summary.status` in Step 1's code below.
+
 - [ ] **Step 1: Write `MembershipScreen`**
 
 ```dart
@@ -2782,7 +2784,11 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBackground),
                     )
-                  : Text(l10n.membershipFreezeButton),
+                  : Text(
+                      summary.status == MembershipStatus.frozen
+                          ? l10n.membershipFrozenButton
+                          : l10n.membershipFreezeButton,
+                    ),
             ),
             const SizedBox(height: AppSpacing.md),
             Card(
