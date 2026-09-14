@@ -55,6 +55,7 @@
   "membershipPaidStatus": "Paid",
   "membershipRenewButton": "Renew Membership",
   "membershipFreezeButton": "Request Freeze",
+  "membershipFrozenButton": "Membership Frozen",
   "membershipRenewRequested": "Renewal request received",
   "membershipPaymentHistoryLabel": "Payment History"
 }

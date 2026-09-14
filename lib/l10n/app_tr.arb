@@ -122,6 +122,8 @@
   "@membershipRenewButton": {},
   "membershipFreezeButton": "Üyeliği Dondur",
   "@membershipFreezeButton": {},
+  "membershipFrozenButton": "Üyeliğiniz Donduruldu",
+  "@membershipFrozenButton": {},
   "membershipRenewRequested": "Yenileme talebi alındı",
   "@membershipRenewRequested": {},
   "membershipPaymentHistoryLabel": "Ödeme Geçmişi",

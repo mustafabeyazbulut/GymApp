@@ -122,7 +122,11 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBackground),
                     )
-                  : Text(l10n.membershipFreezeButton),
+                  : Text(
+                      summary.status == MembershipStatus.frozen
+                          ? l10n.membershipFrozenButton
+                          : l10n.membershipFreezeButton,
+                    ),
             ),
             const SizedBox(height: AppSpacing.md),
             Card(
