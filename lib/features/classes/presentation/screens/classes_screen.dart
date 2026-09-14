@@ -148,17 +148,39 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
                 ),
               ),
               Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  itemCount: filtered.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
-                  itemBuilder: (context, index) => _ClassCard(
-                    session: filtered[index],
-                    isReserving: _reservingId == filtered[index].id,
-                    onReserve: () => _reserve(filtered[index].id),
-                    l10n: l10n,
-                  ),
-                ),
+                child: filtered.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.xl),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.event_busy_outlined,
+                                size: 40,
+                                color: AppColors.onBackgroundFaint,
+                              ),
+                              const SizedBox(height: AppSpacing.md),
+                              Text(
+                                l10n.classesEmptyFilterMessage,
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+                        itemBuilder: (context, index) => _ClassCard(
+                          session: filtered[index],
+                          isReserving: _reservingId == filtered[index].id,
+                          onReserve: () => _reserve(filtered[index].id),
+                          l10n: l10n,
+                        ),
+                      ),
               ),
             ],
           );

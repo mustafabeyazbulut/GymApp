@@ -84,6 +84,8 @@
   "@classesReservedButton": {},
   "classesWaitlistButton": "Bekleme Listesi",
   "@classesWaitlistButton": {},
+  "classesEmptyFilterMessage": "Bu filtreye uygun ders bulunamadı.",
+  "@classesEmptyFilterMessage": {},
 
   "progressTitle": "Gelişimim",
   "@progressTitle": {},

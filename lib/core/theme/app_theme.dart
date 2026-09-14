@@ -21,6 +21,16 @@ abstract final class AppTheme {
     );
 
     return base.copyWith(
+      chipTheme: ChipThemeData(
+        backgroundColor: AppColors.surface,
+        selectedColor: AppColors.successSurface,
+        disabledColor: AppColors.surface,
+        labelStyle: AppTypography.textTheme.labelSmall?.copyWith(color: AppColors.onBackground),
+        side: const BorderSide(color: AppColors.border),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusPill)),
+        showCheckmark: false,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+      ),
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,

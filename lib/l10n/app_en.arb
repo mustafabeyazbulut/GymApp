@@ -36,6 +36,7 @@
   "classesReserveButton": "Reserve Spot",
   "classesReservedButton": "Reserved",
   "classesWaitlistButton": "Waitlist",
+  "classesEmptyFilterMessage": "No classes match this filter.",
 
   "progressTitle": "My Progress",
   "progressMonthLabel": "This Month",
