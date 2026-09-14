@@ -2388,6 +2388,8 @@ git commit -m "Add progress screen"
 
 "Üyeliği Yenile" (renew) has no repository method — per the spec it's a pure UI-level mock (a `SnackBar`, no state change), so nothing to put behind an interface. Only "Dondurma Talebi" (freeze) actually mutates state.
 
+**Post-review update (proactive, before implementation):** Tasks 7 and 11's code-quality reviews both flagged the same recurring gap — a test on a 100%-deterministic fixture that only spot-checks one or two fields instead of asserting every field exactly, leaving the actual shipped content (dates, prices, names) unverified. Rather than let this surface a third time, `Step 1`'s test below already asserts every field of the fixture exactly. Implement this version, not a looser one.
+
 - [ ] **Step 1: Write the failing test for `FakeMembershipRepository`**
 
 ```dart
@@ -2402,17 +2404,30 @@ void main() {
 
     final summary = await repository.getMembership();
 
+    expect(summary.packageName, 'BJJ + Fitness Aylık');
     expect(summary.status, MembershipStatus.active);
+    expect(summary.startDate, '01.09.2026');
+    expect(summary.endDate, '30.09.2026');
+    expect(summary.price, '₺2.500');
+    expect(summary.isPaid, true);
     expect(summary.paymentHistory, hasLength(3));
+    expect(summary.paymentHistory[0].date, '01.09.2026');
+    expect(summary.paymentHistory[0].amount, '₺2.500');
+    expect(summary.paymentHistory[1].date, '01.08.2026');
+    expect(summary.paymentHistory[1].amount, '₺2.500');
+    expect(summary.paymentHistory[2].date, '01.07.2026');
+    expect(summary.paymentHistory[2].amount, '₺2.500');
   });
 
-  test('requestFreeze flips the status to frozen', () async {
+  test('requestFreeze flips the status to frozen and leaves other fields unchanged', () async {
     final repository = FakeMembershipRepository();
 
     await repository.requestFreeze();
     final summary = await repository.getMembership();
 
     expect(summary.status, MembershipStatus.frozen);
+    expect(summary.packageName, 'BJJ + Fitness Aylık');
+    expect(summary.paymentHistory, hasLength(3));
   });
 }
 ```
