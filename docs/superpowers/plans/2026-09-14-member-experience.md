@@ -1032,8 +1032,26 @@ git commit -m "Add home summary domain, fake repository and provider"
 
 **Files:**
 - Create: `lib/features/home/presentation/screens/home_screen.dart`
+- Modify: `lib/l10n/app_tr.arb`, `lib/l10n/app_en.arb` (add `homeNextClassTrainerLabel`)
 
 The weekly attendance bar chart is simple enough to inline directly in the screen (7 `Container`s in a `Row`, height proportional to a fixed per-day value) — no separate chart widget needed, unlike the progress gauges which are reused 3 times and warranted `CircularStatGauge`.
+
+**Post-review update (applied after this task's first implementation pass, folded into the task text so the plan stays accurate):** a code-quality review caught 3 real issues in the first version — (1) `"Eğitmen: ${summary.nextClassTrainer}"` was a hardcoded, unlocalized Turkish literal that would leak through even on the English locale; (2) the design spec explicitly says the "Rezervasyon" button should switch to the Dersler tab, not sit as a silent no-op (only "Giriş Yap" is meant to be a true no-op Faz 2 stub); (3) the "Aktif Paketin"/"Sıradaki Ders" cards read as visually monotone with no icon accent, against this project's explicit icon-consistency bar. The code block below already has all three fixes applied — implement this version, not an earlier one.
+
+Add this new key to **both** `lib/l10n/app_tr.arb` and `lib/l10n/app_en.arb`, right after the existing `homeNextClassLabel` key:
+
+`app_tr.arb`:
+```json
+  "homeNextClassTrainerLabel": "Eğitmen: {trainerName}",
+  "@homeNextClassTrainerLabel": {
+    "placeholders": { "trainerName": { "type": "String" } }
+  },
+```
+
+`app_en.arb`:
+```json
+  "homeNextClassTrainerLabel": "Trainer: {trainerName}",
+```
 
 - [ ] **Step 1: Write `HomeScreen`**
 
@@ -1041,6 +1059,7 @@ The weekly attendance bar chart is simple enough to inline directly in the scree
 // lib/features/home/presentation/screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -1057,7 +1076,7 @@ class HomeScreen extends ConsumerWidget {
     final summaryAsync = ref.watch(homeSummaryProvider);
 
     return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false, title: const Text('GymApp')),
+      appBar: AppBar(automaticallyImplyLeading: false, title: Text(l10n.appTitle)),
       body: summaryAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
@@ -1110,7 +1129,13 @@ class _HomeContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.homeActivePackageLabel, style: textTheme.labelSmall),
+                Row(
+                  children: [
+                    const Icon(Icons.inventory_2_outlined, size: 14, color: AppColors.onBackgroundFaint),
+                    const SizedBox(width: AppSpacing.xs),
+                    Text(l10n.homeActivePackageLabel, style: textTheme.labelSmall),
+                  ],
+                ),
                 const SizedBox(height: AppSpacing.sm),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1130,14 +1155,23 @@ class _HomeContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.homeNextClassLabel, style: textTheme.labelSmall),
+                Row(
+                  children: [
+                    const Icon(Icons.calendar_month_outlined, size: 14, color: AppColors.onBackgroundFaint),
+                    const SizedBox(width: AppSpacing.xs),
+                    Text(l10n.homeNextClassLabel, style: textTheme.labelSmall),
+                  ],
+                ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   '${summary.nextClassName} · ${summary.nextClassTime}',
                   style: textTheme.titleMedium,
                 ),
                 const SizedBox(height: AppSpacing.xs),
-                Text('Eğitmen: ${summary.nextClassTrainer}', style: textTheme.bodyMedium),
+                Text(
+                  l10n.homeNextClassTrainerLabel(summary.nextClassTrainer),
+                  style: textTheme.bodyMedium,
+                ),
               ],
             ),
           ),
@@ -1147,13 +1181,18 @@ class _HomeContent extends StatelessWidget {
           children: [
             Expanded(
               child: ElevatedButton(
-                onPressed: () {},
+                // Branch index 1 = Dersler, per Task 16's StatefulShellRoute
+                // branch order (home, classes, progress, membership).
+                onPressed: () => StatefulNavigationShell.of(context).goBranch(1),
                 child: Text(l10n.homeReservationButton),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: OutlinedButton(
+                // Deliberately a no-op — Faz 2 door-access check-in, not
+                // built yet. Per spec, unlike Reservation, this one stays
+                // silent for now.
                 onPressed: () {},
                 child: Text(l10n.homeCheckInButton),
               ),
