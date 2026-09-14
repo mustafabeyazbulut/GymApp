@@ -23,7 +23,7 @@ metadata:
 ## Task checklist
 
 - [x] Task 1 — Remove the Branch Feature — Last commit: `e180a49` "Remove Branch feature and replace router with temporary placeholder" (spec ✅, code-quality ✅ "Ready to merge: Yes"). Clean, total deletion (14 files) — `lib/features/` no longer exists at all. `lib/core/widgets/app_shell.dart` is now a temporary orphan (nothing imports it) — this is correct/expected, Task 15 rewrites it, not a bug to fix early. `app_router.dart` replaced with the minimal one-route placeholder from the plan, to be replaced for real in Task 16.
-- [ ] Task 2 — Update `AppColors.primary` to a Calmer Green
+- [x] Task 2 — Update `AppColors.primary` to a Calmer Green — Last commit: `65269ae` "Tone down primary accent from neon lime to a calmer green" (spec ✅, code-quality ✅ "Ready to merge: Yes"). Exactly 2 lines changed (`primary`, `successSurface`), nothing else. Contrast vs `onPrimary` recomputed: ~9.25:1, well clear of WCAG AAA even.
 - [ ] Task 3 — Rewrite Localization (remove Branch keys, add Member Experience keys)
 - [ ] Task 4 — `CircularStatGauge` Widget
 - [ ] Task 5 — Auth Feature (fake repository + auth state)
