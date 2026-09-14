@@ -6,9 +6,25 @@ part 'branch_list_provider.g.dart';
 
 @riverpod
 class BranchList extends _$BranchList {
+  /// The last successfully loaded list, kept independently of [state].
+  ///
+  /// `AsyncValue.copyWithPrevious` — the framework's own mechanism for
+  /// carrying a previous value forward into a failed refresh's `AsyncError`
+  /// — was made `@internal` in riverpod 3.x (not usable from application
+  /// code; confirmed against the installed `riverpod-3.4.3` source, where
+  /// using it trips the `invalid_use_of_internal_member` analyzer warning).
+  /// Without it, `state.value` goes back to `null` after a failed
+  /// [refresh], which would make [addBranch] silently drop every
+  /// previously-loaded branch. This field is this notifier's own cache of
+  /// the last known-good list so [addBranch] never depends on `state.value`
+  /// directly.
+  List<Branch> _lastKnownBranches = const [];
+
   @override
-  Future<List<Branch>> build() {
-    return ref.watch(branchRepositoryProvider).getBranches();
+  Future<List<Branch>> build() async {
+    final branches = await ref.watch(branchRepositoryProvider).getBranches();
+    _lastKnownBranches = branches;
+    return branches;
   }
 
   Future<void> refresh() async {
@@ -16,6 +32,10 @@ class BranchList extends _$BranchList {
     state = await AsyncValue.guard(
       () => ref.read(branchRepositoryProvider).getBranches(),
     );
+    final value = state.value;
+    if (value != null) {
+      _lastKnownBranches = value;
+    }
   }
 
   /// Lets `DioException`/`ApiException` propagate to the caller (the form
@@ -32,6 +52,7 @@ class BranchList extends _$BranchList {
       name: name,
       address: address,
     );
-    state = AsyncData([...?state.value, created]);
+    _lastKnownBranches = [..._lastKnownBranches, created];
+    state = AsyncData(_lastKnownBranches);
   }
 }

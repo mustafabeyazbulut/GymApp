@@ -33,7 +33,7 @@ final class BranchListProvider
   BranchList create() => BranchList();
 }
 
-String _$branchListHash() => r'a7ea94b078cb2f1b644ee7aeb1db2e2b4e27a10c';
+String _$branchListHash() => r'a92ab55b6009b3fd188da91814a7a08a17a182e0';
 
 abstract class _$BranchList extends $AsyncNotifier<List<Branch>> {
   FutureOr<List<Branch>> build();
