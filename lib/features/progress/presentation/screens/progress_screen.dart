@@ -91,21 +91,25 @@ class _CategoryTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.primary : AppColors.surface,
-          border: selected ? null : Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: selected ? AppColors.onPrimary : AppColors.onBackground,
-              ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: AppSpacing.minTapTarget),
+        child: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.successSurface : AppColors.surface,
+            border: selected ? null : Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: selected ? AppColors.primary : AppColors.onBackground,
+                ),
+          ),
         ),
       ),
     );
@@ -130,7 +134,7 @@ class _ProgressContent extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               children: [
-                Icon(Icons.military_tech_outlined, color: AppColors.onBackgroundFaint, size: 32),
+                const Icon(Icons.military_tech_outlined, color: AppColors.onBackgroundFaint, size: 32),
                 const SizedBox(height: AppSpacing.sm),
                 Text(summary.achievementTitle, style: textTheme.titleMedium),
                 const SizedBox(height: AppSpacing.xs),
