@@ -11,6 +11,7 @@ abstract final class AppSpacing {
 
   static const radiusMd = 12.0;
   static const radiusLg = 16.0;
+  static const radiusXl = 22.0;
   static const radiusPill = 999.0;
 
   static const minTapTarget = 48.0;
