@@ -57,81 +57,91 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              const Spacer(),
-              Container(
-                width: 26,
-                height: 26,
-                margin: const EdgeInsets.only(bottom: AppSpacing.lg),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(8),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
+            child: Column(
+              children: [
+                SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+                Container(
+                  width: 26,
+                  height: 26,
+                  margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  transform: Matrix4.rotationZ(0.7854),
+                  transformAlignment: Alignment.center,
                 ),
-                transform: Matrix4.rotationZ(0.7854),
-                transformAlignment: Alignment.center,
-              ),
-              Text(
-                l10n.loginWelcomeTitle,
-                style: Theme.of(context).textTheme.headlineSmall,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                l10n.loginSubtitle,
-                style: Theme.of(context).textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      TextFormField(
-                        controller: _identifierController,
-                        decoration: InputDecoration(labelText: l10n.loginIdentifierLabel),
-                        validator: (value) => (value == null || value.trim().isEmpty)
-                            ? l10n.commonFieldRequired
-                            : null,
+                Text(
+                  'MAT & MOVE',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        letterSpacing: 1.5,
+                        fontWeight: FontWeight.w700,
                       ),
-                      const SizedBox(height: AppSpacing.lg),
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: true,
-                        decoration: InputDecoration(labelText: l10n.loginPasswordLabel),
-                        validator: (value) => (value == null || value.trim().isEmpty)
-                            ? l10n.commonFieldRequired
-                            : null,
-                      ),
-                      const SizedBox(height: AppSpacing.xl),
-                      ElevatedButton(
-                        onPressed: _isSubmitting ? null : _submit,
-                        child: _isSubmitting
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppColors.onPrimary,
-                                ),
-                              )
-                            : Text(l10n.loginSubmitButton),
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
-                      Text(
-                        l10n.loginForgotPassword,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ],
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  l10n.loginWelcomeTitle,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  l10n.loginSubtitle,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextFormField(
+                          controller: _identifierController,
+                          decoration: InputDecoration(labelText: l10n.loginIdentifierLabel),
+                          validator: (value) => (value == null || value.trim().isEmpty)
+                              ? l10n.commonFieldRequired
+                              : null,
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: true,
+                          decoration: InputDecoration(labelText: l10n.loginPasswordLabel),
+                          validator: (value) => (value == null || value.trim().isEmpty)
+                              ? l10n.commonFieldRequired
+                              : null,
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+                        ElevatedButton(
+                          onPressed: _isSubmitting ? null : _submit,
+                          child: _isSubmitting
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.onPrimary,
+                                  ),
+                                )
+                              : Text(l10n.loginSubmitButton),
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        Text(
+                          l10n.loginForgotPassword,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-            ],
+              ],
+            ),
           ),
         ),
       ),
