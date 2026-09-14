@@ -15,7 +15,7 @@ part 'app_router.g.dart';
 GoRouter appRouter(Ref ref) {
   final isAuthed = ref.watch(authStateProvider);
 
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: isAuthed ? '/home' : '/login',
     redirect: (context, state) {
       final loggingIn = state.matchedLocation == '/login';
@@ -49,4 +49,6 @@ GoRouter appRouter(Ref ref) {
       ),
     ],
   );
+  ref.onDispose(router.dispose);
+  return router;
 }
