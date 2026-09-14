@@ -15,7 +15,10 @@ class FakeHomeRepository implements HomeRepository {
       nextClassName: 'BJJ Temel',
       nextClassTime: 'Bugün 19:00',
       nextClassTrainer: 'Mert Demir',
-      weeklyAttendance: [true, true, false, true, false, true, false],
+      weeklyAttendance: [
+        ('Pzt', true), ('Sal', true), ('Çar', false), ('Per', true),
+        ('Cum', false), ('Cmt', true), ('Paz', false),
+      ],
     );
   }
 }

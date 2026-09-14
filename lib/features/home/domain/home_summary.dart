@@ -16,8 +16,12 @@ class HomeSummary {
   final String nextClassTime;
   final String nextClassTrainer;
 
-  /// One entry per day, Monday first — true means a class was attended.
-  final List<bool> weeklyAttendance;
+  /// One (day label, attended) pair per day, Monday first. The label is
+  /// paired directly with its value — deliberately not a separate
+  /// same-length list zipped by position — so a real backend returning
+  /// attendance in a different order can never silently desync from the
+  /// day labels the UI renders next to it.
+  final List<(String, bool)> weeklyAttendance;
 
-  int get attendedCount => weeklyAttendance.where((attended) => attended).length;
+  int get attendedCount => weeklyAttendance.where((day) => day.$2).length;
 }

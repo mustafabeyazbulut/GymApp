@@ -19,7 +19,10 @@ void main() {
         nextClassName: 'Test Ders',
         nextClassTime: 'Yarın 10:00',
         nextClassTrainer: 'Test Eğitmen',
-        weeklyAttendance: [true, false, false, false, false, false, false],
+        weeklyAttendance: [
+          ('Pzt', true), ('Sal', false), ('Çar', false), ('Per', false),
+          ('Cum', false), ('Cmt', false), ('Paz', false),
+        ],
       ),
     );
     final container = ProviderContainer(
