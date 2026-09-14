@@ -1,0 +1,19 @@
+{
+  "@@locale": "en",
+  "appTitle": "GymApp",
+  "branchesTitle": "Branches",
+  "branchesEmptyTitle": "No branches yet",
+  "branchesEmptyMessage": "Tap the button below to add the first branch.",
+  "branchAddButton": "Add Branch",
+  "branchFormTitle": "New Branch",
+  "branchFormCompanyIdLabel": "Company ID",
+  "branchFormNameLabel": "Branch Name",
+  "branchFormAddressLabel": "Address",
+  "branchFormSubmitButton": "Save",
+  "branchFormValidationRequired": "This field is required",
+  "branchFormValidationCompanyId": "Enter a valid Company ID",
+  "branchStatusActive": "Active",
+  "branchStatusInactive": "Inactive",
+  "commonError": "Something went wrong",
+  "commonRetry": "Retry"
+}
