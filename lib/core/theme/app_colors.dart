@@ -15,7 +15,7 @@ abstract final class AppColors {
 
   static const onBackground = Color(0xFFF5F5F5);
   static const onBackgroundMuted = Color(0xFFA1A1AA);
-  static const onBackgroundFaint = Color(0xFF71717A);
+  static const onBackgroundFaint = Color(0xFF8E8E96);
 
   static const border = Color(0xFF2A2A2E);
   static const error = Color(0xFFFF6B6B);
