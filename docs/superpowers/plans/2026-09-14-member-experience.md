@@ -835,16 +835,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_app/features/home/data/fake_home_repository.dart';
 
 void main() {
-  test('getHomeSummary returns a fixed mock summary with sane values', () async {
+  test('getHomeSummary returns the exact fixed mock summary', () async {
     final repository = FakeHomeRepository();
 
     final summary = await repository.getHomeSummary();
 
-    expect(summary.greetingName, isNotEmpty);
-    expect(summary.activePackageName, isNotEmpty);
-    expect(summary.daysLeft, greaterThan(0));
-    expect(summary.weeklyAttendance, hasLength(7));
-    expect(summary.attendedCount, summary.weeklyAttendance.where((d) => d).length);
+    expect(summary.greetingName, 'Elnara');
+    expect(summary.activePackageName, 'BJJ + Fitness');
+    expect(summary.daysLeft, 18);
+    expect(summary.nextClassName, 'BJJ Temel');
+    expect(summary.nextClassTime, 'Bugün 19:00');
+    expect(summary.nextClassTrainer, 'Mert Demir');
+    expect(summary.weeklyAttendance, const [
+      ('Pzt', true), ('Sal', true), ('Çar', false), ('Per', true),
+      ('Cum', false), ('Cmt', true), ('Paz', false),
+    ]);
+    expect(summary.attendedCount, 4);
   });
 }
 ```
@@ -876,10 +882,14 @@ class HomeSummary {
   final String nextClassTime;
   final String nextClassTrainer;
 
-  /// One entry per day, Monday first — true means a class was attended.
-  final List<bool> weeklyAttendance;
+  /// One (day label, attended) pair per day, Monday first. The label is
+  /// paired directly with its value — deliberately not a separate
+  /// same-length list zipped by position — so a real backend returning
+  /// attendance in a different order can never silently desync from the
+  /// day labels the UI renders next to it.
+  final List<(String, bool)> weeklyAttendance;
 
-  int get attendedCount => weeklyAttendance.where((attended) => attended).length;
+  int get attendedCount => weeklyAttendance.where((day) => day.$2).length;
 }
 ```
 
@@ -911,7 +921,10 @@ class FakeHomeRepository implements HomeRepository {
       nextClassName: 'BJJ Temel',
       nextClassTime: 'Bugün 19:00',
       nextClassTrainer: 'Mert Demir',
-      weeklyAttendance: [true, true, false, true, false, true, false],
+      weeklyAttendance: [
+        ('Pzt', true), ('Sal', true), ('Çar', false), ('Per', true),
+        ('Cum', false), ('Cmt', true), ('Paz', false),
+      ],
     );
   }
 }
@@ -954,7 +967,10 @@ void main() {
         nextClassName: 'Test Ders',
         nextClassTime: 'Yarın 10:00',
         nextClassTrainer: 'Test Eğitmen',
-        weeklyAttendance: [true, false, false, false, false, false, false],
+        weeklyAttendance: [
+          ('Pzt', true), ('Sal', false), ('Çar', false), ('Per', false),
+          ('Cum', false), ('Cmt', false), ('Paz', false),
+        ],
       ),
     );
     final container = ProviderContainer(
@@ -1077,8 +1093,6 @@ class _HomeContent extends StatelessWidget {
   final AppLocalizations l10n;
   final HomeSummary summary;
 
-  static const _dayLabels = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
-
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -1164,31 +1178,36 @@ class _HomeContent extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),
-                SizedBox(
-                  height: 32,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      for (final attended in summary.weeklyAttendance)
-                        Expanded(
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 3),
-                            height: attended ? 32 : 12,
-                            decoration: BoxDecoration(
-                              color: attended ? AppColors.primary : AppColors.surfaceElevated,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    for (final label in _dayLabels)
-                      Text(label, style: textTheme.labelSmall?.copyWith(fontSize: 8)),
+                    // Bar + label are read from the same (label, attended)
+                    // pair in one loop — see HomeSummary.weeklyAttendance's
+                    // doc comment for why this isn't two same-length lists
+                    // zipped by position.
+                    for (final (label, attended) in summary.weeklyAttendance)
+                      Expanded(
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              height: 32,
+                              child: Align(
+                                alignment: Alignment.bottomCenter,
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                                  height: attended ? 32 : 12,
+                                  decoration: BoxDecoration(
+                                    color: attended ? AppColors.primary : AppColors.surfaceElevated,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            Text(label, style: textTheme.labelSmall?.copyWith(fontSize: 8)),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ],
