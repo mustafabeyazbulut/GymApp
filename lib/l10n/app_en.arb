@@ -16,6 +16,16 @@
   "loginPasswordLabel": "Password",
   "loginSubmitButton": "Log In",
   "loginForgotPassword": "Forgot password",
+  "loginNoAccount": "No account? Sign up",
+
+  "registerTitle": "Create Account",
+  "registerFullNameLabel": "Full name",
+  "registerPhoneLabel": "Phone",
+  "registerEmailLabel": "Email (optional)",
+  "registerPasswordLabel": "Password",
+  "registerSubmitButton": "Create Account",
+  "registerHaveAccount": "Already have an account? Log in",
+  "registerPasswordTooShort": "Password must be at least 8 characters",
 
   "homeGreeting": "Hello, {name}",
   "homeSubtitle": "Discipline is with you today",

@@ -41,7 +41,7 @@ final class AuthStateProvider extends $AsyncNotifierProvider<AuthState, bool> {
   AuthState create() => AuthState();
 }
 
-String _$authStateHash() => r'68e9ab0af5ad50a7f8ea2f8f8576ca013be662d1';
+String _$authStateHash() => r'e7bf16bd0975fe2a01e4bd96c4f2f7bcd45aa3b2';
 
 /// Whether the app should show the tab shell (true) or `/login` (false).
 /// On startup, this checks for a stored access token rather than always

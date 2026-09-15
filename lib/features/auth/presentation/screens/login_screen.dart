@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -135,6 +136,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           l10n.loginForgotPassword,
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        TextButton(
+                          onPressed: _isSubmitting ? null : () => context.push('/register'),
+                          child: Text(l10n.loginNoAccount, textAlign: TextAlign.center),
                         ),
                       ],
                     ),

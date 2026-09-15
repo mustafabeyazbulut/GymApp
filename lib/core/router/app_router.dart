@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../widgets/app_shell.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/classes/presentation/screens/classes_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/membership/presentation/screens/membership_screen.dart';
@@ -23,7 +24,8 @@ GoRouter appRouter(Ref ref) {
   final router = GoRouter(
     initialLocation: isAuthed ? '/home' : '/login',
     redirect: (context, state) {
-      final loggingIn = state.matchedLocation == '/login';
+      final loggingIn =
+          state.matchedLocation == '/login' || state.matchedLocation == '/register';
       if (!isAuthed && !loggingIn) return '/login';
       if (isAuthed && loggingIn) return '/home';
       return null;
@@ -32,6 +34,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
