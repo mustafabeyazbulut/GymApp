@@ -57,5 +57,7 @@
   "membershipFreezeButton": "Request Freeze",
   "membershipFrozenButton": "Membership Frozen",
   "membershipRenewRequested": "Renewal request received",
-  "membershipPaymentHistoryLabel": "Payment History"
+  "membershipPaymentHistoryLabel": "Payment History",
+  "membershipEmptyStateTitle": "No active membership yet",
+  "membershipEmptyStateBody": "Once you join a gym, your package, classes, and progress will show up here."
 }
