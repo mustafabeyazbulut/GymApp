@@ -24,4 +24,6 @@ abstract interface class AuthRepository {
   });
 
   Future<MeResult> getMe();
+
+  Future<void> deleteAccount();
 }

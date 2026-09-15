@@ -73,6 +73,12 @@ class RealAuthRepository implements AuthRepository {
     return MeResult.fromJson(response.data!);
   }
 
+  @override
+  Future<void> deleteAccount() async {
+    await _guard(() => _dio.delete<void>('/api/auth/me'));
+    await _tokenStore.clear();
+  }
+
   Future<void> _storeTokenPair(Map<String, dynamic> data) => _tokenStore.saveTokens(
         accessToken: data['accessToken'] as String,
         refreshToken: data['refreshToken'] as String,

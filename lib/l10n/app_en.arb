@@ -83,5 +83,11 @@
   "membershipRenewRequested": "Renewal request received",
   "membershipPaymentHistoryLabel": "Payment History",
   "membershipEmptyStateTitle": "No active membership yet",
-  "membershipEmptyStateBody": "Once you join a gym, your package, classes, and progress will show up here."
+  "membershipEmptyStateBody": "Once you join a gym, your package, classes, and progress will show up here.",
+
+  "accountDeletionButton": "Delete My Account",
+  "accountDeletionConfirmTitle": "Are you sure you want to delete your account?",
+  "accountDeletionConfirmBody": "This cannot be undone. Your account and all your data will be permanently deleted.",
+  "accountDeletionConfirmButton": "Yes, Delete",
+  "accountDeletionCancelButton": "Cancel"
 }

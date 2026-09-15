@@ -5,6 +5,8 @@ import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../auth/data/real_auth_repository.dart';
+import '../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../domain/membership_summary.dart';
 import '../providers/membership_provider.dart';
 
@@ -32,6 +34,34 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(l10n.membershipRenewRequested)),
     );
+  }
+
+  Future<void> _confirmAndDeleteAccount() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.accountDeletionConfirmTitle),
+        content: Text(l10n.accountDeletionConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.accountDeletionCancelButton),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.accountDeletionConfirmButton),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    await ref.read(authRepositoryProvider).deleteAccount();
+    if (!mounted) return;
+    await ref.read(authStateProvider.notifier).logOut();
   }
 
   @override
@@ -151,6 +181,12 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
                   ],
                 ),
               ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+              onPressed: _confirmAndDeleteAccount,
+              child: Text(l10n.accountDeletionButton),
             ),
           ],
         ),

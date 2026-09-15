@@ -144,4 +144,13 @@ void main() {
       throwsA(isA<RateLimitedAuthException>()),
     );
   });
+
+  test('deleteAccount calls DELETE /api/auth/me and clears the token store', () async {
+    await tokenStore.saveTokens(accessToken: 'a', refreshToken: 'r');
+    adapter.onDelete('/api/auth/me', (server) => server.reply(204, null));
+
+    await repository.deleteAccount();
+
+    expect(await tokenStore.readAccessToken(), isNull);
+  });
 }

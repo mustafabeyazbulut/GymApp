@@ -177,5 +177,16 @@
   "membershipEmptyStateTitle": "Henüz aktif üyeliğin yok",
   "@membershipEmptyStateTitle": {},
   "membershipEmptyStateBody": "Bir gym'e üye olduğunda paketin, derslerin ve gelişimin burada görünecek.",
-  "@membershipEmptyStateBody": {}
+  "@membershipEmptyStateBody": {},
+
+  "accountDeletionButton": "Hesabımı Sil",
+  "@accountDeletionButton": {},
+  "accountDeletionConfirmTitle": "Hesabını silmek istediğine emin misin?",
+  "@accountDeletionConfirmTitle": {},
+  "accountDeletionConfirmBody": "Bu işlem geri alınamaz. Hesabın ve tüm verilerin kalıcı olarak silinir.",
+  "@accountDeletionConfirmBody": {},
+  "accountDeletionConfirmButton": "Evet, Sil",
+  "@accountDeletionConfirmButton": {},
+  "accountDeletionCancelButton": "Vazgeç",
+  "@accountDeletionCancelButton": {}
 }
