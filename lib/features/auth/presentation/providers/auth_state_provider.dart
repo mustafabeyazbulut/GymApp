@@ -10,8 +10,13 @@ part 'auth_state_provider.g.dart';
 class AuthState extends _$AuthState {
   @override
   Future<bool> build() async {
-    final token = await ref.watch(tokenStoreProvider).readAccessToken();
-    return token != null;
+    final store = ref.watch(tokenStoreProvider);
+    final accessToken = await store.readAccessToken();
+    final refreshToken = await store.readRefreshToken();
+    // Per SecureTokenStore's own documented contract: a present access token
+    // with a missing refresh token is a partial/mismatched pair (e.g. from a
+    // process kill mid-write), not a valid session — treat it as logged out.
+    return accessToken != null && refreshToken != null;
   }
 
   void logIn() => state = const AsyncData(true);

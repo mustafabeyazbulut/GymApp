@@ -19,6 +19,7 @@ void main() {
 
   test('build() is true when a stored access token exists', () async {
     when(() => tokenStore.readAccessToken()).thenAnswer((_) async => 'stored-token');
+    when(() => tokenStore.readRefreshToken()).thenAnswer((_) async => 'stored-refresh-token');
 
     final result = await container.read(authStateProvider.future);
 
@@ -27,6 +28,16 @@ void main() {
 
   test('build() is false when no token is stored', () async {
     when(() => tokenStore.readAccessToken()).thenAnswer((_) async => null);
+    when(() => tokenStore.readRefreshToken()).thenAnswer((_) async => null);
+
+    final result = await container.read(authStateProvider.future);
+
+    expect(result, isFalse);
+  });
+
+  test('build() is false when access token exists but refresh token is missing (partial pair)', () async {
+    when(() => tokenStore.readAccessToken()).thenAnswer((_) async => 'stored-token');
+    when(() => tokenStore.readRefreshToken()).thenAnswer((_) async => null);
 
     final result = await container.read(authStateProvider.future);
 
@@ -35,6 +46,7 @@ void main() {
 
   test('logIn() sets state to true', () async {
     when(() => tokenStore.readAccessToken()).thenAnswer((_) async => null);
+    when(() => tokenStore.readRefreshToken()).thenAnswer((_) async => null);
     await container.read(authStateProvider.future);
 
     container.read(authStateProvider.notifier).logIn();
@@ -44,6 +56,7 @@ void main() {
 
   test('logOut() clears the token store and sets state to false', () async {
     when(() => tokenStore.readAccessToken()).thenAnswer((_) async => 'stored-token');
+    when(() => tokenStore.readRefreshToken()).thenAnswer((_) async => 'stored-refresh-token');
     when(() => tokenStore.clear()).thenAnswer((_) async {});
     await container.read(authStateProvider.future);
 
