@@ -8,6 +8,8 @@
   "@commonError": {},
   "commonRetry": "Tekrar Dene",
   "@commonRetry": {},
+  "commonNetworkError": "Bağlantı kurulamadı",
+  "@commonNetworkError": {},
 
   "navHome": "Ana Sayfa",
   "@navHome": {},
@@ -32,6 +34,10 @@
   "@loginForgotPassword": {},
   "loginNoAccount": "Hesabın yok mu? Kayıt ol",
   "@loginNoAccount": {},
+  "loginRetryButton": "Tekrar Dene",
+  "@loginRetryButton": {},
+  "loginInvalidCredentialsError": "Telefon numarası veya şifre hatalı",
+  "@loginInvalidCredentialsError": {},
 
   "registerTitle": "Hesap Oluştur",
   "@registerTitle": {},

@@ -4,6 +4,7 @@
   "commonFieldRequired": "This field is required",
   "commonError": "Something went wrong",
   "commonRetry": "Retry",
+  "commonNetworkError": "Couldn't connect",
 
   "navHome": "Home",
   "navClasses": "Classes",
@@ -17,6 +18,8 @@
   "loginSubmitButton": "Log In",
   "loginForgotPassword": "Forgot password",
   "loginNoAccount": "No account? Sign up",
+  "loginRetryButton": "Try Again",
+  "loginInvalidCredentialsError": "Phone number or password is incorrect",
 
   "registerTitle": "Create Account",
   "registerFullNameLabel": "Full name",
