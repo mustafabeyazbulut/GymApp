@@ -19,15 +19,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _networkErrorBarKey = GlobalKey();
   bool _isSubmitting = false;
   bool _hasInvalidCredentialsError = false;
   bool _hasNetworkError = false;
+
+  // Reserved bottom space for the network-error bar while it's shown, so the
+  // bar (painted last in the Stack, on top of the scroll view) never overlaps
+  // and swallows taps on the Forgot-password/Sign-up links beneath it.
+  //
+  // A plain fixed constant here would be fragile under large accessibility
+  // text-scale factors: the bar's Row (icon + message + retry button) can
+  // grow taller than a guessed number, which would either force the bar's
+  // real content into a too-small box or leave the reserved padding short of
+  // the bar's actual height — reintroducing the same overlap bug. Instead we
+  // start with a reasonable estimate and correct it to the bar's real
+  // rendered height once it's been laid out (see
+  // `_measureNetworkErrorBarHeight`), so the reserved padding always matches
+  // reality regardless of text scale or locale string length.
+  double _networkErrorBarHeight = 56.0;
 
   @override
   void dispose() {
     _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _measureNetworkErrorBarHeight() {
+    if (!mounted) return;
+    final renderObject = _networkErrorBarKey.currentContext?.findRenderObject();
+    if (renderObject is RenderBox && renderObject.hasSize) {
+      final measuredHeight = renderObject.size.height;
+      if ((measuredHeight - _networkErrorBarHeight).abs() > 0.5) {
+        setState(() => _networkErrorBarHeight = measuredHeight);
+      }
+    }
   }
 
   Future<void> _submit() async {
@@ -77,7 +104,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: Stack(
             children: [
               SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
+                padding: EdgeInsets.only(
+                  top: AppSpacing.xxl,
+                  bottom: AppSpacing.xxl + (_hasNetworkError ? _networkErrorBarHeight : 0),
+                ),
                 child: Column(
                   children: [
                     SizedBox(height: MediaQuery.of(context).size.height * 0.1),
@@ -124,6 +154,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               enabled: !_isSubmitting,
                               decoration: InputDecoration(
                                 labelText: l10n.loginIdentifierLabel,
+                                // Empty string (not null) — forces the red error-state styling and
+                                // reserves the same error-line height as the password field below,
+                                // without duplicating the error message on both fields. The real
+                                // message only shows under the password field, per the approved mockup.
                                 errorText: _hasInvalidCredentialsError ? '' : null,
                               ),
                               validator: (value) => (value == null || value.trim().isEmpty)
@@ -180,30 +214,44 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  child: DecoratedBox(
-                    decoration: const BoxDecoration(
-                      color: AppColors.surface,
-                      border: Border(top: BorderSide(color: AppColors.border)),
-                    ),
-                    child: SafeArea(
-                      top: false,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.circle, size: 6, color: AppColors.error),
-                            const SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: Text(l10n.commonNetworkError, style: Theme.of(context).textTheme.bodyMedium),
-                            ),
-                            TextButton(
-                              onPressed: _isSubmitting ? null : _submit,
-                              child: Text(l10n.loginRetryButton),
-                            ),
-                          ],
+                  child: Builder(
+                    builder: (context) {
+                      // Re-measure after every frame this bar is shown; the
+                      // setState in _measureNetworkErrorBarHeight only fires
+                      // when the measured height actually changed, so this
+                      // converges after a frame or two instead of looping.
+                      WidgetsBinding.instance.addPostFrameCallback((_) => _measureNetworkErrorBarHeight());
+                      return DecoratedBox(
+                        key: _networkErrorBarKey,
+                        decoration: const BoxDecoration(
+                          color: AppColors.surface,
+                          border: Border(top: BorderSide(color: AppColors.border)),
                         ),
-                      ),
-                    ),
+                        child: SafeArea(
+                          top: false,
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.circle, size: 6, color: AppColors.error),
+                                const SizedBox(width: AppSpacing.sm),
+                                Expanded(
+                                  child: Text(
+                                    l10n.commonNetworkError,
+                                    style: Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: _isSubmitting ? null : _submit,
+                                  child: Text(l10n.commonRetry),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
             ],

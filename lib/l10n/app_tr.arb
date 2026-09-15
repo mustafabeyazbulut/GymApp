@@ -34,8 +34,6 @@
   "@loginForgotPassword": {},
   "loginNoAccount": "Hesabın yok mu? Kayıt ol",
   "@loginNoAccount": {},
-  "loginRetryButton": "Tekrar Dene",
-  "@loginRetryButton": {},
   "loginInvalidCredentialsError": "Telefon numarası veya şifre hatalı",
   "@loginInvalidCredentialsError": {},
 
