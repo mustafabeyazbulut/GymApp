@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'fake_auth_repository.dart';
+part of 'real_auth_repository.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -48,4 +48,4 @@ final class AuthRepositoryProvider
   }
 }
 
-String _$authRepositoryHash() => r'def5d7007d88665df7fa3bedae7cec6f6872cc95';
+String _$authRepositoryHash() => r'cacf053f78df41ed1250ea5c551423e77dc8a7d1';
