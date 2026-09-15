@@ -22,6 +22,7 @@
   "registerFullNameLabel": "Full name",
   "registerPhoneLabel": "Phone",
   "registerEmailLabel": "Email (optional)",
+  "registerEmailInvalid": "Enter a valid email address",
   "registerPasswordLabel": "Password",
   "registerSubmitButton": "Create Account",
   "registerHaveAccount": "Already have an account? Log in",

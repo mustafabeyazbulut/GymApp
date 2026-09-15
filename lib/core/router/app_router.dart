@@ -12,6 +12,14 @@ import '../../features/progress/presentation/screens/progress_screen.dart';
 
 part 'app_router.g.dart';
 
+// Routes reachable while NOT authenticated. Every route added here that
+// should be usable before login (register, password-reset flows, etc.)
+// must be added to this set, or `redirect` below will bounce it straight
+// back to /login. Centralized here after Task 6's own review found the
+// original two-line `||` check was already about to be forgotten for
+// Task 7's /forgot-password route.
+const _publicRoutes = {'/login', '/register'};
+
 @riverpod
 GoRouter appRouter(Ref ref) {
   final authState = ref.watch(authStateProvider);
@@ -24,8 +32,7 @@ GoRouter appRouter(Ref ref) {
   final router = GoRouter(
     initialLocation: isAuthed ? '/home' : '/login',
     redirect: (context, state) {
-      final loggingIn =
-          state.matchedLocation == '/login' || state.matchedLocation == '/register';
+      final loggingIn = _publicRoutes.contains(state.matchedLocation);
       if (!isAuthed && !loggingIn) return '/login';
       if (isAuthed && loggingIn) return '/home';
       return null;

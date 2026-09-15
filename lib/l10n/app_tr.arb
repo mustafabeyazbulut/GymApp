@@ -41,6 +41,8 @@
   "@registerPhoneLabel": {},
   "registerEmailLabel": "E-posta (opsiyonel)",
   "@registerEmailLabel": {},
+  "registerEmailInvalid": "Geçerli bir e-posta adresi girin",
+  "@registerEmailInvalid": {},
   "registerPasswordLabel": "Şifre",
   "@registerPasswordLabel": {},
   "registerSubmitButton": "Hesap Oluştur",

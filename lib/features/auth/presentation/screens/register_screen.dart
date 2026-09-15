@@ -92,6 +92,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(labelText: l10n.registerEmailLabel),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) return null;
+                    final trimmed = value.trim();
+                    final isValid = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(trimmed);
+                    return isValid ? null : l10n.registerEmailInvalid;
+                  },
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 TextFormField(
@@ -106,7 +112,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 if (_errorText != null) ...[
                   const SizedBox(height: AppSpacing.md),
-                  Text(_errorText!, style: TextStyle(color: AppColors.error, fontSize: 11)),
+                  Text(_errorText!, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.error)),
                 ],
                 const SizedBox(height: AppSpacing.xl),
                 ElevatedButton(
