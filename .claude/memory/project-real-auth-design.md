@@ -13,8 +13,9 @@ metadata:
 
 - [x] Task 1 — RefreshToken entity, EF config, User.Email unique index, migration — commit `602506a`. Spec ✅ (independently re-verified: diff, build, tests, migration content, no-drift check all re-run by reviewer, not just trusted). Code-quality ✅ "Ready to merge: Yes" — matches sibling `DeviceTokenConfiguration`/`OtpVerificationConfiguration` style exactly, TokenHash(200) length judged correct for `PasswordHasher<T>`'s ~84-char V3 output, cascade FK confirmed safe (single-level, Postgres). Minor forward-looking note (not fixed, not blocking): Task 1's unit test only checks default-null POCO values, doesn't exercise the EF unique index/cascade — an integration test actually exercising `TokenHash` uniqueness + cascade delete should be added once a later task (rotation/revocation, likely Task 7) actually uses this entity.
 - [x] Task 2 — `UnauthorizedException`/`ForbiddenException` (401/403) — commit `01a682e`. Spec ✅, code-quality ✅ "Ready to merge: Yes", no issues found (mechanical, exact clone of existing `NotFoundException`/`ConflictException` pattern).
-- [ ] Task 3 — `IPasswordHasher`/`IJwtTokenService`/`ISmsSender`/`IEmailSender` abstractions
-- [ ] Tasks 4–14 — not started
+- [x] Task 3 — `IPasswordHasher`/`IJwtTokenService`/`ISmsSender`/`IEmailSender` abstractions — commits `70938bc` + `7834a51` (GymAppApi). Spec ✅ (byte-for-byte verified against plan). Code-quality ✅ after fix: reviewer flagged `GenerateAccessToken(int userId, string fullName, string? email, string phone)` as a transposition hazard (3 adjacent string/string? params) — fixed by introducing `AccessTokenClaims(UserId, FullName, Email, Phone)` record (mirrors the existing `AccessTokenResult` pattern), fix re-verified independently. **Plan document itself updated to match** (commit `017f7f0` in GymAppApi) — every future call site in Tasks 4–8/12 (JwtTokenService impl, login/register/refresh handlers, Moq setups, integration-test seed) now uses the new signature, so no later task will contradict this.
+- [ ] Task 4 — Infrastructure implementations (PasswordHasherAdapter, JwtTokenService, LoggingSms/EmailSender) + DI wiring
+- [ ] Tasks 5–14 — not started
 
 ## Mobile (GymApp) task checklist
 
