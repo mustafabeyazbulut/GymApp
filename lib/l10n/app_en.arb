@@ -36,6 +36,8 @@
   "forgotPasswordNewPasswordLabel": "New Password",
   "forgotPasswordResetButton": "Reset Password",
   "forgotPasswordSuccessMessage": "Your password has been updated, you can log in now.",
+  "forgotPasswordBackToLogin": "Back to login",
+  "forgotPasswordChangeIdentifier": "Use different info",
 
   "homeGreeting": "Hello, {name}",
   "homeSubtitle": "Discipline is with you today",

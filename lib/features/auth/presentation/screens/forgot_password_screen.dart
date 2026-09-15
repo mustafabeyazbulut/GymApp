@@ -42,6 +42,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     try {
       await ref.read(authRepositoryProvider).forgotPassword(identifier: _identifierController.text.trim());
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.forgotPasswordCodeSentMessage)));
       setState(() => _step = _Step.resetPassword);
     } on AuthException catch (exception) {
       if (!mounted) return;
@@ -132,6 +134,27 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary),
                         )
                       : Text(_step == _Step.requestCode ? l10n.forgotPasswordSendCodeButton : l10n.forgotPasswordResetButton),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                TextButton(
+                  onPressed: _isSubmitting
+                      ? null
+                      : () {
+                          if (_step == _Step.requestCode) {
+                            context.pop();
+                          } else {
+                            setState(() {
+                              _step = _Step.requestCode;
+                              _codeController.clear();
+                              _newPasswordController.clear();
+                              _errorText = null;
+                            });
+                          }
+                        },
+                  child: Text(
+                    _step == _Step.requestCode ? l10n.forgotPasswordBackToLogin : l10n.forgotPasswordChangeIdentifier,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ],
             ),

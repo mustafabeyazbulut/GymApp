@@ -68,6 +68,10 @@
   "@forgotPasswordResetButton": {},
   "forgotPasswordSuccessMessage": "Şifren güncellendi, şimdi giriş yapabilirsin.",
   "@forgotPasswordSuccessMessage": {},
+  "forgotPasswordBackToLogin": "Giriş ekranına dön",
+  "@forgotPasswordBackToLogin": {},
+  "forgotPasswordChangeIdentifier": "Farklı bilgi kullan",
+  "@forgotPasswordChangeIdentifier": {},
 
   "homeGreeting": "Merhaba, {name}",
   "@homeGreeting": {
