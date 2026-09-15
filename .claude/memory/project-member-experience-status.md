@@ -50,6 +50,10 @@ This plan (17/17 tasks) delivered a fully working mock-data mobile app: login sc
 - 3 independently-implemented "pill/badge" widgets (`home_screen.dart`'s `_Pill`, `classes_screen.dart`'s inline badge, `membership_screen.dart`'s `_StatusPill`) have visible styling drift (`classes_screen.dart`'s is missing `fontWeight: w600`) — see Task 14's entry above. Worth extracting a shared `lib/core/widgets/status_pill.dart` before adding a 4th screen with pill-style UI.
 - Router rebuilds the whole `GoRouter` on every login/logout — fine today (flat routes, no back-stack to lose) but would need revisiting if any branch ever gains a nested route — see Task 16's entry above.
 
+## SUPERSEDED — see [[project-real-auth-design]]
+
+The section below (CONFIRMED next task) is kept as historical context for how this decision originated, but the actual current status of that work — visual design now final, tenant-less/open-membership architecture decided, brainstorm in progress — lives in `.claude/memory/project-real-auth-design.md`. Read that file first; don't resume planning from this section alone.
+
 ## CONFIRMED next task (2026-09-14, user's explicit instruction): real Auth, starting from Login
 
 The user has explicitly decided the next work item: **start building the real (backend-integrated) Auth feature, beginning with the Login screen.** Exact words: "authdan başlamak lazım" (need to start with auth) — "en baştan tasarlamaya başlayacaksın loginden" (you'll start designing from scratch, from login). This is a firm decision, not an open question — do NOT re-ask "which feature should we do first" in the next session, go straight into it.
