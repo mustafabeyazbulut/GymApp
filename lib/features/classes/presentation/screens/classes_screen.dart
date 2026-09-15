@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/empty_membership_state.dart';
 import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../auth/domain/auth_exceptions.dart';
+import '../../../auth/presentation/providers/current_user_provider.dart';
 import '../../domain/class_session.dart';
 import '../providers/class_list_provider.dart';
 
@@ -46,11 +49,10 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final sessionsAsync = ref.watch(classListProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.classesTitle)),
-      body: sessionsAsync.when(
+      body: ref.watch(currentUserProvider).when(
         loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (error, stackTrace) => Center(
           child: Padding(
@@ -59,131 +61,159 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  error is ApiException ? error.message : l10n.commonError,
+                  error is AuthException ? error.message : l10n.commonError,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 OutlinedButton(
-                  onPressed: () => ref.invalidate(classListProvider),
+                  onPressed: () => ref.invalidate(currentUserProvider),
                   child: Text(l10n.commonRetry),
                 ),
               ],
             ),
           ),
         ),
-        data: (sessions) {
-          final filtered = _selectedCategory == null
-              ? sessions
-              : sessions.where((s) => s.category == _selectedCategory).toList();
+        data: (currentUser) {
+          if (!currentUser.hasActiveMembership) {
+            return const EmptyMembershipState();
+          }
+          final sessionsAsync = ref.watch(classListProvider);
+          return sessionsAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+            error: (error, stackTrace) => Center(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      error is ApiException ? error.message : l10n.commonError,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    OutlinedButton(
+                      onPressed: () => ref.invalidate(classListProvider),
+                      child: Text(l10n.commonRetry),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            data: (sessions) {
+              final filtered = _selectedCategory == null
+                  ? sessions
+                  : sessions.where((s) => s.category == _selectedCategory).toList();
 
-          return Column(
-            children: [
-              // Decorative date strip — per spec, selecting a different day does not
-              // change which sessions are shown below (deliberate simplification, not
-              // a missing feature).
-              Padding(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
-                child: Row(
-                  children: [
-                    for (var i = 0; i < _weekDates.length; i++)
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => _selectedDayIndex = i),
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 3),
-                            padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                            decoration: BoxDecoration(
-                              color: i == _selectedDayIndex ? AppColors.primary : AppColors.surface,
-                              border: i == _selectedDayIndex ? null : Border.all(color: AppColors.border),
-                              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  _weekDates[i].$1,
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                        color: i == _selectedDayIndex
-                                            ? AppColors.onPrimary
-                                            : AppColors.onBackground,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+              return Column(
+                children: [
+                  // Decorative date strip — per spec, selecting a different day does not
+                  // change which sessions are shown below (deliberate simplification, not
+                  // a missing feature).
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
+                    child: Row(
+                      children: [
+                        for (var i = 0; i < _weekDates.length; i++)
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() => _selectedDayIndex = i),
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 3),
+                                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                                decoration: BoxDecoration(
+                                  color: i == _selectedDayIndex ? AppColors.primary : Colors.transparent,
+                                  border: i == _selectedDayIndex ? null : Border.all(color: AppColors.border),
+                                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                                 ),
-                                Text(
-                                  _weekDates[i].$2,
-                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                        color: i == _selectedDayIndex
-                                            ? AppColors.onPrimary.withValues(alpha: 0.7)
-                                            : AppColors.onBackgroundFaint,
-                                      ),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      _weekDates[i].$1,
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                            color: i == _selectedDayIndex
+                                                ? AppColors.onPrimary
+                                                : AppColors.onBackground,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                    Text(
+                                      _weekDates[i].$2,
+                                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                            color: i == _selectedDayIndex
+                                                ? AppColors.onPrimary.withValues(alpha: 0.7)
+                                                : AppColors.onBackgroundFaint,
+                                          ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
+                    child: Row(
+                      children: [
+                        ChoiceChip(
+                          label: Text(l10n.classesFilterAll),
+                          selected: _selectedCategory == null,
+                          onSelected: (_) => setState(() => _selectedCategory = null),
                         ),
-                      ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
-                child: Row(
-                  children: [
-                    ChoiceChip(
-                      label: Text(l10n.classesFilterAll),
-                      selected: _selectedCategory == null,
-                      onSelected: (_) => setState(() => _selectedCategory = null),
+                        const SizedBox(width: AppSpacing.sm),
+                        ChoiceChip(
+                          label: Text(l10n.classesCategoryBjj),
+                          selected: _selectedCategory == ClassCategory.bjj,
+                          onSelected: (_) => setState(() => _selectedCategory = ClassCategory.bjj),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        ChoiceChip(
+                          label: Text(l10n.classesCategoryFitness),
+                          selected: _selectedCategory == ClassCategory.fitness,
+                          onSelected: (_) => setState(() => _selectedCategory = ClassCategory.fitness),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: AppSpacing.sm),
-                    ChoiceChip(
-                      label: Text(l10n.classesCategoryBjj),
-                      selected: _selectedCategory == ClassCategory.bjj,
-                      onSelected: (_) => setState(() => _selectedCategory = ClassCategory.bjj),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    ChoiceChip(
-                      label: Text(l10n.classesCategoryFitness),
-                      selected: _selectedCategory == ClassCategory.fitness,
-                      onSelected: (_) => setState(() => _selectedCategory = ClassCategory.fitness),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: filtered.isEmpty
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(AppSpacing.xl),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.event_busy_outlined,
-                                size: 40,
-                                color: AppColors.onBackgroundFaint,
+                  ),
+                  Expanded(
+                    child: filtered.isEmpty
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(AppSpacing.xl),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.event_busy_outlined,
+                                    size: 40,
+                                    color: AppColors.onBackgroundFaint,
+                                  ),
+                                  const SizedBox(height: AppSpacing.md),
+                                  Text(
+                                    l10n.classesEmptyFilterMessage,
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: AppSpacing.md),
-                              Text(
-                                l10n.classesEmptyFilterMessage,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            ],
+                            ),
+                          )
+                        : ListView.separated(
+                            padding: const EdgeInsets.all(AppSpacing.lg),
+                            itemCount: filtered.length,
+                            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+                            itemBuilder: (context, index) => _ClassCard(
+                              session: filtered[index],
+                              isReserving: _reservingId == filtered[index].id,
+                              onReserve: () => _reserve(filtered[index].id),
+                              l10n: l10n,
+                            ),
                           ),
-                        ),
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(AppSpacing.lg),
-                        itemCount: filtered.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
-                        itemBuilder: (context, index) => _ClassCard(
-                          session: filtered[index],
-                          isReserving: _reservingId == filtered[index].id,
-                          onReserve: () => _reserve(filtered[index].id),
-                          l10n: l10n,
-                        ),
-                      ),
-              ),
-            ],
+                  ),
+                ],
+              );
+            },
           );
         },
       ),
@@ -210,7 +240,11 @@ class _ClassCard extends StatelessWidget {
     final categoryLabel =
         session.category == ClassCategory.bjj ? l10n.classesCategoryBjj : l10n.classesCategoryFitness;
 
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
