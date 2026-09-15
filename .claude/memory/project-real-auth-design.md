@@ -1,13 +1,31 @@
 ---
 name: project-real-auth-design
-description: GymApp real Auth feature (backend-integrated login/register) — design APPROVED, specs written+committed in both repos, next step is writing-plans. Read this first for the current auth design status; supersedes the "next task" section of [[project-member-experience-status]].
+description: GymApp real Auth feature (backend-integrated login/register) — design approved, specs AND implementation plans written+committed in both repos. Next step is execution (subagent-driven-development), starting at GymAppApi plan Task 1. Read this first for the current auth status; supersedes the "next task" section of [[project-member-experience-status]].
 metadata:
   type: project
 ---
 
-# Real Auth — Design Status (approved, specs committed)
+# Real Auth — Design Status (plans committed, ready to execute)
 
-**STATUS: design approved, specs written and committed in both repos. Not yet planned (no `writing-plans` output), no code written.** This file is the resume point if the session is interrupted before the plan is written — read it, then go straight to `superpowers:writing-plans` against the two committed specs rather than re-brainstorming.
+**STATUS: design approved, specs written, and full implementation plans written — all committed in both repos. No implementation code written yet.** This file is the resume point if the session is interrupted before execution starts or mid-execution — read it, then continue task-by-task via `superpowers:subagent-driven-development` rather than re-planning.
+
+## Plans (written 2026-09-15, both committed)
+
+- Backend: `C:\Users\MBEYAZBULUT\Documents\GitHub\GymAppApi\docs\superpowers\plans\2026-09-15-real-auth.md` — 14 tasks (RefreshToken entity + User.Email unique index; 401/403 exceptions; IPasswordHasher/IJwtTokenService/ISmsSender/IEmailSender abstractions + Infrastructure implementations; register; login + JWT Bearer wiring; refresh with rotation/reuse-detection; forgot-password (reuses the existing `OtpVerification` entity, NOT a new entity — see that plan's "Grounding facts" section for why); reset-password; GET/DELETE /api/auth/me; POST /api/assignments gated behind a GymAdmin/SuperAdmin authorization handler that re-queries Assignment per-request rather than trusting a JWT claim; a SuperAdmin migration seed; WebApplicationFactory-based authorization integration tests; final smoke test).
+- Mobile: `C:\Users\MBEYAZBULUT\Documents\GitHub\GymApp\docs\superpowers\plans\2026-09-15-real-auth.md` — 15 tasks (TokenStore/SecureTokenStore; Dio 401-refresh interceptor; AuthRepository reshape + RealAuthRepository, replacing FakeAuthRepository; authStateProvider silent-refresh-on-start; currentUserProvider + shared EmptyMembershipState widget; Register screen; Forgot Password screen; Login screen real error/loading states; account deletion on Membership screen; shared StatusPill extraction (fixes a real bug — classes_screen.dart's badge was missing `fontWeight: w600`); restyle Home/Classes/Progress/Membership to the approved thin-line visual language (Tasks 11–14, no dependency on the auth tasks); final whole-app smoke test).
+
+**Key cross-repo dependencies the two plans agree on (do not let these drift if either plan is edited later):** mobile Task 2 (Dio interceptor) needs backend Task 7 (`/api/auth/refresh`) reachable; mobile Task 3 (`RealAuthRepository`) needs backend Tasks 5/6/7/10 (register/login/refresh/me); mobile Task 9 (account deletion) needs backend Task 10 (`DELETE /api/auth/me`). Response shapes are pinned identically in both plans' "Grounding facts" sections — `{accessToken, expiresAtUtc, refreshToken}` for register/login/refresh, `{id, fullName, phone, email, assignments:[{companyId, companyName, branchId, role}]}` for GET /me.
+
+**Two corrections made during plan-writing, after reading the actual existing code (not oversights — both are explained in-line in the relevant plan's "Grounding facts" section):**
+1. Backend reuses the already-existing `OtpVerification` entity (with `OtpPurpose.PasswordReset`, already scaffolded during Backend Foundation) for password-reset codes, instead of the new `PasswordResetCode` entity the committed spec had sketched before this plan's author read that code closely.
+2. Mobile's `AuthRepository.register(...)` takes separate `phone` (required) + `email` (optional) parameters rather than a single generic `identifier`, because the backend's actual `User` entity has `Phone` as required+unique and `Email` as optional — the spec's single-`identifier` sketch didn't account for that asymmetry.
+
+## Next action if resuming
+
+1. Read this file first, then skim both plan files above (they're long — ~3100 and ~2500 lines respectively, written with full TDD steps and complete code per the `writing-plans` skill's "no placeholders" rule).
+2. Run `git log --oneline` in both repos to confirm which tasks have actually landed — trust git over this file if they disagree (no tasks are executed yet as of this writing).
+3. Invoke `superpowers:subagent-driven-development` starting from GymAppApi plan Task 1 (backend must lead, per the dependency list above) — fresh implementer subagent per task, then spec-compliance review, then code-quality review (the design-quality bar in `[[feedback-design-quality-bar]]` applies to every UI task in the mobile plan, not just functional correctness).
+4. Update this file's status after each task lands, same discipline as `[[project-member-experience-status]]` used throughout the Member Experience plan.
 
 ## Why this file exists / sequence so far
 
