@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/data/real_auth_repository.dart';
+import '../../../auth/domain/auth_exceptions.dart';
 import '../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../domain/membership_summary.dart';
 import '../providers/membership_provider.dart';
@@ -19,6 +20,7 @@ class MembershipScreen extends ConsumerStatefulWidget {
 
 class _MembershipScreenState extends ConsumerState<MembershipScreen> {
   bool _isFreezing = false;
+  bool _isDeletingAccount = false;
 
   Future<void> _requestFreeze() async {
     setState(() => _isFreezing = true);
@@ -59,9 +61,19 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
 
     if (confirmed != true || !mounted) return;
 
-    await ref.read(authRepositoryProvider).deleteAccount();
-    if (!mounted) return;
-    await ref.read(authStateProvider.notifier).logOut();
+    setState(() => _isDeletingAccount = true);
+    try {
+      await ref.read(authRepositoryProvider).deleteAccount();
+      if (!mounted) return;
+      // deleteAccount() already clears the token store; logOut() clears it again.
+      // A second clear() on an already-cleared store is expected to be a no-op.
+      await ref.read(authStateProvider.notifier).logOut();
+    } on AuthException catch (exception) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+    } finally {
+      if (mounted) setState(() => _isDeletingAccount = false);
+    }
   }
 
   @override
@@ -185,8 +197,14 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
             const SizedBox(height: AppSpacing.xl),
             TextButton(
               style: TextButton.styleFrom(foregroundColor: AppColors.error),
-              onPressed: _confirmAndDeleteAccount,
-              child: Text(l10n.accountDeletionButton),
+              onPressed: _isDeletingAccount ? null : _confirmAndDeleteAccount,
+              child: _isDeletingAccount
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.error),
+                    )
+                  : Text(l10n.accountDeletionButton),
             ),
           ],
         ),
