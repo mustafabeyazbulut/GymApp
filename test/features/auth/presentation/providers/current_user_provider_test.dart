@@ -19,6 +19,11 @@ void main() {
 
     final result = await container.read(currentUserProvider.future);
 
+    expect(result.id, 1);
+    expect(result.fullName, 'Ayşe');
+    expect(result.phone, '+905551112233');
+    expect(result.email, isNull);
+    expect(result.assignments, isEmpty);
     expect(result.hasActiveMembership, isFalse);
   });
 }
