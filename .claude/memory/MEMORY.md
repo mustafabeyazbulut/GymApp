@@ -1,6 +1,6 @@
 # Memory Index
 
-- [Real Auth design](project-real-auth-design.md) — plans committed both repos (14+15 tasks), next: execute via subagent-driven-development. Read this first.
+- [Real Auth design](project-real-auth-design.md) — backend DONE (14/14, verified vs real Postgres), mobile plan (15 tasks) not started. Read this first.
 - [Member Experience status](project-member-experience-status.md) — PLAN COMPLETE (17/17 tasks), historical context; its "next task" pointer is superseded by the Real Auth design file above.
 - [Mobile Foundation status](project-mobile-foundation-status.md) — prior, now-superseded plan (Branch proof-of-concept, since deleted); historical context only.
 - [Memory location rule](feedback-memory-location.md) — all mobile memory lives in this repo, never in GymAppApi's memory.
