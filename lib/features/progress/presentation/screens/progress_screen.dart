@@ -5,7 +5,10 @@ import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/circular_stat_gauge.dart';
+import '../../../../core/widgets/empty_membership_state.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../auth/domain/auth_exceptions.dart';
+import '../../../auth/presentation/providers/current_user_provider.dart';
 import '../../domain/progress_summary.dart';
 import '../providers/progress_summary_provider.dart';
 
@@ -22,60 +25,87 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final summaryAsync = ref.watch(progressSummaryProvider(_selectedCategory));
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.progressTitle)),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
-            child: Row(
+      body: ref.watch(currentUserProvider).when(
+        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+        error: (error, stackTrace) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: _CategoryTab(
-                    label: l10n.progressCategoryBjj,
-                    selected: _selectedCategory == ProgressCategory.bjj,
-                    onTap: () => setState(() => _selectedCategory = ProgressCategory.bjj),
-                  ),
+                Text(
+                  error is AuthException ? error.message : l10n.commonError,
+                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: _CategoryTab(
-                    label: l10n.progressCategoryFitness,
-                    selected: _selectedCategory == ProgressCategory.fitness,
-                    onTap: () => setState(() => _selectedCategory = ProgressCategory.fitness),
-                  ),
+                const SizedBox(height: AppSpacing.lg),
+                OutlinedButton(
+                  onPressed: () => ref.invalidate(currentUserProvider),
+                  child: Text(l10n.commonRetry),
                 ),
               ],
             ),
           ),
-          Expanded(
-            child: summaryAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-              error: (error, stackTrace) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.xl),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        error is ApiException ? error.message : l10n.commonError,
-                        textAlign: TextAlign.center,
+        ),
+        data: (currentUser) {
+          if (!currentUser.hasActiveMembership) {
+            return const EmptyMembershipState();
+          }
+          final summaryAsync = ref.watch(progressSummaryProvider(_selectedCategory));
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _CategoryTab(
+                        label: l10n.progressCategoryBjj,
+                        selected: _selectedCategory == ProgressCategory.bjj,
+                        onTap: () => setState(() => _selectedCategory = ProgressCategory.bjj),
                       ),
-                      const SizedBox(height: AppSpacing.lg),
-                      OutlinedButton(
-                        onPressed: () => ref.invalidate(progressSummaryProvider(_selectedCategory)),
-                        child: Text(l10n.commonRetry),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: _CategoryTab(
+                        label: l10n.progressCategoryFitness,
+                        selected: _selectedCategory == ProgressCategory.fitness,
+                        onTap: () => setState(() => _selectedCategory = ProgressCategory.fitness),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-              data: (summary) => _ProgressContent(l10n: l10n, summary: summary),
-            ),
-          ),
-        ],
+              Expanded(
+                child: summaryAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+                  error: (error, stackTrace) => Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.xl),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            error is ApiException ? error.message : l10n.commonError,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+                          OutlinedButton(
+                            onPressed: () => ref.invalidate(progressSummaryProvider(_selectedCategory)),
+                            child: Text(l10n.commonRetry),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  data: (summary) => _ProgressContent(l10n: l10n, summary: summary),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -129,7 +159,11 @@ class _ProgressContent extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
-        Card(
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
@@ -148,7 +182,11 @@ class _ProgressContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.md),
-        Card(
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Row(
@@ -184,7 +222,11 @@ class _ProgressContent extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-        Card(
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
