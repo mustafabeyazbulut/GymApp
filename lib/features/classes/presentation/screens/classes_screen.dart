@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../domain/class_session.dart';
 import '../providers/class_list_provider.dart';
@@ -219,18 +220,7 @@ class _ClassCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(session.name, style: textTheme.titleMedium),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-                  decoration: BoxDecoration(
-                    color: AppColors.successSurface,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
-                  ),
-                  child: Text(
-                    categoryLabel,
-                    style: textTheme.labelSmall?.copyWith(color: AppColors.primary),
-                  ),
-                ),
+                StatusPill(text: categoryLabel, isPositive: true),
               ],
             ),
             const SizedBox(height: AppSpacing.xs),

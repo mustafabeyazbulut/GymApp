@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/data/real_auth_repository.dart';
 import '../../../auth/domain/auth_exceptions.dart';
@@ -119,7 +120,7 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
                         Expanded(
                           child: Text(summary.packageName, style: Theme.of(context).textTheme.titleMedium),
                         ),
-                        _StatusPill(
+                        StatusPill(
                           text: summary.status == MembershipStatus.active
                               ? l10n.membershipActiveStatus
                               : l10n.membershipFrozenStatus,
@@ -143,7 +144,7 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
                         children: [
                           Text(summary.price, style: Theme.of(context).textTheme.titleMedium),
                           if (summary.isPaid)
-                            _StatusPill(text: l10n.membershipPaidStatus, isPositive: true),
+                            StatusPill(text: l10n.membershipPaidStatus, isPositive: true),
                         ],
                       ),
                     ),
@@ -208,31 +209,6 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.text, required this.isPositive});
-
-  final String text;
-  final bool isPositive;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-      decoration: BoxDecoration(
-        color: isPositive ? AppColors.successSurface : AppColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
-      ),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: isPositive ? AppColors.primary : AppColors.onBackgroundFaint,
-              fontWeight: FontWeight.w600,
-            ),
       ),
     );
   }

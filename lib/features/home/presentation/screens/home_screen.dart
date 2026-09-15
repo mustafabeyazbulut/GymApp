@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../domain/home_summary.dart';
 import '../providers/home_summary_provider.dart';
@@ -82,7 +83,7 @@ class _HomeContent extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(summary.activePackageName, style: textTheme.titleMedium),
-                    _Pill(text: l10n.homeDaysLeft(summary.daysLeft)),
+                    StatusPill(text: l10n.homeDaysLeft(summary.daysLeft), isPositive: true),
                   ],
                 ),
               ],
@@ -195,30 +196,6 @@ class _HomeContent extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _Pill extends StatelessWidget {
-  const _Pill({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-      decoration: BoxDecoration(
-        color: AppColors.successSurface,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
-      ),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w600,
-            ),
-      ),
     );
   }
 }
