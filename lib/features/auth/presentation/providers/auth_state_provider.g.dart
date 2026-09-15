@@ -9,16 +9,19 @@ part of 'auth_state_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// Whether the app should show the tab shell (true) or `/login` (false).
-/// No persistence — resets to false every app launch, by design (see spec).
+/// On startup, this checks for a stored access token rather than always
+/// resetting to false — real sessions now persist across app launches.
 
 @ProviderFor(AuthState)
 final authStateProvider = AuthStateProvider._();
 
 /// Whether the app should show the tab shell (true) or `/login` (false).
-/// No persistence — resets to false every app launch, by design (see spec).
-final class AuthStateProvider extends $NotifierProvider<AuthState, bool> {
+/// On startup, this checks for a stored access token rather than always
+/// resetting to false — real sessions now persist across app launches.
+final class AuthStateProvider extends $AsyncNotifierProvider<AuthState, bool> {
   /// Whether the app should show the tab shell (true) or `/login` (false).
-  /// No persistence — resets to false every app launch, by design (see spec).
+  /// On startup, this checks for a stored access token rather than always
+  /// resetting to false — real sessions now persist across app launches.
   AuthStateProvider._()
     : super(
         from: null,
@@ -36,32 +39,25 @@ final class AuthStateProvider extends $NotifierProvider<AuthState, bool> {
   @$internal
   @override
   AuthState create() => AuthState();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(bool value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<bool>(value),
-    );
-  }
 }
 
-String _$authStateHash() => r'8ba5a9c513913682bf932e810d8dd570ebed4eb1';
+String _$authStateHash() => r'68e9ab0af5ad50a7f8ea2f8f8576ca013be662d1';
 
 /// Whether the app should show the tab shell (true) or `/login` (false).
-/// No persistence — resets to false every app launch, by design (see spec).
+/// On startup, this checks for a stored access token rather than always
+/// resetting to false — real sessions now persist across app launches.
 
-abstract class _$AuthState extends $Notifier<bool> {
-  bool build();
+abstract class _$AuthState extends $AsyncNotifier<bool> {
+  FutureOr<bool> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<bool, bool>;
+    final ref = this.ref as $Ref<AsyncValue<bool>, bool>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<bool, bool>,
-              bool,
+              AnyNotifier<AsyncValue<bool>, bool>,
+              AsyncValue<bool>,
               Object?,
               Object?
             >;

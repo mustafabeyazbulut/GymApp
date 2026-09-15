@@ -13,7 +13,12 @@ part 'app_router.g.dart';
 
 @riverpod
 GoRouter appRouter(Ref ref) {
-  final isAuthed = ref.watch(authStateProvider);
+  final authState = ref.watch(authStateProvider);
+  final isAuthed = authState.value ?? false;
+  // While the initial silent-refresh check is still loading (authState is
+  // AsyncLoading), isAuthed defaults to false — briefly showing /login
+  // during app startup rather than blocking on a splash screen. Acceptable
+  // for this plan's scope (a proper splash/loading screen is a follow-up).
 
   final router = GoRouter(
     initialLocation: isAuthed ? '/home' : '/login',
