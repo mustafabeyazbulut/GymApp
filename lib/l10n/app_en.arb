@@ -28,6 +28,15 @@
   "registerHaveAccount": "Already have an account? Log in",
   "registerPasswordTooShort": "Password must be at least 8 characters",
 
+  "forgotPasswordTitle": "Forgot Password",
+  "forgotPasswordIdentifierLabel": "Phone or email",
+  "forgotPasswordSendCodeButton": "Send Code",
+  "forgotPasswordCodeSentMessage": "If your account exists, a reset code has been sent.",
+  "forgotPasswordCodeLabel": "Code",
+  "forgotPasswordNewPasswordLabel": "New Password",
+  "forgotPasswordResetButton": "Reset Password",
+  "forgotPasswordSuccessMessage": "Your password has been updated, you can log in now.",
+
   "homeGreeting": "Hello, {name}",
   "homeSubtitle": "Discipline is with you today",
   "homeActivePackageLabel": "Your Active Package",

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../widgets/app_shell.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
+import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/classes/presentation/screens/classes_screen.dart';
@@ -18,7 +19,7 @@ part 'app_router.g.dart';
 // back to /login. Centralized here after Task 6's own review found the
 // original two-line `||` check was already about to be forgotten for
 // Task 7's /forgot-password route.
-const _publicRoutes = {'/login', '/register'};
+const _publicRoutes = {'/login', '/register', '/forgot-password'};
 
 @riverpod
 GoRouter appRouter(Ref ref) {
@@ -45,6 +46,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),

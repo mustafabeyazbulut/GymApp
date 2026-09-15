@@ -52,6 +52,23 @@
   "registerPasswordTooShort": "Şifre en az 8 karakter olmalı",
   "@registerPasswordTooShort": {},
 
+  "forgotPasswordTitle": "Şifremi Unuttum",
+  "@forgotPasswordTitle": {},
+  "forgotPasswordIdentifierLabel": "Telefon veya e-posta",
+  "@forgotPasswordIdentifierLabel": {},
+  "forgotPasswordSendCodeButton": "Kod Gönder",
+  "@forgotPasswordSendCodeButton": {},
+  "forgotPasswordCodeSentMessage": "Hesabınız varsa, şifre sıfırlama kodu gönderildi.",
+  "@forgotPasswordCodeSentMessage": {},
+  "forgotPasswordCodeLabel": "Kod",
+  "@forgotPasswordCodeLabel": {},
+  "forgotPasswordNewPasswordLabel": "Yeni Şifre",
+  "@forgotPasswordNewPasswordLabel": {},
+  "forgotPasswordResetButton": "Şifreyi Sıfırla",
+  "@forgotPasswordResetButton": {},
+  "forgotPasswordSuccessMessage": "Şifren güncellendi, şimdi giriş yapabilirsin.",
+  "@forgotPasswordSuccessMessage": {},
+
   "homeGreeting": "Merhaba, {name}",
   "@homeGreeting": {
     "placeholders": { "name": { "type": "String" } }
