@@ -5,9 +5,20 @@ metadata:
   type: project
 ---
 
-# Real Auth — Design Status (plans committed, ready to execute)
+# Real Auth — Design Status (execution in progress)
 
-**STATUS: design approved, specs written, and full implementation plans written — all committed in both repos. No implementation code written yet.** This file is the resume point if the session is interrupted before execution starts or mid-execution — read it, then continue task-by-task via `superpowers:subagent-driven-development` rather than re-planning.
+**STATUS: executing via subagent-driven-development. GymAppApi Task 1/14 done (spec ✅, code-quality ✅ "Ready to merge: Yes").** This file is the resume point if the session is interrupted mid-execution — read it, then continue task-by-task via `superpowers:subagent-driven-development` from the first unchecked task below rather than re-planning.
+
+## Backend (GymAppApi) task checklist
+
+- [x] Task 1 — RefreshToken entity, EF config, User.Email unique index, migration — commit `602506a`. Spec ✅ (independently re-verified: diff, build, tests, migration content, no-drift check all re-run by reviewer, not just trusted). Code-quality ✅ "Ready to merge: Yes" — matches sibling `DeviceTokenConfiguration`/`OtpVerificationConfiguration` style exactly, TokenHash(200) length judged correct for `PasswordHasher<T>`'s ~84-char V3 output, cascade FK confirmed safe (single-level, Postgres). Minor forward-looking note (not fixed, not blocking): Task 1's unit test only checks default-null POCO values, doesn't exercise the EF unique index/cascade — an integration test actually exercising `TokenHash` uniqueness + cascade delete should be added once a later task (rotation/revocation, likely Task 7) actually uses this entity.
+- [ ] Task 2 — `UnauthorizedException`/`ForbiddenException` (401/403)
+- [ ] Task 3 — (see plan file for exact task list; not yet read in detail by this session)
+- [ ] Tasks 4–14 — not started
+
+## Mobile (GymApp) task checklist
+
+- [ ] All 15 tasks — not started (blocked on backend Tasks 5–7/10 for Tasks 2/3/9 specifically; Tasks 11–14 restyle work has no blocker and can start any time)
 
 ## Plans (written 2026-09-15, both committed)
 
