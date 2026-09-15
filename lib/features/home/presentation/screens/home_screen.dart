@@ -7,6 +7,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/empty_membership_state.dart';
 import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../auth/domain/auth_exceptions.dart';
 import '../../../auth/presentation/providers/current_user_provider.dart';
 import '../../domain/home_summary.dart';
 import '../providers/home_summary_provider.dart';
@@ -18,17 +19,35 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final currentUserAsync = ref.watch(currentUserProvider);
-    final summaryAsync = ref.watch(homeSummaryProvider);
 
     return Scaffold(
       appBar: AppBar(automaticallyImplyLeading: false, title: Text(l10n.appTitle)),
       body: currentUserAsync.when(
         loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-        error: (_, _) => const Center(child: CircularProgressIndicator(color: AppColors.primary)), // getMe failing transiently shouldn't block the whole screen; the existing summaryAsync error path below still surfaces real data errors
+        error: (error, stackTrace) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  error is AuthException ? error.message : l10n.commonError,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                OutlinedButton(
+                  onPressed: () => ref.invalidate(currentUserProvider),
+                  child: Text(l10n.commonRetry),
+                ),
+              ],
+            ),
+          ),
+        ),
         data: (currentUser) {
           if (!currentUser.hasActiveMembership) {
             return const EmptyMembershipState();
           }
+          final summaryAsync = ref.watch(homeSummaryProvider);
           return summaryAsync.when(
             loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
             error: (error, stackTrace) => Center(
