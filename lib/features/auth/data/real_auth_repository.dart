@@ -68,6 +68,8 @@ class RealAuthRepository implements AuthRepository {
   @override
   Future<MeResult> getMe() async {
     final response = await _guard(() => _dio.get<Map<String, dynamic>>('/api/auth/me'));
+    // MeResult.fromJson runs outside _guard's try/catch, so a JSON-parsing failure (e.g. a cast
+    // error) surfaces as a raw error here, not as an AuthException.
     return MeResult.fromJson(response.data!);
   }
 
@@ -91,6 +93,9 @@ class RealAuthRepository implements AuthRepository {
     }
     if (statusCode == 401) {
       return const InvalidCredentialsException();
+    }
+    if (statusCode == 429) {
+      return const RateLimitedAuthException();
     }
 
     final data = exception.response?.data;

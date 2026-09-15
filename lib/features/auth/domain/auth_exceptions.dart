@@ -19,3 +19,7 @@ class ConflictAuthException extends AuthException {
 class GenericAuthException extends AuthException {
   const GenericAuthException(super.message);
 }
+
+class RateLimitedAuthException extends AuthException {
+  const RateLimitedAuthException() : super('Çok fazla deneme yaptınız. Lütfen birkaç dakika sonra tekrar deneyin.');
+}

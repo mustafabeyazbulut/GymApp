@@ -118,4 +118,30 @@ void main() {
     expect(result.hasActiveMembership, isTrue);
     expect(result.assignments.single.companyName, 'MAT & MOVE Kadıköy');
   });
+
+  test('getMe parses a null companyId/companyName without throwing (e.g. a SuperAdmin assignment)', () async {
+    adapter.onGet('/api/auth/me', (server) => server.reply(200, {
+          'id': 1,
+          'fullName': 'Süper Admin',
+          'phone': '+900000000000',
+          'email': 'admin@gymapp.local',
+          'assignments': [
+            {'companyId': null, 'companyName': null, 'branchId': null, 'role': 'SuperAdmin'},
+          ],
+        }));
+
+    final result = await repository.getMe();
+
+    expect(result.assignments.single.companyId, isNull);
+    expect(result.assignments.single.companyName, isNull);
+  });
+
+  test('login on 429 throws RateLimitedAuthException', () async {
+    adapter.onPost('/api/auth/login', (server) => server.reply(429, ''), data: Matchers.any);
+
+    await expectLater(
+      () => repository.login(identifier: '+905551112233', password: 'Sifre123!'),
+      throwsA(isA<RateLimitedAuthException>()),
+    );
+  });
 }

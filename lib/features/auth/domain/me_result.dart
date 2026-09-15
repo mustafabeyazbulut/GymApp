@@ -7,14 +7,15 @@ class MeAssignment {
   });
 
   factory MeAssignment.fromJson(Map<String, dynamic> json) => MeAssignment(
-        companyId: json['companyId'] as int,
-        companyName: json['companyName'] as String,
+        companyId: json['companyId'] as int?,
+        companyName: json['companyName'] as String?,
         branchId: json['branchId'] as int?,
         role: json['role'] as String,
       );
 
-  final int companyId;
-  final String companyName;
+  // Null for a platform-wide assignment (e.g. SuperAdmin), which is not tied to a single company.
+  final int? companyId;
+  final String? companyName;
   final int? branchId;
   final String role;
 }
