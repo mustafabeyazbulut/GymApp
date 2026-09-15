@@ -1,13 +1,13 @@
 ---
 name: project-real-auth-design
-description: GymApp real Auth feature (backend-integrated login/register) — brainstorming in progress, spans GymApp mobile + GymAppApi backend. Read this first for the current auth design status; supersedes the "next task" section of [[project-member-experience-status]].
+description: GymApp real Auth feature (backend-integrated login/register) — design APPROVED, specs written+committed in both repos, next step is writing-plans. Read this first for the current auth design status; supersedes the "next task" section of [[project-member-experience-status]].
 metadata:
   type: project
 ---
 
-# Real Auth — Design Status (brainstorming, not yet spec'd)
+# Real Auth — Design Status (approved, specs committed)
 
-**STATUS: mid-brainstorm** (superpowers:brainstorming skill), spanning both repos. Not yet written as a spec doc, no implementation plan yet, no code written. This file is the resume point if the session is interrupted before the spec is written — read it, then continue the brainstorm rather than re-asking questions already answered below.
+**STATUS: design approved, specs written and committed in both repos. Not yet planned (no `writing-plans` output), no code written.** This file is the resume point if the session is interrupted before the plan is written — read it, then go straight to `superpowers:writing-plans` against the two committed specs rather than re-brainstorming.
 
 ## Why this file exists / sequence so far
 
@@ -36,17 +36,21 @@ metadata:
 - **Token strategy: access + refresh JWT.** Short-lived access token (e.g. ~1h) + long-lived refresh token (hashed at rest in DB, rotated on use) — chosen over a single long-lived token for standard security/UX trade-off (stay logged in for weeks without repeated password entry, but a leaked access token has limited blast radius). Needs a refresh endpoint + a refresh-token table/entity in the eventual plan.
 - Password hashing continues to reuse `Microsoft.AspNetCore.Identity.PasswordHasher<T>` (already noted as the intended approach in `User.cs`'s own doc comment — not a new decision, just confirmed still correct).
 
-## Still open (not yet asked / not yet resolved) — resume brainstorming here
+## All open brainstorm questions — RESOLVED (2026-09-15)
 
-1. Assign-endpoint auth gating (see above).
-2. "Şifremi unuttum" (forgot password) — real flow in this plan, or an intentional no-op placeholder (like `homeCheckInButton` already is elsewhere in this app) deferred to a future plan?
-3. New Register/Sign-up screen's exact fields and copy (email vs phone as primary identifier — or both? full name required at signup?) — not yet designed, should reuse the login mockup's exact visual skeleton (same thin-line fields).
-4. The new "no active membership yet" empty-state screen's content/copy — not yet designed.
-5. Whether `AuthRepository`'s interface reshape (token return, typed error distinction between invalid-credentials vs network-error, matching the two error states already in the approved mockup) has any other shape implications not yet surfaced.
+All items that were open are now decided. Full write-up lives in the two committed spec docs (source of truth, don't re-derive from this bullet list):
+- Backend: `C:\Users\MBEYAZBULUT\Documents\GitHub\GymAppApi\docs\superpowers\specs\2026-09-15-real-auth-design.md`
+- Mobile: `C:\Users\MBEYAZBULUT\Documents\GitHub\GymApp\docs\superpowers\specs\2026-09-15-real-auth-design.md`
+
+Quick index of what got decided (see the specs for full detail):
+1. Assign endpoint (`POST /api/assignments`) requires a GymAdmin/SuperAdmin JWT — a SuperAdmin account is migration-seeded (`HasData`) to make this testable at all, since no admin-creation tooling exists.
+2. Forgot password is a REAL flow in this plan (not a no-op) — code sent via email+SMS (whichever the account has), backend `ISmsSender`/`IEmailSender` abstracted behind a logging/fake implementation for now (no real SMS provider account yet).
+3. Register screen: Ad Soyad + E-posta/Telefon + Şifre (no confirm-password field).
+4. New "Henüz aktif üyeliğin yok" empty state — informative, not an error, shown by the 4 content screens when the logged-in user's Assignment list is empty (handled at screen level, not the router).
+5. `AuthRepository` reshaped: register/login/logout/forgotPassword/resetPassword/getMe, typed exceptions (`InvalidCredentialsException`/`NetworkAuthException`) matching the two error states already in the approved login mockup. Tokens live in a new `SecureTokenStore` (flutter_secure_storage), never touch the repository's callers directly.
+6. Scope stays ONE big plan (not split into auth vs. restyle) — user's explicit choice, consistent with this project's precedent (Backend Foundation/Member Experience were both single large plans).
+7. **App Store/Play Store compliance (added after user flagged "Android ve iOS da yayınlıcaz, standartlarını kullan"):** self-service account deletion is now IN SCOPE — `DELETE /api/auth/me` (backend) + a "Hesabımı Sil" destructive action on the Üyeliğim screen (mobile), required for Apple App Store review (Guideline 5.1.1(v): account creation requires account deletion) and Play Store's user-data-deletion policy. `flutter_secure_storage` already satisfies the "don't store credentials in plaintext" expectation (Keychain/Keystore under the hood) — no extra work needed there. A Terms/Privacy-policy link placeholder is noted in the mobile spec but the actual legal text/URL is explicitly out of scope (separate, non-code task).
 
 ## Next action if resuming
 
-1. Read this file in full first (supersedes the old "CONFIRMED next task" pointer in [[project-member-experience-status]], which only knew about the login-visual-design step, not this backend/tenant decision).
-2. Continue the `superpowers:brainstorming` session from the "Still open" list above — do not re-ask anything already decided above.
-3. Once all open items are resolved, present the full design per the brainstorming skill's flow, write the spec to `docs/superpowers/specs/`, get user approval, then hand off to `writing-plans`.
-4. This feature spans both repos — the spec/plan will likely need tasks in both GymAppApi (auth endpoints, Assignment/refresh-token persistence, register/login/refresh/assign endpoints) and GymApp (real `AuthRepository`, Register screen, restyled 4 screens, new empty-membership state, secure token storage). Keep following [[feedback-memory-location]] — this file stays the mobile-side source of truth; only add a short pointer note (not a duplicate) to GymAppApi's own memory.
+**Design is fully approved and specs are written+committed.** Next step per the brainstorming skill's own flow: invoke `superpowers:writing-plans` to turn both specs into an implementation plan (this will likely be one plan file with tasks spanning both repos, given the user chose "tek büyük plan"). Do NOT re-brainstorm or re-ask any of the resolved items above — read the two spec files directly if any detail is unclear.

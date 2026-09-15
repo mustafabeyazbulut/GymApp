@@ -1,6 +1,6 @@
 # Memory Index
 
-- [Real Auth design](project-real-auth-design.md) — ACTIVE, mid-brainstorm. Open-membership/tenant-less model, login visual final, 4 screens to be restyled. Read this first.
+- [Real Auth design](project-real-auth-design.md) — design APPROVED, specs committed both repos, next: writing-plans. Read this first.
 - [Member Experience status](project-member-experience-status.md) — PLAN COMPLETE (17/17 tasks), historical context; its "next task" pointer is superseded by the Real Auth design file above.
 - [Mobile Foundation status](project-mobile-foundation-status.md) — prior, now-superseded plan (Branch proof-of-concept, since deleted); historical context only.
 - [Memory location rule](feedback-memory-location.md) — all mobile memory lives in this repo, never in GymAppApi's memory.
