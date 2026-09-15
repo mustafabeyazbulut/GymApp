@@ -31,6 +31,14 @@ void main() {
     expect(result, 'stored-access');
   });
 
+  test('readRefreshToken reads the refresh-token key', () async {
+    when(() => storage.read(key: 'gym_app_refresh_token')).thenAnswer((_) async => 'stored-refresh');
+
+    final result = await tokenStore.readRefreshToken();
+
+    expect(result, 'stored-refresh');
+  });
+
   test('clear deletes both keys', () async {
     when(() => storage.delete(key: any(named: 'key'))).thenAnswer((_) async {});
 

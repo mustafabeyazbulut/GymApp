@@ -21,6 +21,10 @@ class SecureTokenStore implements TokenStore {
   @override
   Future<String?> readRefreshToken() => _storage.read(key: _refreshTokenKey);
 
+  // flutter_secure_storage has no transactional write/delete API, so a process
+  // kill between the two writes (or two deletes) below can leave a mismatched
+  // or partial token pair on disk. Consumers must treat a present access token
+  // with a missing refresh token as logged-out, not as an error state.
   @override
   Future<void> saveTokens({required String accessToken, required String refreshToken}) async {
     await _storage.write(key: _accessTokenKey, value: accessToken);
