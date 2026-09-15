@@ -12,8 +12,8 @@ metadata:
 ## Backend (GymAppApi) task checklist
 
 - [x] Task 1 — RefreshToken entity, EF config, User.Email unique index, migration — commit `602506a`. Spec ✅ (independently re-verified: diff, build, tests, migration content, no-drift check all re-run by reviewer, not just trusted). Code-quality ✅ "Ready to merge: Yes" — matches sibling `DeviceTokenConfiguration`/`OtpVerificationConfiguration` style exactly, TokenHash(200) length judged correct for `PasswordHasher<T>`'s ~84-char V3 output, cascade FK confirmed safe (single-level, Postgres). Minor forward-looking note (not fixed, not blocking): Task 1's unit test only checks default-null POCO values, doesn't exercise the EF unique index/cascade — an integration test actually exercising `TokenHash` uniqueness + cascade delete should be added once a later task (rotation/revocation, likely Task 7) actually uses this entity.
-- [ ] Task 2 — `UnauthorizedException`/`ForbiddenException` (401/403)
-- [ ] Task 3 — (see plan file for exact task list; not yet read in detail by this session)
+- [x] Task 2 — `UnauthorizedException`/`ForbiddenException` (401/403) — commit `01a682e`. Spec ✅, code-quality ✅ "Ready to merge: Yes", no issues found (mechanical, exact clone of existing `NotFoundException`/`ConflictException` pattern).
+- [ ] Task 3 — `IPasswordHasher`/`IJwtTokenService`/`ISmsSender`/`IEmailSender` abstractions
 - [ ] Tasks 4–14 — not started
 
 ## Mobile (GymApp) task checklist
