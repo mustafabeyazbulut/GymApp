@@ -1,13 +1,13 @@
 ---
 name: project-real-auth-design
-description: GymApp real Auth feature (backend-integrated login/register) — BACKEND FULLY DONE (14/14 tasks, verified against real Postgres). Mobile plan (15 tasks) not yet started. Read this first for current status.
+description: GymApp real Auth feature (backend-integrated login/register) — BACKEND FULLY DONE (14/14). Mobile plan (15 tasks) IN PROGRESS, Task 1/15 done. Read this first for current status.
 metadata:
   type: project
 ---
 
-# Real Auth — Design Status (backend done, mobile not started)
+# Real Auth — Design Status (backend done, mobile in progress)
 
-**STATUS: GymAppApi backend plan 14/14 tasks DONE — implemented, reviewed, and verified end-to-end against a real running Postgres instance (not just unit/integration tests). GymApp mobile plan (15 tasks) NOT YET STARTED.** This file is the resume point if the session is interrupted — read it, then continue with `superpowers:subagent-driven-development` on the MOBILE plan from its Task 1 (the backend needs no further work).
+**STATUS: GymAppApi backend plan 14/14 tasks DONE — implemented, reviewed, and verified end-to-end against a real running Postgres instance (not just unit/integration tests). GymApp mobile plan (15 tasks) IN PROGRESS — Task 1/15 done.** This file is the resume point if the session is interrupted — read it, then continue with `superpowers:subagent-driven-development` on the MOBILE plan from its next unchecked task (the backend needs no further work).
 
 ## Backend (GymAppApi) task checklist
 
@@ -50,7 +50,8 @@ Backend is done — proceed to `superpowers:subagent-driven-development` on the 
 
 ## Mobile (GymApp) task checklist
 
-- [ ] All 15 tasks — not started (blocked on backend Tasks 5–7/10 for Tasks 2/3/9 specifically; Tasks 11–14 restyle work has no blocker and can start any time)
+- [x] Task 1 — `TokenStore` abstraction + `SecureTokenStore` (flutter_secure_storage, Keychain/Keystore) + `FakeTokenStore` — commits `4e7eede` + `ee9411b` (fix). Spec ✅ (independently re-verified: all 4 required files, exact storage keys, provider shape, generated `.g.dart` present and valid, `flutter test`/`flutter analyze` re-run directly, no scope creep into DioClient/AuthRepository). Code-quality: "Changes requested" → fixed → re-reviewed ✅ Approved. 2 Important findings, both fixed: (1) missing test coverage for `readRefreshToken()` — added; (2) no doc note that `saveTokens`/`clear` do two sequential (non-atomic) storage ops since `flutter_secure_storage` has no transactional API — added a doc comment stating consumers must treat "access token present, refresh token missing" as logged-out, not an error (relevant for Task 2's interceptor and Task 3's repository to keep in mind). Also noted but not acted on (Minor, non-blocking): iOS `KeychainAccessibility` not explicitly pinned (uses library default `unlocked`) — a deliberate choice to make later if it matters, not a bug.
+- [ ] Tasks 2–15 — not started (Task 2 Dio interceptor, Task 3 RealAuthRepository, Task 9 account deletion depend on backend Tasks 5–7/10, all already done and verified; Tasks 11–14 restyle work has no blocker and can start any time)
 
 ## Plans (written 2026-09-15, both committed)
 
