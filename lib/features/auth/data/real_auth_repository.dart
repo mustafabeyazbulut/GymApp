@@ -16,16 +16,28 @@ class RealAuthRepository implements AuthRepository {
   final TokenStore _tokenStore;
 
   @override
-  Future<void> register({
-    required String fullName,
-    required String phone,
-    String? email,
-    required String password,
-  }) async {
-    final response = await _guard(() => _dio.post<Map<String, dynamic>>('/api/auth/register', data: {
-          'fullName': fullName,
+  Future<void> requestRegistrationOtp({required String phone, String? email}) async {
+    await _guard(() => _dio.post<void>('/api/auth/register/request-otp', data: {
           'phone': phone,
           'email': email,
+        }));
+  }
+
+  @override
+  Future<void> completeRegistration({
+    required String fullName,
+    required String phone,
+    required String phoneCode,
+    String? email,
+    String? emailCode,
+    required String password,
+  }) async {
+    final response = await _guard(() => _dio.post<Map<String, dynamic>>('/api/auth/register/complete', data: {
+          'fullName': fullName,
+          'phone': phone,
+          'phoneCode': phoneCode,
+          'email': email,
+          'emailCode': emailCode,
           'password': password,
         }));
     await _storeTokenPair(response.data!);
@@ -97,9 +109,6 @@ class RealAuthRepository implements AuthRepository {
     if (statusCode == null) {
       return const NetworkAuthException();
     }
-    if (statusCode == 401) {
-      return const InvalidCredentialsException();
-    }
     if (statusCode == 429) {
       return const RateLimitedAuthException();
     }
@@ -109,6 +118,16 @@ class RealAuthRepository implements AuthRepository {
         ? (data['Errors'] as List).first.toString()
         : 'Beklenmeyen bir hata oluştu.';
 
+    if (statusCode == 401) {
+      // register/complete's 401 means "wrong OTP code", not "wrong
+      // password" - the server's own message already says which channel
+      // (phone/email) failed, so surface it verbatim instead of the
+      // hardcoded InvalidCredentialsException every other 401 uses.
+      if (exception.requestOptions.path == '/api/auth/register/complete') {
+        return GenericAuthException(message);
+      }
+      return const InvalidCredentialsException();
+    }
     if (statusCode == 409) {
       return ConflictAuthException(message);
     }
