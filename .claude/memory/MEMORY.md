@@ -1,7 +1,8 @@
 # Memory Index
 
-- [Real Auth design](project-real-auth-design.md) — backend DONE (14/14, verified vs real Postgres), mobile plan (15 tasks) IN PROGRESS (Task 7 confirmed, Task 8 pending review). Read this first.
-- [Member Experience status](project-member-experience-status.md) — PLAN COMPLETE (17/17 tasks), historical context; its "next task" pointer is superseded by the Real Auth design file above.
+- [OTP security actions status](project-otp-security-actions.md) — CURRENT status, read this FIRST. OTP register, phone normalization, notifications, language switcher, OTP-gated freeze/reactivate/delete, membership-screen visual fixes. Supersedes the "no OTP" line in the Real Auth file below.
+- [Real Auth design](project-real-auth-design.md) — backend + mobile Real Auth plan, COMPLETE (14/14, 15/15). Historical/design-rationale context; for current status read the file above instead.
+- [Member Experience status](project-member-experience-status.md) — PLAN COMPLETE (17/17 tasks), historical context; superseded by the files above.
 - [Mobile Foundation status](project-mobile-foundation-status.md) — prior, now-superseded plan (Branch proof-of-concept, since deleted); historical context only.
 - [Memory location rule](feedback-memory-location.md) — all mobile memory lives in this repo, never in GymAppApi's memory.
 - [Design quality bar](feedback-design-quality-bar.md) — every screen, even POC ones, must match the reference mockup's polish, not a rough placeholder.
