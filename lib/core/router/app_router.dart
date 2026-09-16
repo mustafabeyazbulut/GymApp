@@ -9,6 +9,7 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/classes/presentation/screens/classes_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/membership/presentation/screens/membership_screen.dart';
+import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/progress/presentation/screens/progress_screen.dart';
 
 part 'app_router.g.dart';
@@ -50,6 +51,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),

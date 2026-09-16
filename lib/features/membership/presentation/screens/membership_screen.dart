@@ -1,6 +1,7 @@
 // lib/features/membership/presentation/screens/membership_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -88,13 +89,38 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
         title: Text(l10n.membershipTitle),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: l10n.commonLogOut,
-            onPressed: () => ref.read(authStateProvider.notifier).logOut(),
+            icon: const Icon(Icons.notifications_outlined),
+            tooltip: l10n.notificationsTitle,
+            onPressed: () => context.push('/notifications'),
           ),
         ],
       ),
-      body: ref.watch(currentUserProvider).when(
+      body: Column(
+        children: [
+          Expanded(child: _buildBody(context, ref, l10n)),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.md),
+              child: TextButton(
+                style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                onPressed: () => ref.read(authStateProvider.notifier).logOut(),
+                child: Text(l10n.commonLogOut),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Kept as its own persistent bottom element (see build()), reachable
+  // regardless of loading/error/empty-membership/active-membership state -
+  // previously logOut() was only reachable via the delete-account flow deep
+  // inside the active-membership branch, leaving no way out for an account
+  // with no membership yet.
+  Widget _buildBody(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
+    return ref.watch(currentUserProvider).when(
         loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (error, stackTrace) => Center(
           child: Padding(
@@ -255,7 +281,7 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
             ),
           );
         },
-      ),
-    );
+      );
   }
 }
+

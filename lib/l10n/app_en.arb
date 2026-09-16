@@ -81,6 +81,8 @@
   "progressCategoryFitness": "Fitness",
 
   "membershipTitle": "My Membership",
+  "notificationsTitle": "Notifications",
+  "notificationsEmptyMessage": "You have no notifications yet.",
   "membershipActiveStatus": "Active",
   "membershipFrozenStatus": "Frozen",
   "membershipPaidStatus": "Paid",

@@ -172,6 +172,10 @@
 
   "membershipTitle": "Üyeliğim",
   "@membershipTitle": {},
+  "notificationsTitle": "Bildirimler",
+  "@notificationsTitle": {},
+  "notificationsEmptyMessage": "Henüz bildiriminiz yok.",
+  "@notificationsEmptyMessage": {},
   "membershipActiveStatus": "Aktif",
   "@membershipActiveStatus": {},
   "membershipFrozenStatus": "Donduruldu",
