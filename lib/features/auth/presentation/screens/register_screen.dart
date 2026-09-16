@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -15,36 +17,82 @@ class RegisterScreen extends ConsumerStatefulWidget {
   ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
+enum _Step { requestOtp, completeRegistration }
+
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
-  final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _phoneCodeController = TextEditingController();
+  final _emailCodeController = TextEditingController();
+  _Step _step = _Step.requestOtp;
+  String? _phone;
   bool _isSubmitting = false;
   String? _errorText;
+
+  bool get _hasEmail => _emailController.text.trim().isNotEmpty;
 
   @override
   void dispose() {
     _fullNameController.dispose();
-    _phoneController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _phoneCodeController.dispose();
+    _emailCodeController.dispose();
     super.dispose();
   }
 
-  Future<void> _submit() async {
+  bool _ensurePhoneEntered() {
+    if (_phone == null || _phone!.trim().isEmpty) {
+      setState(() => _errorText = AppLocalizations.of(context)!.commonFieldRequired);
+      return false;
+    }
+    return true;
+  }
+
+  Future<void> _requestOtp() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!_ensurePhoneEntered()) return;
 
     setState(() {
       _isSubmitting = true;
       _errorText = null;
     });
     try {
-      await ref.read(authRepositoryProvider).register(
+      await ref.read(authRepositoryProvider).requestRegistrationOtp(
+            phone: _phone!,
+            email: _hasEmail ? _emailController.text.trim() : null,
+          );
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(_hasEmail ? l10n.registerCodeSentBothMessage : l10n.registerCodeSentPhoneOnlyMessage),
+      ));
+      setState(() => _step = _Step.completeRegistration);
+    } on AuthException catch (exception) {
+      if (!mounted) return;
+      setState(() => _errorText = exception.message);
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _completeRegistration() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (!_ensurePhoneEntered()) return;
+
+    setState(() {
+      _isSubmitting = true;
+      _errorText = null;
+    });
+    try {
+      await ref.read(authRepositoryProvider).completeRegistration(
             fullName: _fullNameController.text.trim(),
-            phone: _phoneController.text.trim(),
-            email: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
+            phone: _phone!,
+            phoneCode: _phoneCodeController.text.trim(),
+            email: _hasEmail ? _emailController.text.trim() : null,
+            emailCode: _hasEmail ? _emailCodeController.text.trim() : null,
             password: _passwordController.text,
           );
       if (!mounted) return;
@@ -57,9 +105,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
   }
 
+  void _backToRequestOtp() {
+    setState(() {
+      _step = _Step.requestOtp;
+      _phoneCodeController.clear();
+      _emailCodeController.clear();
+      _errorText = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final inStep1 = _step == _Step.requestOtp;
 
     return Scaffold(
       body: SafeArea(
@@ -75,21 +133,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: AppSpacing.xl),
                 TextFormField(
                   controller: _fullNameController,
+                  enabled: inStep1,
                   decoration: InputDecoration(labelText: l10n.registerFullNameLabel),
                   validator: (value) =>
                       (value == null || value.trim().isEmpty) ? l10n.commonFieldRequired : null,
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
+                IntlPhoneField(
+                  enabled: inStep1,
+                  initialCountryCode: 'TR',
                   decoration: InputDecoration(labelText: l10n.registerPhoneLabel),
-                  validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? l10n.commonFieldRequired : null,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  onChanged: (phone) => _phone = phone.completeNumber,
+                  validator: (phone) =>
+                      (phone == null || phone.number.trim().isEmpty) ? l10n.commonFieldRequired : null,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 TextFormField(
                   controller: _emailController,
+                  enabled: inStep1,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(labelText: l10n.registerEmailLabel),
                   validator: (value) {
@@ -102,6 +164,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: AppSpacing.lg),
                 TextFormField(
                   controller: _passwordController,
+                  enabled: inStep1,
                   obscureText: true,
                   decoration: InputDecoration(labelText: l10n.registerPasswordLabel),
                   validator: (value) {
@@ -110,25 +173,56 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     return null;
                   },
                 ),
+                if (!inStep1) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  TextFormField(
+                    controller: _phoneCodeController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(6),
+                    ],
+                    decoration: InputDecoration(labelText: l10n.registerPhoneCodeLabel),
+                    validator: (value) =>
+                        (value == null || value.trim().isEmpty) ? l10n.commonFieldRequired : null,
+                  ),
+                  if (_hasEmail) ...[
+                    const SizedBox(height: AppSpacing.lg),
+                    TextFormField(
+                      controller: _emailCodeController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(6),
+                      ],
+                      decoration: InputDecoration(labelText: l10n.registerEmailCodeLabel),
+                      validator: (value) =>
+                          (value == null || value.trim().isEmpty) ? l10n.commonFieldRequired : null,
+                    ),
+                  ],
+                ],
                 if (_errorText != null) ...[
                   const SizedBox(height: AppSpacing.md),
                   Text(_errorText!, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.error)),
                 ],
                 const SizedBox(height: AppSpacing.xl),
                 ElevatedButton(
-                  onPressed: _isSubmitting ? null : _submit,
+                  onPressed: _isSubmitting ? null : (inStep1 ? _requestOtp : _completeRegistration),
                   child: _isSubmitting
                       ? const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary),
                         )
-                      : Text(l10n.registerSubmitButton),
+                      : Text(inStep1 ? l10n.registerSendCodeButton : l10n.registerSubmitButton),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 TextButton(
-                  onPressed: _isSubmitting ? null : () => context.pop(),
-                  child: Text(l10n.registerHaveAccount, textAlign: TextAlign.center),
+                  onPressed: _isSubmitting ? null : (inStep1 ? () => context.pop() : _backToRequestOtp),
+                  child: Text(
+                    inStep1 ? l10n.registerHaveAccount : l10n.registerChangeDetails,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ],
             ),
