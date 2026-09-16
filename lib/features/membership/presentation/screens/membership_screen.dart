@@ -178,48 +178,54 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.md),
+              // Same hairline-card language as the Payment History card
+              // below (border: AppColors.border, radius: AppSpacing.radiusLg,
+              // labelSmall eyebrow) - kept here, outside the
+              // active-membership-only ListView, for the same reachability
+              // reason as Log Out: a freshly registered account with no
+              // membership yet must still be able to reach these.
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextButton.icon(
-                    onPressed: _isChangingLanguage ? null : _pickLanguage,
-                    icon: _isChangingLanguage
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBackground),
-                          )
-                        : const Icon(Icons.language, size: 18),
-                    label: Text(l10n.settingsLanguageLabel),
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.border),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.xs),
+                            child: Text(l10n.settingsAccountSectionTitle, style: Theme.of(context).textTheme.labelSmall),
+                          ),
+                          _SettingsRow(
+                            label: l10n.settingsLanguageLabel,
+                            trailingText: _languageDisplayName(context),
+                            isLoading: _isChangingLanguage,
+                            onTap: _isChangingLanguage ? null : _pickLanguage,
+                          ),
+                          Container(height: 1, color: AppColors.border),
+                          _SettingsRow(
+                            label: l10n.accountFreezeButton,
+                            isLoading: _isFreezingAccount,
+                            onTap: _isFreezingAccount ? null : _confirmAndFreezeAccount,
+                          ),
+                          Container(height: 1, color: AppColors.border),
+                          _SettingsRow(
+                            label: l10n.accountDeletionButton,
+                            labelColor: AppColors.error,
+                            isLoading: _isDeletingAccount,
+                            onTap: _isDeletingAccount ? null : _confirmAndDeleteAccount,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  // Kept here, not inside the active-membership-only ListView
-                  // below, for the same reachability reason as Log Out - a
-                  // freshly registered account with no membership yet must
-                  // still be able to freeze/delete itself.
-                  TextButton(
-                    style: TextButton.styleFrom(foregroundColor: AppColors.error),
-                    onPressed: _isFreezingAccount ? null : _confirmAndFreezeAccount,
-                    child: _isFreezingAccount
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.error),
-                          )
-                        : Text(l10n.accountFreezeButton),
-                  ),
-                  TextButton(
-                    style: TextButton.styleFrom(foregroundColor: AppColors.error),
-                    onPressed: _isDeletingAccount ? null : _confirmAndDeleteAccount,
-                    child: _isDeletingAccount
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.error),
-                          )
-                        : Text(l10n.accountDeletionButton),
-                  ),
-                  TextButton(
-                    style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                  const SizedBox(height: AppSpacing.md),
+                  OutlinedButton(
                     onPressed: () => ref.read(authStateProvider.notifier).logOut(),
                     child: Text(l10n.commonLogOut),
                   ),
@@ -231,6 +237,9 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
       ),
     );
   }
+
+  String _languageDisplayName(BuildContext context) =>
+      Localizations.localeOf(context).languageCode == 'en' ? 'English' : 'Türkçe';
 
   // Kept as its own persistent bottom element (see build()), reachable
   // regardless of loading/error/empty-membership/active-membership state -
@@ -391,6 +400,62 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
           );
         },
       );
+  }
+}
+
+/// A tappable settings row matching the mockup's hairline-card language —
+/// label on the left, either a plain chevron or a trailing value (e.g. the
+/// current language name) + chevron on the right, swapped for a spinner
+/// while [isLoading].
+class _SettingsRow extends StatelessWidget {
+  const _SettingsRow({
+    required this.label,
+    required this.onTap,
+    this.trailingText,
+    this.labelColor,
+    this.isLoading = false,
+  });
+
+  final String label;
+  final VoidCallback? onTap;
+  final String? trailingText;
+  final Color? labelColor;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: labelColor),
+            ),
+            if (isLoading)
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBackgroundFaint),
+              )
+            else
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (trailingText != null) ...[
+                    Text(trailingText!, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundFaint)),
+                    const SizedBox(width: AppSpacing.xs),
+                  ],
+                  const Icon(Icons.chevron_right, size: 18, color: AppColors.onBackgroundFaint),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

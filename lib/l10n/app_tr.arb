@@ -200,6 +200,8 @@
   "@membershipRenewRequested": {},
   "membershipPaymentHistoryLabel": "Ödeme Geçmişi",
   "@membershipPaymentHistoryLabel": {},
+  "settingsAccountSectionTitle": "HESAP",
+  "@settingsAccountSectionTitle": {},
   "membershipEmptyStateTitle": "Henüz aktif üyeliğin yok",
   "@membershipEmptyStateTitle": {},
   "membershipEmptyStateBody": "Bir gym'e üye olduğunda paketin, derslerin ve gelişimin burada görünecek.",
