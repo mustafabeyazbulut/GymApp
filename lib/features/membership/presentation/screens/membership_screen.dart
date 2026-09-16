@@ -188,12 +188,14 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
+                    clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
+                      color: AppColors.surface,
                       border: Border.all(color: AppColors.border),
                       borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -202,6 +204,7 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
                             child: Text(l10n.settingsAccountSectionTitle, style: Theme.of(context).textTheme.labelSmall),
                           ),
                           _SettingsRow(
+                            icon: Icons.language,
                             label: l10n.settingsLanguageLabel,
                             trailingText: _languageDisplayName(context),
                             isLoading: _isChangingLanguage,
@@ -209,12 +212,14 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
                           ),
                           Container(height: 1, color: AppColors.border),
                           _SettingsRow(
+                            icon: Icons.pause_circle_outline,
                             label: l10n.accountFreezeButton,
                             isLoading: _isFreezingAccount,
                             onTap: _isFreezingAccount ? null : _confirmAndFreezeAccount,
                           ),
                           Container(height: 1, color: AppColors.border),
                           _SettingsRow(
+                            icon: Icons.delete_outline,
                             label: l10n.accountDeletionButton,
                             labelColor: AppColors.error,
                             isLoading: _isDeletingAccount,
@@ -302,6 +307,7 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
               children: [
                 Container(
                   decoration: BoxDecoration(
+                    color: AppColors.surface,
                     border: Border.all(color: AppColors.border),
                     borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                   ),
@@ -370,6 +376,7 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
                 const SizedBox(height: AppSpacing.md),
                 Container(
                   decoration: BoxDecoration(
+                    color: AppColors.surface,
                     border: Border.all(color: AppColors.border),
                     borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                   ),
@@ -409,6 +416,7 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
 /// while [isLoading].
 class _SettingsRow extends StatelessWidget {
   const _SettingsRow({
+    required this.icon,
     required this.label,
     required this.onTap,
     this.trailingText,
@@ -416,6 +424,7 @@ class _SettingsRow extends StatelessWidget {
     this.isLoading = false,
   });
 
+  final IconData icon;
   final String label;
   final VoidCallback? onTap;
   final String? trailingText;
@@ -427,13 +436,16 @@ class _SettingsRow extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: labelColor),
+            Icon(icon, size: 18, color: labelColor ?? AppColors.onBackgroundFaint),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: labelColor),
+              ),
             ),
             if (isLoading)
               const SizedBox(
