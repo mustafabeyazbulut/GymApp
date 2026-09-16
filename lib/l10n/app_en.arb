@@ -29,6 +29,12 @@
   "registerSubmitButton": "Create Account",
   "registerHaveAccount": "Already have an account? Log in",
   "registerPasswordTooShort": "Password must be at least 8 characters",
+  "registerSendCodeButton": "Send Code",
+  "registerCodeSentPhoneOnlyMessage": "A verification code has been sent to your phone.",
+  "registerCodeSentBothMessage": "A verification code has been sent to your phone and email.",
+  "registerPhoneCodeLabel": "Phone Code",
+  "registerEmailCodeLabel": "Email Code",
+  "registerChangeDetails": "Change details",
 
   "forgotPasswordTitle": "Forgot Password",
   "forgotPasswordIdentifierLabel": "Phone or email",
