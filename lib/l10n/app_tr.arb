@@ -176,6 +176,10 @@
 
   "membershipTitle": "Üyeliğim",
   "@membershipTitle": {},
+  "settingsLanguageLabel": "Dil",
+  "@settingsLanguageLabel": {},
+  "settingsLanguagePickerTitle": "Dil Seçin",
+  "@settingsLanguagePickerTitle": {},
   "notificationsTitle": "Bildirimler",
   "@notificationsTitle": {},
   "notificationsEmptyMessage": "Henüz bildiriminiz yok.",

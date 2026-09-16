@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/locale/app_locale_provider.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -25,6 +26,41 @@ class MembershipScreen extends ConsumerStatefulWidget {
 class _MembershipScreenState extends ConsumerState<MembershipScreen> {
   bool _isFreezing = false;
   bool _isDeletingAccount = false;
+  bool _isChangingLanguage = false;
+
+  Future<void> _pickLanguage() async {
+    final l10n = AppLocalizations.of(context)!;
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => SimpleDialog(
+        title: Text(l10n.settingsLanguagePickerTitle),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.of(dialogContext).pop('tr'),
+            child: const Text('Türkçe'),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.of(dialogContext).pop('en'),
+            child: const Text('English'),
+          ),
+        ],
+      ),
+    );
+
+    if (selected == null || !mounted) return;
+
+    setState(() => _isChangingLanguage = true);
+    try {
+      await ref.read(authRepositoryProvider).updatePreferredLanguage(selected);
+      if (!mounted) return;
+      ref.read(appLocaleProvider.notifier).setLocale(Locale(selected));
+    } on AuthException catch (exception) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+    } finally {
+      if (mounted) setState(() => _isChangingLanguage = false);
+    }
+  }
 
   Future<void> _requestFreeze() async {
     setState(() => _isFreezing = true);
@@ -102,10 +138,26 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.md),
-              child: TextButton(
-                style: TextButton.styleFrom(foregroundColor: AppColors.error),
-                onPressed: () => ref.read(authStateProvider.notifier).logOut(),
-                child: Text(l10n.commonLogOut),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton.icon(
+                    onPressed: _isChangingLanguage ? null : _pickLanguage,
+                    icon: _isChangingLanguage
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBackground),
+                          )
+                        : const Icon(Icons.language, size: 18),
+                    label: Text(l10n.settingsLanguageLabel),
+                  ),
+                  TextButton(
+                    style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                    onPressed: () => ref.read(authStateProvider.notifier).logOut(),
+                    child: Text(l10n.commonLogOut),
+                  ),
+                ],
               ),
             ),
           ),

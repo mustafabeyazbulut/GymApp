@@ -173,6 +173,7 @@ void main() {
         'fullName': 'Ayşe Yılmaz',
         'phone': '+905551112233',
         'email': 'ayse@test.com',
+        'preferredLanguage': 'tr',
         'assignments': [
           {'companyId': 3, 'companyName': 'MAT & MOVE Kadıköy', 'branchId': null, 'role': 'Member'},
         ],
@@ -191,6 +192,7 @@ void main() {
           'fullName': 'Süper Admin',
           'phone': '+900000000000',
           'email': 'admin@gymapp.local',
+          'preferredLanguage': 'tr',
           'assignments': [
             {'companyId': null, 'companyName': null, 'branchId': null, 'role': 'SuperAdmin'},
           ],

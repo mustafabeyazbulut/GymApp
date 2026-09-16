@@ -91,6 +91,11 @@ class RealAuthRepository implements AuthRepository {
     await _tokenStore.clear();
   }
 
+  @override
+  Future<void> updatePreferredLanguage(String language) async {
+    await _guard(() => _dio.patch<void>('/api/auth/me/language', data: {'language': language}));
+  }
+
   Future<void> _storeTokenPair(Map<String, dynamic> data) => _tokenStore.saveTokens(
         accessToken: data['accessToken'] as String,
         refreshToken: data['refreshToken'] as String,

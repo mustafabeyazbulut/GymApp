@@ -33,4 +33,6 @@ abstract interface class AuthRepository {
   Future<MeResult> getMe();
 
   Future<void> deleteAccount();
+
+  Future<void> updatePreferredLanguage(String language);
 }
