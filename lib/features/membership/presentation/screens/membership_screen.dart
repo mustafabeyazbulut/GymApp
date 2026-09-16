@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/account_frozen_state.dart';
 import '../../../../core/widgets/empty_membership_state.dart';
+import '../../../../core/widgets/otp_code_dialog.dart';
 import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/data/real_auth_repository.dart';
@@ -143,7 +144,19 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
 
     setState(() => _isFreezingAccount = true);
     try {
-      await ref.read(authRepositoryProvider).freezeAccount();
+      await ref.read(authRepositoryProvider).requestFreezeOtp();
+      if (!mounted) return;
+      final code = await showOtpCodeDialog(
+        context: context,
+        title: l10n.accountActionOtpTitle,
+        message: l10n.accountActionOtpMessage,
+        codeLabel: l10n.accountActionOtpCodeLabel,
+        submitLabel: l10n.accountActionOtpSubmitButton,
+        cancelLabel: l10n.accountActionOtpCancelButton,
+      );
+      if (code == null || !mounted) return;
+
+      await ref.read(authRepositoryProvider).freezeAccount(code: code);
       if (!mounted) return;
       // freezeAccount() already revoked every refresh token server-side;
       // logOut() just clears the now-stale local copy.

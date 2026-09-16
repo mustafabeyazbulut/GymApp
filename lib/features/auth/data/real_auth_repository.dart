@@ -97,13 +97,23 @@ class RealAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> freezeAccount() async {
-    await _guard(() => _dio.post<void>('/api/auth/me/freeze'));
+  Future<void> requestFreezeOtp() async {
+    await _guard(() => _dio.post<void>('/api/auth/me/freeze/request-otp'));
   }
 
   @override
-  Future<void> reactivateAccount() async {
-    await _guard(() => _dio.post<void>('/api/auth/me/unfreeze'));
+  Future<void> freezeAccount({required String code}) async {
+    await _guard(() => _dio.post<void>('/api/auth/me/freeze', data: {'code': code}));
+  }
+
+  @override
+  Future<void> requestUnfreezeOtp() async {
+    await _guard(() => _dio.post<void>('/api/auth/me/unfreeze/request-otp'));
+  }
+
+  @override
+  Future<void> reactivateAccount({required String code}) async {
+    await _guard(() => _dio.post<void>('/api/auth/me/unfreeze', data: {'code': code}));
   }
 
   Future<void> _storeTokenPair(Map<String, dynamic> data) => _tokenStore.saveTokens(
@@ -134,11 +144,16 @@ class RealAuthRepository implements AuthRepository {
         : 'Beklenmeyen bir hata oluştu.';
 
     if (statusCode == 401) {
-      // register/complete's 401 means "wrong OTP code", not "wrong
-      // password" - the server's own message already says which channel
-      // (phone/email) failed, so surface it verbatim instead of the
-      // hardcoded InvalidCredentialsException every other 401 uses.
-      if (exception.requestOptions.path == '/api/auth/register/complete') {
+      // These paths' 401 means "wrong OTP code", not "wrong password" - the
+      // server's own message already says which channel failed, so surface
+      // it verbatim instead of the hardcoded InvalidCredentialsException
+      // every other 401 uses.
+      const otpVerifiedPaths = {
+        '/api/auth/register/complete',
+        '/api/auth/me/freeze',
+        '/api/auth/me/unfreeze',
+      };
+      if (otpVerifiedPaths.contains(exception.requestOptions.path)) {
         return GenericAuthException(message);
       }
       return const InvalidCredentialsException();

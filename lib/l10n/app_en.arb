@@ -111,5 +111,11 @@
   "accountFreezeConfirmButton": "Yes, Freeze",
   "accountFrozenTitle": "Your Account Is Frozen",
   "accountFrozenBody": "You previously froze your account temporarily. Reactivate it below to keep using the app.",
-  "accountFrozenReactivateButton": "Reactivate My Account"
+  "accountFrozenReactivateButton": "Reactivate My Account",
+
+  "accountActionOtpTitle": "Verification Code",
+  "accountActionOtpMessage": "Enter the 6-digit code sent to your phone.",
+  "accountActionOtpCodeLabel": "Code",
+  "accountActionOtpSubmitButton": "Confirm",
+  "accountActionOtpCancelButton": "Cancel"
 }

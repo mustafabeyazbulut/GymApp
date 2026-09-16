@@ -234,15 +234,55 @@ void main() {
     await repository.updatePreferredLanguage('en');
   });
 
-  test('freezeAccount calls POST /api/auth/me/freeze', () async {
-    adapter.onPost('/api/auth/me/freeze', (server) => server.reply(204, null));
+  test('requestFreezeOtp calls POST /api/auth/me/freeze/request-otp', () async {
+    adapter.onPost('/api/auth/me/freeze/request-otp', (server) => server.reply(204, null));
 
-    await repository.freezeAccount();
+    await repository.requestFreezeOtp();
   });
 
-  test('reactivateAccount calls POST /api/auth/me/unfreeze', () async {
-    adapter.onPost('/api/auth/me/unfreeze', (server) => server.reply(204, null));
+  test('freezeAccount calls POST /api/auth/me/freeze with the code', () async {
+    adapter.onPost(
+      '/api/auth/me/freeze',
+      (server) => server.reply(204, null),
+      data: {'code': '123456'},
+    );
 
-    await repository.reactivateAccount();
+    await repository.freezeAccount(code: '123456');
+  });
+
+  test('freezeAccount on 401 surfaces the server message (wrong code, not wrong password)', () async {
+    adapter.onPost(
+      '/api/auth/me/freeze',
+      (server) => server.reply(401, {
+        'Status': 401,
+        'Errors': ['Telefon kodu hatalı, süresi dolmuş veya çok fazla deneme yapıldı.'],
+      }),
+      data: {'code': '000000'},
+    );
+
+    await expectLater(
+      () => repository.freezeAccount(code: '000000'),
+      throwsA(isA<GenericAuthException>().having(
+        (e) => e.message,
+        'message',
+        'Telefon kodu hatalı, süresi dolmuş veya çok fazla deneme yapıldı.',
+      )),
+    );
+  });
+
+  test('requestUnfreezeOtp calls POST /api/auth/me/unfreeze/request-otp', () async {
+    adapter.onPost('/api/auth/me/unfreeze/request-otp', (server) => server.reply(204, null));
+
+    await repository.requestUnfreezeOtp();
+  });
+
+  test('reactivateAccount calls POST /api/auth/me/unfreeze with the code', () async {
+    adapter.onPost(
+      '/api/auth/me/unfreeze',
+      (server) => server.reply(204, null),
+      data: {'code': '123456'},
+    );
+
+    await repository.reactivateAccount(code: '123456');
   });
 }

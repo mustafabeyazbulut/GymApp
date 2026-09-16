@@ -231,5 +231,16 @@
   "accountFrozenBody": "Hesabını geçici olarak dondurmuştun. Tekrar kullanmak için aşağıdan aktifleştirebilirsin.",
   "@accountFrozenBody": {},
   "accountFrozenReactivateButton": "Hesabımı Aktifleştir",
-  "@accountFrozenReactivateButton": {}
+  "@accountFrozenReactivateButton": {},
+
+  "accountActionOtpTitle": "Doğrulama Kodu",
+  "@accountActionOtpTitle": {},
+  "accountActionOtpMessage": "Telefonunuza gönderilen 6 haneli kodu girin.",
+  "@accountActionOtpMessage": {},
+  "accountActionOtpCodeLabel": "Kod",
+  "@accountActionOtpCodeLabel": {},
+  "accountActionOtpSubmitButton": "Onayla",
+  "@accountActionOtpSubmitButton": {},
+  "accountActionOtpCancelButton": "Vazgeç",
+  "@accountActionOtpCancelButton": {}
 }

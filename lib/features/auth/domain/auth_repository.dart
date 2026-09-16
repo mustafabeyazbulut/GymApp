@@ -40,8 +40,14 @@ abstract interface class AuthRepository {
   // the account's own login access (Instagram-style "deactivate
   // temporarily"). Login itself still succeeds afterward; the app gates
   // navigation behind a reactivation screen once getMe() reports
-  // isAccountFrozen.
-  Future<void> freezeAccount();
+  // isAccountFrozen. Both freezing and reactivating require proving control
+  // of the account's phone first via a 6-digit code (requestFreezeOtp/
+  // requestUnfreezeOtp send it, freezeAccount/reactivateAccount consume it).
+  Future<void> requestFreezeOtp();
 
-  Future<void> reactivateAccount();
+  Future<void> freezeAccount({required String code});
+
+  Future<void> requestUnfreezeOtp();
+
+  Future<void> reactivateAccount({required String code});
 }

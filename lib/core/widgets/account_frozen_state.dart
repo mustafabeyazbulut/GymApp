@@ -6,6 +6,7 @@ import '../../features/auth/data/real_auth_repository.dart';
 import '../../features/auth/domain/auth_exceptions.dart';
 import '../../features/auth/presentation/providers/current_user_provider.dart';
 import '../../l10n/generated/app_localizations.dart';
+import 'otp_code_dialog.dart';
 
 /// Shown by each of the 4 content screens instead of their normal content
 /// when the logged-in user's own account has been self-service frozen
@@ -29,7 +30,20 @@ class _AccountFrozenStateState extends ConsumerState<AccountFrozenState> {
       _errorText = null;
     });
     try {
-      await ref.read(authRepositoryProvider).reactivateAccount();
+      await ref.read(authRepositoryProvider).requestUnfreezeOtp();
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      final code = await showOtpCodeDialog(
+        context: context,
+        title: l10n.accountActionOtpTitle,
+        message: l10n.accountActionOtpMessage,
+        codeLabel: l10n.accountActionOtpCodeLabel,
+        submitLabel: l10n.accountActionOtpSubmitButton,
+        cancelLabel: l10n.accountActionOtpCancelButton,
+      );
+      if (code == null || !mounted) return;
+
+      await ref.read(authRepositoryProvider).reactivateAccount(code: code);
       if (!mounted) return;
       ref.invalidate(currentUserProvider);
     } on AuthException catch (exception) {
