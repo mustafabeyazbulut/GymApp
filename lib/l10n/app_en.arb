@@ -30,6 +30,8 @@
   "registerSubmitButton": "Create Account",
   "registerHaveAccount": "Already have an account? Log in",
   "registerPasswordTooShort": "Password must be at least 8 characters",
+  "registerConfirmPasswordLabel": "Confirm Password",
+  "registerPasswordMismatch": "Passwords do not match",
   "registerSendCodeButton": "Send Code",
   "registerCodeSentPhoneOnlyMessage": "A verification code has been sent to your phone.",
   "registerCodeSentBothMessage": "A verification code has been sent to your phone and email.",

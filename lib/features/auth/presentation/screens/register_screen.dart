@@ -24,6 +24,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _fullNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final _phoneCodeController = TextEditingController();
   final _emailCodeController = TextEditingController();
   _Step _step = _Step.requestOtp;
@@ -38,6 +39,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _fullNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _phoneCodeController.dispose();
     _emailCodeController.dispose();
     super.dispose();
@@ -170,6 +172,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   validator: (value) {
                     if (value == null || value.isEmpty) return l10n.commonFieldRequired;
                     if (value.length < 8) return l10n.registerPasswordTooShort;
+                    return null;
+                  },
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  enabled: inStep1,
+                  obscureText: true,
+                  decoration: InputDecoration(labelText: l10n.registerConfirmPasswordLabel),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return l10n.commonFieldRequired;
+                    if (value != _passwordController.text) return l10n.registerPasswordMismatch;
                     return null;
                   },
                 ),
