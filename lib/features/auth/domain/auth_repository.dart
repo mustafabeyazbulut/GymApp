@@ -32,7 +32,11 @@ abstract interface class AuthRepository {
 
   Future<MeResult> getMe();
 
-  Future<void> deleteAccount();
+  // Irreversible, so it requires proving control of the account's phone
+  // first via a 6-digit code, same as freeze/unfreeze below.
+  Future<void> requestDeleteAccountOtp();
+
+  Future<void> deleteAccount({required String code});
 
   Future<void> updatePreferredLanguage(String language);
 

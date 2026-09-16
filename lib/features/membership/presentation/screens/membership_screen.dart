@@ -106,7 +106,19 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
 
     setState(() => _isDeletingAccount = true);
     try {
-      await ref.read(authRepositoryProvider).deleteAccount();
+      await ref.read(authRepositoryProvider).requestDeleteAccountOtp();
+      if (!mounted) return;
+      final code = await showOtpCodeDialog(
+        context: context,
+        title: l10n.accountActionOtpTitle,
+        message: l10n.accountActionOtpMessage,
+        codeLabel: l10n.accountActionOtpCodeLabel,
+        submitLabel: l10n.accountActionOtpSubmitButton,
+        cancelLabel: l10n.accountActionOtpCancelButton,
+      );
+      if (code == null || !mounted) return;
+
+      await ref.read(authRepositoryProvider).deleteAccount(code: code);
       if (!mounted) return;
       // deleteAccount() already clears the token store; logOut() clears it again.
       // A second clear() on an already-cleared store is expected to be a no-op.

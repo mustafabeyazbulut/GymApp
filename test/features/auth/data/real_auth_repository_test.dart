@@ -215,13 +215,43 @@ void main() {
     );
   });
 
-  test('deleteAccount calls DELETE /api/auth/me and clears the token store', () async {
-    await tokenStore.saveTokens(accessToken: 'a', refreshToken: 'r');
-    adapter.onDelete('/api/auth/me', (server) => server.reply(204, null));
+  test('requestDeleteAccountOtp calls POST /api/auth/me/delete/request-otp', () async {
+    adapter.onPost('/api/auth/me/delete/request-otp', (server) => server.reply(204, null));
 
-    await repository.deleteAccount();
+    await repository.requestDeleteAccountOtp();
+  });
+
+  test('deleteAccount calls DELETE /api/auth/me with the code and clears the token store', () async {
+    await tokenStore.saveTokens(accessToken: 'a', refreshToken: 'r');
+    adapter.onDelete(
+      '/api/auth/me',
+      (server) => server.reply(204, null),
+      data: {'code': '123456'},
+    );
+
+    await repository.deleteAccount(code: '123456');
 
     expect(await tokenStore.readAccessToken(), isNull);
+  });
+
+  test('deleteAccount on 401 surfaces the server message (wrong code, not wrong password)', () async {
+    adapter.onDelete(
+      '/api/auth/me',
+      (server) => server.reply(401, {
+        'Status': 401,
+        'Errors': ['Telefon kodu hatalı, süresi dolmuş veya çok fazla deneme yapıldı.'],
+      }),
+      data: {'code': '000000'},
+    );
+
+    await expectLater(
+      () => repository.deleteAccount(code: '000000'),
+      throwsA(isA<GenericAuthException>().having(
+        (e) => e.message,
+        'message',
+        'Telefon kodu hatalı, süresi dolmuş veya çok fazla deneme yapıldı.',
+      )),
+    );
   });
 
   test('updatePreferredLanguage calls PATCH /api/auth/me/language with the language', () async {

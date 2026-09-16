@@ -86,8 +86,13 @@ class RealAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> deleteAccount() async {
-    await _guard(() => _dio.delete<void>('/api/auth/me'));
+  Future<void> requestDeleteAccountOtp() async {
+    await _guard(() => _dio.post<void>('/api/auth/me/delete/request-otp'));
+  }
+
+  @override
+  Future<void> deleteAccount({required String code}) async {
+    await _guard(() => _dio.delete<void>('/api/auth/me', data: {'code': code}));
     await _tokenStore.clear();
   }
 
@@ -144,16 +149,20 @@ class RealAuthRepository implements AuthRepository {
         : 'Beklenmeyen bir hata oluştu.';
 
     if (statusCode == 401) {
-      // These paths' 401 means "wrong OTP code", not "wrong password" - the
-      // server's own message already says which channel failed, so surface
-      // it verbatim instead of the hardcoded InvalidCredentialsException
-      // every other 401 uses.
-      const otpVerifiedPaths = {
-        '/api/auth/register/complete',
-        '/api/auth/me/freeze',
-        '/api/auth/me/unfreeze',
+      // These (method, path) calls' 401 means "wrong OTP code", not "wrong
+      // password" - the server's own message already says which channel
+      // failed, so surface it verbatim instead of the hardcoded
+      // InvalidCredentialsException every other 401 uses. DELETE /api/auth/me
+      // is included but GET /api/auth/me (an expired access token) is not -
+      // same path, different method, different meaning.
+      const otpVerifiedCalls = {
+        'POST /api/auth/register/complete',
+        'POST /api/auth/me/freeze',
+        'POST /api/auth/me/unfreeze',
+        'DELETE /api/auth/me',
       };
-      if (otpVerifiedPaths.contains(exception.requestOptions.path)) {
+      final call = '${exception.requestOptions.method} ${exception.requestOptions.path}';
+      if (otpVerifiedCalls.contains(call)) {
         return GenericAuthException(message);
       }
       return const InvalidCredentialsException();
