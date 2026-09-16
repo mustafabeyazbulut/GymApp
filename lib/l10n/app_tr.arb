@@ -10,6 +10,8 @@
   "@commonRetry": {},
   "commonNetworkError": "Bağlantı kurulamadı",
   "@commonNetworkError": {},
+  "commonLogOut": "Çıkış Yap",
+  "@commonLogOut": {},
 
   "navHome": "Ana Sayfa",
   "@navHome": {},

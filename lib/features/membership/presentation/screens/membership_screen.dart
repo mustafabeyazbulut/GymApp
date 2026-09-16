@@ -84,7 +84,16 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.membershipTitle)),
+      appBar: AppBar(
+        title: Text(l10n.membershipTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: l10n.commonLogOut,
+            onPressed: () => ref.read(authStateProvider.notifier).logOut(),
+          ),
+        ],
+      ),
       body: ref.watch(currentUserProvider).when(
         loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (error, stackTrace) => Center(

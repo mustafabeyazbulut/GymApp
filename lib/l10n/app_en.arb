@@ -5,6 +5,7 @@
   "commonError": "Something went wrong",
   "commonRetry": "Retry",
   "commonNetworkError": "Couldn't connect",
+  "commonLogOut": "Log Out",
 
   "navHome": "Home",
   "navClasses": "Classes",
