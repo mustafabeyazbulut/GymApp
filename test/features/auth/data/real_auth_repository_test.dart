@@ -174,6 +174,7 @@ void main() {
         'phone': '+905551112233',
         'email': 'ayse@test.com',
         'preferredLanguage': 'tr',
+        'isAccountFrozen': false,
         'assignments': [
           {'companyId': 3, 'companyName': 'MAT & MOVE Kadıköy', 'branchId': null, 'role': 'Member'},
         ],
@@ -193,6 +194,7 @@ void main() {
           'phone': '+900000000000',
           'email': 'admin@gymapp.local',
           'preferredLanguage': 'tr',
+          'isAccountFrozen': false,
           'assignments': [
             {'companyId': null, 'companyName': null, 'branchId': null, 'role': 'SuperAdmin'},
           ],
@@ -220,5 +222,27 @@ void main() {
     await repository.deleteAccount();
 
     expect(await tokenStore.readAccessToken(), isNull);
+  });
+
+  test('updatePreferredLanguage calls PATCH /api/auth/me/language with the language', () async {
+    adapter.onPatch(
+      '/api/auth/me/language',
+      (server) => server.reply(204, null),
+      data: {'language': 'en'},
+    );
+
+    await repository.updatePreferredLanguage('en');
+  });
+
+  test('freezeAccount calls POST /api/auth/me/freeze', () async {
+    adapter.onPost('/api/auth/me/freeze', (server) => server.reply(204, null));
+
+    await repository.freezeAccount();
+  });
+
+  test('reactivateAccount calls POST /api/auth/me/unfreeze', () async {
+    adapter.onPost('/api/auth/me/unfreeze', (server) => server.reply(204, null));
+
+    await repository.reactivateAccount();
   });
 }

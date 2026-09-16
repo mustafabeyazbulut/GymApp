@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/account_frozen_state.dart';
 import '../../../../core/widgets/empty_membership_state.dart';
 import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -74,6 +75,9 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
           ),
         ),
         data: (currentUser) {
+          if (currentUser.isAccountFrozen) {
+            return const AccountFrozenState();
+          }
           if (!currentUser.hasActiveMembership) {
             return const EmptyMembershipState();
           }

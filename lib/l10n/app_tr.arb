@@ -214,5 +214,20 @@
   "accountDeletionConfirmButton": "Evet, Sil",
   "@accountDeletionConfirmButton": {},
   "accountDeletionCancelButton": "Vazgeç",
-  "@accountDeletionCancelButton": {}
+  "@accountDeletionCancelButton": {},
+
+  "accountFreezeButton": "Hesabımı Dondur",
+  "@accountFreezeButton": {},
+  "accountFreezeConfirmTitle": "Hesabını dondurmak istediğine emin misin?",
+  "@accountFreezeConfirmTitle": {},
+  "accountFreezeConfirmBody": "Hesabın geçici olarak dondurulur, silinmez. Tekrar giriş yaptığında hesabını istediğin zaman aktifleştirebilirsin.",
+  "@accountFreezeConfirmBody": {},
+  "accountFreezeConfirmButton": "Evet, Dondur",
+  "@accountFreezeConfirmButton": {},
+  "accountFrozenTitle": "Hesabın Donduruldu",
+  "@accountFrozenTitle": {},
+  "accountFrozenBody": "Hesabını geçici olarak dondurmuştun. Tekrar kullanmak için aşağıdan aktifleştirebilirsin.",
+  "@accountFrozenBody": {},
+  "accountFrozenReactivateButton": "Hesabımı Aktifleştir",
+  "@accountFrozenReactivateButton": {}
 }

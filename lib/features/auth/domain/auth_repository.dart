@@ -35,4 +35,13 @@ abstract interface class AuthRepository {
   Future<void> deleteAccount();
 
   Future<void> updatePreferredLanguage(String language);
+
+  // Distinct from any membership/package freeze - this temporarily disables
+  // the account's own login access (Instagram-style "deactivate
+  // temporarily"). Login itself still succeeds afterward; the app gates
+  // navigation behind a reactivation screen once getMe() reports
+  // isAccountFrozen.
+  Future<void> freezeAccount();
+
+  Future<void> reactivateAccount();
 }

@@ -96,6 +96,16 @@ class RealAuthRepository implements AuthRepository {
     await _guard(() => _dio.patch<void>('/api/auth/me/language', data: {'language': language}));
   }
 
+  @override
+  Future<void> freezeAccount() async {
+    await _guard(() => _dio.post<void>('/api/auth/me/freeze'));
+  }
+
+  @override
+  Future<void> reactivateAccount() async {
+    await _guard(() => _dio.post<void>('/api/auth/me/unfreeze'));
+  }
+
   Future<void> _storeTokenPair(Map<String, dynamic> data) => _tokenStore.saveTokens(
         accessToken: data['accessToken'] as String,
         refreshToken: data['refreshToken'] as String,

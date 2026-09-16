@@ -6,6 +6,7 @@ import '../../../../core/locale/app_locale_provider.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/account_frozen_state.dart';
 import '../../../../core/widgets/empty_membership_state.dart';
 import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -27,6 +28,7 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
   bool _isFreezing = false;
   bool _isDeletingAccount = false;
   bool _isChangingLanguage = false;
+  bool _isFreezingAccount = false;
 
   Future<void> _pickLanguage() async {
     final l10n = AppLocalizations.of(context)!;
@@ -116,6 +118,44 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
     }
   }
 
+  Future<void> _confirmAndFreezeAccount() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.accountFreezeConfirmTitle),
+        content: Text(l10n.accountFreezeConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.accountDeletionCancelButton),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.accountFreezeConfirmButton),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isFreezingAccount = true);
+    try {
+      await ref.read(authRepositoryProvider).freezeAccount();
+      if (!mounted) return;
+      // freezeAccount() already revoked every refresh token server-side;
+      // logOut() just clears the now-stale local copy.
+      await ref.read(authStateProvider.notifier).logOut();
+    } on AuthException catch (exception) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+    } finally {
+      if (mounted) setState(() => _isFreezingAccount = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -151,6 +191,32 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
                           )
                         : const Icon(Icons.language, size: 18),
                     label: Text(l10n.settingsLanguageLabel),
+                  ),
+                  // Kept here, not inside the active-membership-only ListView
+                  // below, for the same reachability reason as Log Out - a
+                  // freshly registered account with no membership yet must
+                  // still be able to freeze/delete itself.
+                  TextButton(
+                    style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                    onPressed: _isFreezingAccount ? null : _confirmAndFreezeAccount,
+                    child: _isFreezingAccount
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.error),
+                          )
+                        : Text(l10n.accountFreezeButton),
+                  ),
+                  TextButton(
+                    style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                    onPressed: _isDeletingAccount ? null : _confirmAndDeleteAccount,
+                    child: _isDeletingAccount
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.error),
+                          )
+                        : Text(l10n.accountDeletionButton),
                   ),
                   TextButton(
                     style: TextButton.styleFrom(foregroundColor: AppColors.error),
@@ -194,6 +260,9 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
           ),
         ),
         data: (currentUser) {
+          if (currentUser.isAccountFrozen) {
+            return const AccountFrozenState();
+          }
           if (!currentUser.hasActiveMembership) {
             return const EmptyMembershipState();
           }
@@ -316,18 +385,6 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                TextButton(
-                  style: TextButton.styleFrom(foregroundColor: AppColors.error),
-                  onPressed: _isDeletingAccount ? null : _confirmAndDeleteAccount,
-                  child: _isDeletingAccount
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.error),
-                        )
-                      : Text(l10n.accountDeletionButton),
                 ),
               ],
             ),

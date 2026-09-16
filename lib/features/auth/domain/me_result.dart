@@ -27,6 +27,7 @@ class MeResult {
     required this.phone,
     required this.email,
     required this.preferredLanguage,
+    required this.isAccountFrozen,
     required this.assignments,
   });
 
@@ -36,6 +37,7 @@ class MeResult {
         phone: json['phone'] as String,
         email: json['email'] as String?,
         preferredLanguage: json['preferredLanguage'] as String,
+        isAccountFrozen: json['isAccountFrozen'] as bool,
         assignments: (json['assignments'] as List)
             .map((e) => MeAssignment.fromJson(e as Map<String, dynamic>))
             .toList(),
@@ -46,6 +48,7 @@ class MeResult {
   final String phone;
   final String? email;
   final String preferredLanguage;
+  final bool isAccountFrozen;
   final List<MeAssignment> assignments;
 
   bool get hasActiveMembership => assignments.isNotEmpty;

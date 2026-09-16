@@ -102,5 +102,13 @@
   "accountDeletionConfirmTitle": "Are you sure you want to delete your account?",
   "accountDeletionConfirmBody": "This cannot be undone. Your account and all your data will be permanently deleted.",
   "accountDeletionConfirmButton": "Yes, Delete",
-  "accountDeletionCancelButton": "Cancel"
+  "accountDeletionCancelButton": "Cancel",
+
+  "accountFreezeButton": "Freeze My Account",
+  "accountFreezeConfirmTitle": "Are you sure you want to freeze your account?",
+  "accountFreezeConfirmBody": "Your account will be temporarily frozen, not deleted. You can reactivate it any time after logging back in.",
+  "accountFreezeConfirmButton": "Yes, Freeze",
+  "accountFrozenTitle": "Your Account Is Frozen",
+  "accountFrozenBody": "You previously froze your account temporarily. Reactivate it below to keep using the app.",
+  "accountFrozenReactivateButton": "Reactivate My Account"
 }
