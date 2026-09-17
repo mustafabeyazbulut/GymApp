@@ -8,6 +8,19 @@
 
 **Tech Stack:** Flutter, Riverpod (`riverpod_annotation` code-gen), `go_router`, `dio` (already the project's HTTP client — `ApiException.fromDioException` already exists in `lib/core/network/api_exception.dart` but currently has **zero real callers anywhere in the app** — the Branch proof-of-concept that first used it was deleted when Mobile Foundation was superseded; this plan's `TenantRepository` is its first real use), `intl_phone_field` (already a dependency, used by the screens' phone fields).
 
+## PLAN COMPLETE (2026-09-17) — all 6 tasks done, plus one scope addition
+
+All 6 tasks shipped; see each task's own "Step N: Commit" line below for its commit hash. Two things happened that weren't in the original text:
+
+1. **Company Management screen (added mid-plan, not in the original scope).** User feedback while reviewing Task 3's live UI: going straight from the drawer into a bare "Yeni Firma Ekle" form was illogical — there needed to be somewhere to see and manage companies that already exist. Added, with the user's explicit go-ahead for the fuller scope (list + rename + activate/deactivate, not just a list):
+   - **Backend** (`GymAppApi`, commit `b74bcfe`): `GET /api/companies`, `GET /api/companies/{id}`, `PATCH /api/companies/{id}` (rename), `PATCH /api/companies/{id}/active` (toggle), all `SuperAdminOnly`.
+   - **Mobile** (commit `73387c2`): `CompanyManagementScreen` (list, branch count, Aktif/Pasif `StatusPill`) and `CompanyDetailScreen` (rename, active toggle, branch list) at `/admin/companies` and `/admin/companies/:id`. The drawer's admin item now opens this list instead of jumping straight to Create Company; "Yeni Firma Ekle" is reached from the list's app bar action instead.
+   - **Design polish pass** (commit `7d4fb05`): the first version used bare `Material`/no border and `radiusMd`, inconsistent with the app's own locked visual language ([[feedback-visual-language]]) — cards need `color: AppColors.surface` + `Border.all(AppColors.border)` + `AppSpacing.radiusLg`, per `membership_screen.dart`'s own cards. Rebuilt both screens to that standard, added row icons and `StatusPill` (reused, not reinvented) for Aktif/Pasif, and reordered the drawer so the admin item(s) sit above a divider, ahead of Dil/Dondur/Sil, per further user feedback.
+   - Verified genuinely end-to-end against the live `GymAppApi` backend via a `flutter build web --release` + Playwright-driven browser session (login as the seeded SuperAdmin, open the drawer, list companies, rename one, toggle it inactive, confirm the badge — all real HTTP calls, not mocked).
+2. **Task 6 found two extra cleanup spots the plan's "Key facts" didn't anticipate** (see that task's own commit note): `forgot_password_screen.dart` was reusing `registerPasswordTooShort` for its own password field (renamed to `commonPasswordTooShort`, not deleted), and `dio_client.dart`'s `_noAuthPaths` still had a stale pre-OTP-rework `/api/auth/register` entry.
+
+**Next step for whoever picks this up:** `GymAppApi`'s own Task 11 (retire the backend's `/api/auth/register/*` endpoints) was blocked on this plan's Task 6 shipping first — it now has. That backend task is safe to do now.
+
 ---
 
 ## Key facts (read before starting — verified by reading the actual current code, not memory)
@@ -138,7 +151,7 @@ Expected: FAIL — `isSuperAdmin`/`staffAssignment` don't exist yet (compile err
 Run: `flutter test test/features/auth/domain/me_result_test.dart`
 Expected: PASS, 5/5.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit** — done, commit `05913e7`.
 
 ```bash
 git add lib/features/auth/domain/me_result.dart test/features/auth/domain/me_result_test.dart
@@ -430,7 +443,7 @@ TenantRepository tenantRepository(Ref ref) => RealTenantRepository(ref.watch(dio
 Run: `dart run build_runner build --delete-conflicting-outputs && flutter test test/features/tenant_onboarding/data/real_tenant_repository_test.dart`
 Expected: PASS, 4/4.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit** — done, commit `95594a4`. (`CompanyDetailDto.data.jsonDecode` type-inference fix during writing: `utf8.decoder.bind(body.stream).join()` instead of `.transform(utf8.decoder)`, which the SDK's stricter generics rejected — see the test file.)
 
 ```bash
 git add lib/features/tenant_onboarding/ test/features/tenant_onboarding/
@@ -661,7 +674,7 @@ and a new top-level `GoRoute` (alongside the existing `/notifications` one, insi
 Run: `flutter gen-l10n && flutter analyze`
 Expected: `No issues found!`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit** — done jointly with Task 4 in commit `8dc4fc6` (both routes wired in the same `app_router.dart` pass). **Partly superseded**: per user feedback, this screen is no longer reached directly from the drawer — see "PLAN COMPLETE" note above, item 1 (Company Management screen).
 
 ```bash
 git add lib/features/tenant_onboarding/presentation/screens/create_company_screen.dart lib/core/router/app_router.dart lib/l10n/app_tr.arb lib/l10n/app_en.arb
@@ -936,7 +949,7 @@ and the route, alongside the one added in Task 3:
 Run: `flutter gen-l10n && flutter analyze`
 Expected: `No issues found!`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit** — done, commit `8dc4fc6`.
 
 ```bash
 git add lib/features/tenant_onboarding/presentation/screens/add_staff_member_screen.dart lib/core/router/app_router.dart lib/l10n/app_tr.arb lib/l10n/app_en.arb
@@ -991,7 +1004,7 @@ Then, inside the `ListView`'s `children`, right after the Language/Freeze/Delete
 Run: `flutter analyze && flutter test`
 Expected: `No issues found!`, full suite still green (no drawer widget test exists today to update — this is additive UI).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit** — done, commit `3486031`. Later reordered (commit `7d4fb05`) per user feedback: the admin items (now "Firma Yönetimi") sit above a divider, ahead of Dil/Dondur/Sil, not interleaved with them.
 
 ```bash
 git add lib/core/widgets/app_drawer.dart
@@ -1060,7 +1073,7 @@ Remove every `register*`/`@register*` key from both `lib/l10n/app_tr.arb` and `l
 Run: `flutter gen-l10n && flutter analyze && flutter test`
 Expected: `No issues found!`, full suite green — a red here almost certainly means a leftover reference to a removed l10n key or the removed methods; grep for it before assuming anything else.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit** — done, commit `3034443`. Also cleaned up two things the plan didn't anticipate: `registerPasswordTooShort` was reused by `forgot_password_screen.dart` (renamed to `commonPasswordTooShort` and kept, not deleted), and a stale pre-OTP-rework `/api/auth/register` entry in `dio_client.dart`'s `_noAuthPaths` (removed).
 
 ```bash
 git add -A
