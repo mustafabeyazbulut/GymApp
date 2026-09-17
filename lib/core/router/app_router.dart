@@ -5,7 +5,6 @@ import '../widgets/app_shell.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/classes/presentation/screens/classes_screen.dart';
 import '../../features/tenant_onboarding/presentation/screens/add_staff_member_screen.dart';
 import '../../features/tenant_onboarding/presentation/screens/company_detail_screen.dart';
@@ -19,12 +18,12 @@ import '../../features/progress/presentation/screens/progress_screen.dart';
 part 'app_router.g.dart';
 
 // Routes reachable while NOT authenticated. Every route added here that
-// should be usable before login (register, password-reset flows, etc.)
-// must be added to this set, or `redirect` below will bounce it straight
-// back to /login. Centralized here after Task 6's own review found the
-// original two-line `||` check was already about to be forgotten for
-// Task 7's /forgot-password route.
-const _publicRoutes = {'/login', '/register', '/forgot-password'};
+// should be usable before login (password-reset flows, etc.) must be
+// added to this set, or `redirect` below will bounce it straight back to
+// /login. Centralized here after Task 6's own review found the original
+// two-line `||` check was already about to be forgotten for Task 7's
+// /forgot-password route.
+const _publicRoutes = {'/login', '/forgot-password'};
 
 @riverpod
 GoRouter appRouter(Ref ref) {
@@ -47,10 +46,6 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
-      ),
-      GoRoute(
-        path: '/register',
-        builder: (context, state) => const RegisterScreen(),
       ),
       GoRoute(
         path: '/forgot-password',

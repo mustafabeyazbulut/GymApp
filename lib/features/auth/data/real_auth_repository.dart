@@ -16,34 +16,6 @@ class RealAuthRepository implements AuthRepository {
   final TokenStore _tokenStore;
 
   @override
-  Future<void> requestRegistrationOtp({required String phone, String? email}) async {
-    await _guard(() => _dio.post<void>('/api/auth/register/request-otp', data: {
-          'phone': phone,
-          'email': email,
-        }));
-  }
-
-  @override
-  Future<void> completeRegistration({
-    required String fullName,
-    required String phone,
-    required String phoneCode,
-    String? email,
-    String? emailCode,
-    required String password,
-  }) async {
-    final response = await _guard(() => _dio.post<Map<String, dynamic>>('/api/auth/register/complete', data: {
-          'fullName': fullName,
-          'phone': phone,
-          'phoneCode': phoneCode,
-          'email': email,
-          'emailCode': emailCode,
-          'password': password,
-        }));
-    await _storeTokenPair(response.data!);
-  }
-
-  @override
   Future<void> login({required String identifier, required String password}) async {
     final response = await _guard(() => _dio.post<Map<String, dynamic>>('/api/auth/login', data: {
           'identifier': identifier,
@@ -156,7 +128,6 @@ class RealAuthRepository implements AuthRepository {
       // is included but GET /api/auth/me (an expired access token) is not -
       // same path, different method, different meaning.
       const otpVerifiedCalls = {
-        'POST /api/auth/register/complete',
         'POST /api/auth/me/freeze',
         'POST /api/auth/me/unfreeze',
         'DELETE /api/auth/me',

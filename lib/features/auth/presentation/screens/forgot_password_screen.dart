@@ -115,7 +115,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     decoration: InputDecoration(labelText: l10n.forgotPasswordNewPasswordLabel),
                     validator: (value) {
                       if (value == null || value.isEmpty) return l10n.commonFieldRequired;
-                      if (value.length < 8) return l10n.registerPasswordTooShort;
+                      if (value.length < 8) return l10n.commonPasswordTooShort;
                       return null;
                     },
                   ),
