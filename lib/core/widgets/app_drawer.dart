@@ -237,6 +237,23 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
               child: ListView(
                 padding: const EdgeInsets.all(AppSpacing.sm),
                 children: [
+                  if (currentUser?.isSuperAdmin ?? false)
+                    _DrawerItem(
+                      icon: Icons.add_business_outlined,
+                      label: l10n.drawerCompanyManagement,
+                      onTap: () => closeThenPush('/admin/companies'),
+                    ),
+                  if (currentUser?.staffAssignment != null)
+                    _DrawerItem(
+                      icon: Icons.person_add_alt_outlined,
+                      label: l10n.drawerAddStaffMember,
+                      onTap: () => closeThenPush('/admin/add-staff-member'),
+                    ),
+                  if ((currentUser?.isSuperAdmin ?? false) || currentUser?.staffAssignment != null)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                      child: Divider(color: AppColors.border, height: 1),
+                    ),
                   _DrawerItem(
                     icon: Icons.language,
                     label: l10n.settingsLanguageLabel,
@@ -259,18 +276,6 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                     isLoading: _isDeletingAccount,
                     onTap: _isDeletingAccount ? null : () => closeThenRun(_confirmAndDeleteAccount),
                   ),
-                  if (currentUser?.isSuperAdmin ?? false)
-                    _DrawerItem(
-                      icon: Icons.add_business_outlined,
-                      label: l10n.drawerCompanyManagement,
-                      onTap: () => closeThenPush('/admin/companies'),
-                    ),
-                  if (currentUser?.staffAssignment != null)
-                    _DrawerItem(
-                      icon: Icons.person_add_alt_outlined,
-                      label: l10n.drawerAddStaffMember,
-                      onTap: () => closeThenPush('/admin/add-staff-member'),
-                    ),
                 ],
               ),
             ),

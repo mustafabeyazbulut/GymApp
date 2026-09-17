@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../data/real_tenant_repository.dart';
 import '../../domain/company_summary.dart';
@@ -96,103 +97,137 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(company?.name ?? l10n.companyManagementTitle)),
-      body: SafeArea(
-        child: _isLoading && company == null
-            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-            : _errorText != null && company == null
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.lg),
-                      child: Text(
-                        _errorText!,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.error),
-                      ),
-                    ),
+      body: SafeArea(child: _buildBody(context, l10n, company)),
+    );
+  }
+
+  Widget _buildBody(BuildContext context, AppLocalizations l10n, CompanyDetail? company) {
+    if (_isLoading && company == null) {
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+    }
+    if (_errorText != null && company == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(_errorText!, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium),
+              const SizedBox(height: AppSpacing.lg),
+              OutlinedButton(onPressed: _load, child: Text(l10n.commonRetry)),
+            ],
+          ),
+        ),
+      );
+    }
+    if (company == null) {
+      return const SizedBox.shrink();
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(
+            controller: _nameController,
+            decoration: InputDecoration(labelText: l10n.companyDetailNameLabel),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          ElevatedButton(
+            onPressed: _isSavingName ? null : _saveName,
+            child: _isSavingName
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary),
                   )
-                : company == null
-                    ? const SizedBox.shrink()
-                    : SingleChildScrollView(
-                        padding: const EdgeInsets.all(AppSpacing.lg),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            TextField(
-                              controller: _nameController,
-                              decoration: InputDecoration(labelText: l10n.companyDetailNameLabel),
-                            ),
-                            const SizedBox(height: AppSpacing.md),
-                            ElevatedButton(
-                              onPressed: _isSavingName ? null : _saveName,
-                              child: _isSavingName
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary),
-                                    )
-                                  : Text(l10n.companyDetailSaveNameButton),
-                            ),
-                            const SizedBox(height: AppSpacing.lg),
-                            Material(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                              child: SwitchListTile(
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusMd)),
-                                title: Text(l10n.companyDetailActiveLabel),
-                                value: company.isActive,
-                                onChanged: _isTogglingActive ? null : _toggleActive,
-                                activeThumbColor: AppColors.primary,
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.xl),
-                            Text(l10n.companyDetailBranchesTitle, style: Theme.of(context).textTheme.titleMedium),
-                            const SizedBox(height: AppSpacing.sm),
-                            ...company.branches.map(
-                              (branch) => Padding(
-                                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                                child: Material(
-                                  color: AppColors.surface,
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(AppSpacing.md),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(branch.name, style: Theme.of(context).textTheme.titleSmall),
-                                              Text(
-                                                branch.address,
-                                                style: Theme.of(context).textTheme.bodyMedium
-                                                    ?.copyWith(color: AppColors.onBackgroundMuted),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        if (!branch.isActive)
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.errorSurface,
-                                              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                                            ),
-                                            child: Text(
-                                              l10n.companyManagementInactiveBadge,
-                                              style: Theme.of(context).textTheme.labelSmall
-                                                  ?.copyWith(color: AppColors.error),
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                : Text(l10n.companyDetailSaveNameButton),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+            child: Row(
+              children: [
+                Icon(
+                  company.isActive ? Icons.toggle_on_outlined : Icons.toggle_off_outlined,
+                  color: company.isActive ? AppColors.primary : AppColors.onBackgroundFaint,
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text(l10n.companyDetailActiveLabel, style: Theme.of(context).textTheme.bodyLarge),
+                ),
+                if (_isTogglingActive)
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                  )
+                else
+                  Switch(
+                    value: company.isActive,
+                    onChanged: _toggleActive,
+                    activeThumbColor: AppColors.primary,
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          Text(l10n.companyDetailBranchesTitle, style: Theme.of(context).textTheme.labelSmall),
+          const SizedBox(height: AppSpacing.sm),
+          for (final branch in company.branches) ...[
+            _BranchTile(branch: branch),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _BranchTile extends StatelessWidget {
+  const _BranchTile({required this.branch});
+
+  final CompanyBranchSummary branch;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      ),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Row(
+        children: [
+          const Icon(Icons.location_on_outlined, color: AppColors.onBackgroundMuted),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(branch.name, style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  branch.address,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundMuted),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          StatusPill(
+            text: branch.isActive ? l10n.companyManagementActiveBadge : l10n.companyManagementInactiveBadge,
+            isPositive: branch.isActive,
+          ),
+        ],
       ),
     );
   }

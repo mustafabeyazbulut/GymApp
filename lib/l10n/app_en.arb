@@ -31,6 +31,7 @@
   "companyManagementTitle": "Company Management",
   "companyManagementAddButton": "New Company",
   "companyManagementBranchCount": "{count} branches",
+  "companyManagementActiveBadge": "Active",
   "companyManagementInactiveBadge": "Inactive",
   "companyManagementEmptyMessage": "No companies yet.",
   "companyDetailNameLabel": "Company Name",

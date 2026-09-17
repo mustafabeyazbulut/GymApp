@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../data/real_tenant_repository.dart';
 import '../../domain/company_summary.dart';
@@ -87,11 +88,18 @@ class _CompanyManagementScreenState extends ConsumerState<CompanyManagementScree
     if (_errorText != null && _companies == null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Text(
-            _errorText!,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.error),
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _errorText!,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              OutlinedButton(onPressed: _load, child: Text(l10n.commonRetry)),
+            ],
           ),
         ),
       );
@@ -100,19 +108,33 @@ class _CompanyManagementScreenState extends ConsumerState<CompanyManagementScree
     final companies = _companies ?? const <CompanyListItem>[];
     return RefreshIndicator(
       onRefresh: _load,
+      color: AppColors.primary,
       child: companies.isEmpty
           ? ListView(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(AppSpacing.xl),
-                  child: Text(l10n.companyManagementEmptyMessage, textAlign: TextAlign.center),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.xxl * 2),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.storefront_outlined, size: 40, color: AppColors.onBackgroundFaint),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          l10n.companyManagementEmptyMessage,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             )
           : ListView.separated(
-              padding: const EdgeInsets.all(AppSpacing.md),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               itemCount: companies.length,
-              separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.sm),
+              separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.md),
               itemBuilder: (context, index) => _CompanyTile(
                 company: companies[index],
                 onTap: () => _openCompanyDetail(companies[index].id),
@@ -132,15 +154,21 @@ class _CompanyTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            border: Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          ),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Row(
             children: [
+              const Icon(Icons.storefront_outlined, color: AppColors.onBackgroundMuted),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,20 +182,12 @@ class _CompanyTile extends StatelessWidget {
                   ],
                 ),
               ),
-              if (!company.isActive) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-                  decoration: BoxDecoration(
-                    color: AppColors.errorSurface,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                  ),
-                  child: Text(
-                    l10n.companyManagementInactiveBadge,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.error),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-              ],
+              const SizedBox(width: AppSpacing.sm),
+              StatusPill(
+                text: company.isActive ? l10n.companyManagementActiveBadge : l10n.companyManagementInactiveBadge,
+                isPositive: company.isActive,
+              ),
+              const SizedBox(width: AppSpacing.xs),
               const Icon(Icons.chevron_right, color: AppColors.onBackgroundFaint),
             ],
           ),

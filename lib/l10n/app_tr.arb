@@ -64,6 +64,8 @@
   "@companyManagementBranchCount": {
     "placeholders": { "count": { "type": "int" } }
   },
+  "companyManagementActiveBadge": "Aktif",
+  "@companyManagementActiveBadge": {},
   "companyManagementInactiveBadge": "Pasif",
   "@companyManagementInactiveBadge": {},
   "companyManagementEmptyMessage": "Henüz firma yok.",
