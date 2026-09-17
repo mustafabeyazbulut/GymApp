@@ -1,6 +1,7 @@
 # Memory Index
 
-- [Tenant Onboarding mobile status](project-tenant-onboarding-mobile-status.md) — CURRENT plan, DONE (6/6 + Company Management addition). Read this first if asked about company/staff management screens.
+- [Never remove registration](feedback-never-remove-registration.md) — self-service registration is permanent; a 2026-09-17 attempt to remove it was reverted. Read before touching Register/CreateCompany/AddStaffMember.
+- [Tenant Onboarding mobile status](project-tenant-onboarding-mobile-status.md) — Tasks 1-5 done + Company Management addition; Task 6 (retire registration) REVERTED, do not redo. Read this first if asked about company/staff management screens.
 - [OTP security actions status](project-otp-security-actions.md) — OTP register, phone normalization, notifications, language switcher, OTP-gated freeze/reactivate/delete, membership-screen visual fixes. Supersedes the "no OTP" line in the Real Auth file below.
 - [Real Auth design](project-real-auth-design.md) — backend + mobile Real Auth plan, COMPLETE (14/14, 15/15). Historical/design-rationale context; for current status read the file above instead.
 - [Member Experience status](project-member-experience-status.md) — PLAN COMPLETE (17/17 tasks), historical context; superseded by the files above.

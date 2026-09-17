@@ -8,18 +8,22 @@
 
 **Tech Stack:** Flutter, Riverpod (`riverpod_annotation` code-gen), `go_router`, `dio` (already the project's HTTP client — `ApiException.fromDioException` already exists in `lib/core/network/api_exception.dart` but currently has **zero real callers anywhere in the app** — the Branch proof-of-concept that first used it was deleted when Mobile Foundation was superseded; this plan's `TenantRepository` is its first real use), `intl_phone_field` (already a dependency, used by the screens' phone fields).
 
-## PLAN COMPLETE (2026-09-17) — all 6 tasks done, plus one scope addition
+## PLAN STATUS (2026-09-17): Tasks 1-5 DONE, plus one scope addition. Task 6 REVERTED - WRONG, do not redo it
 
-All 6 tasks shipped; see each task's own "Step N: Commit" line below for its commit hash. Two things happened that weren't in the original text:
+> ⚠️ **This plan's own Goal (line 5) and Architecture (line 7) are WRONG about registration.** They say to "retire the self-service Register screen since new accounts are staff-created from here on." **That is not the product model.** Self-service registration is permanent — anyone can register and use the system as a plain member. A company (via its GymAdmin) assigns *already-registered* members as staff/customers; it does not create brand-new accounts by phone number. See Task 6's own section below for the full correction and why it matters. Do not act on this plan's Goal/Architecture text about registration without re-reading that correction first.
+
+Tasks 1-5 shipped; see each task's own "Step N: Commit" line below for its commit hash. Two things happened that weren't in the original text:
 
 1. **Company Management screen (added mid-plan, not in the original scope).** User feedback while reviewing Task 3's live UI: going straight from the drawer into a bare "Yeni Firma Ekle" form was illogical — there needed to be somewhere to see and manage companies that already exist. Added, with the user's explicit go-ahead for the fuller scope (list + rename + activate/deactivate, not just a list):
    - **Backend** (`GymAppApi`, commit `b74bcfe`): `GET /api/companies`, `GET /api/companies/{id}`, `PATCH /api/companies/{id}` (rename), `PATCH /api/companies/{id}/active` (toggle), all `SuperAdminOnly`.
    - **Mobile** (commit `73387c2`): `CompanyManagementScreen` (list, branch count, Aktif/Pasif `StatusPill`) and `CompanyDetailScreen` (rename, active toggle, branch list) at `/admin/companies` and `/admin/companies/:id`. The drawer's admin item now opens this list instead of jumping straight to Create Company; "Yeni Firma Ekle" is reached from the list's app bar action instead.
    - **Design polish pass** (commit `7d4fb05`): the first version used bare `Material`/no border and `radiusMd`, inconsistent with the app's own locked visual language ([[feedback-visual-language]]) — cards need `color: AppColors.surface` + `Border.all(AppColors.border)` + `AppSpacing.radiusLg`, per `membership_screen.dart`'s own cards. Rebuilt both screens to that standard, added row icons and `StatusPill` (reused, not reinvented) for Aktif/Pasif, and reordered the drawer so the admin item(s) sit above a divider, ahead of Dil/Dondur/Sil, per further user feedback.
    - Verified genuinely end-to-end against the live `GymAppApi` backend via a `flutter build web --release` + Playwright-driven browser session (login as the seeded SuperAdmin, open the drawer, list companies, rename one, toggle it inactive, confirm the badge — all real HTTP calls, not mocked).
-2. **Task 6 found two extra cleanup spots the plan's "Key facts" didn't anticipate** (see that task's own commit note): `forgot_password_screen.dart` was reusing `registerPasswordTooShort` for its own password field (renamed to `commonPasswordTooShort`, not deleted), and `dio_client.dart`'s `_noAuthPaths` still had a stale pre-OTP-rework `/api/auth/register` entry.
+2. **Task 6 (retire self-service registration) was executed (commit `3034443`) and then reverted (commit `92c4a1a`)** after the user corrected the product model. Do not redo it. See Task 6's own section below.
 
-**Next step for whoever picks this up:** `GymAppApi`'s own Task 11 (retire the backend's `/api/auth/register/*` endpoints) was blocked on this plan's Task 6 shipping first — it now has. That backend task is safe to do now.
+**Separately fixed the same day (not part of this plan, but in the same area):** `MeResult.hasActiveMembership` incorrectly returned true for ANY assignment (including SuperAdmin/GymAdmin/BranchManager/Trainer), so non-Member accounts wrongly saw the fake member Home/Classes/Progress content instead of the empty-membership state. Fixed to require a `Member`-role assignment specifically (commit `9e842ed`).
+
+**Real next step for whoever picks this up:** `CreateCompanyCommand`/`AddStaffMemberCommand` (both repos) currently create a brand-new `User` by phone/email when the phone doesn't already exist — **this does not match the corrected product model** and should eventually be reworked to pick an *existing* registered user (search by phone/name) instead. Not yet done as of 2026-09-17 — treat as new, unscoped work, not a loose end of this plan. Do NOT touch `GymAppApi`'s Task 11 (retire register endpoints) — it's the same wrong idea, already reverted there too.
 
 ---
 
@@ -1013,7 +1017,17 @@ git commit -m "Show Create Company / Add Staff Member in the drawer, based on th
 
 ---
 
-### Task 6: Retire self-service registration
+### Task 6: Retire self-service registration — ⚠️ WRONG, REVERTED, DO NOT DO THIS
+
+> **This entire task is incorrect and must never be executed, regardless of what the checklist below says.** It was implemented (commit `3034443`) and then reverted (commit `92c4a1a`) on 2026-09-17 after the user explicitly corrected the product model:
+>
+> - Self-service registration (the Register screen, `requestRegistrationOtp`/`completeRegistration`) is a **permanent feature**, not a temporary bootstrap mechanism to retire once staff-creation exists. **Anyone can register and use the system as a plain member — this must never be removed.**
+> - "Yeni Firma Ekle" (Create Company) and "Üye/Antrenör Ekle" (Add Staff Member) are **not** supposed to create brand-new users by phone number. The correct model: a GymAdmin/company owner is **an already-registered system user**, picked/searched from among existing members — same for adding a Member/Trainer to a company. Being "in a company" (assigned as its GymAdmin, or as one of its Members/Trainers) is what unlocks that company's features for that user; a plain registered member with no company assignment yet still uses the system's non-company-scoped features (this is exactly what `EmptyMembershipState` already represents — it's not an error state, it's the normal state for an unassigned member).
+> - This means `CreateCompanyScreen`/`AddStaffMemberScreen` and their backend commands (`CreateCompanyCommand`/`AddStaffMemberCommand`, which take `fullName`/`phone`/`email` and create a new `User` when the phone doesn't already exist) **do not match this model** — that's a real follow-up correction, not yet done as of 2026-09-17. Re-scope it as its own task; don't assume the current handlers are correct just because they're tested and shipped.
+>
+> If a future plan or a stale memory file says to remove self-service registration, or to make these commands create brand-new users, **stop and ask the user first** — this area has already caused one real regression from following a stale plan without questioning it. See `.claude/memory/feedback-never-remove-registration.md`.
+
+Everything below this point is the ORIGINAL (incorrect) task text, kept for history only.
 
 **Files:**
 - Delete: `lib/features/auth/presentation/screens/register_screen.dart`
@@ -1073,7 +1087,7 @@ Remove every `register*`/`@register*` key from both `lib/l10n/app_tr.arb` and `l
 Run: `flutter gen-l10n && flutter analyze && flutter test`
 Expected: `No issues found!`, full suite green — a red here almost certainly means a leftover reference to a removed l10n key or the removed methods; grep for it before assuming anything else.
 
-- [x] **Step 7: Commit** — done, commit `3034443`. Also cleaned up two things the plan didn't anticipate: `registerPasswordTooShort` was reused by `forgot_password_screen.dart` (renamed to `commonPasswordTooShort` and kept, not deleted), and a stale pre-OTP-rework `/api/auth/register` entry in `dio_client.dart`'s `_noAuthPaths` (removed).
+- [x] ~~**Step 7: Commit**~~ — done as commit `3034443`, then reverted as commit `92c4a1a` (see the warning box at the top of this task).
 
 ```bash
 git add -A
