@@ -70,6 +70,68 @@ void main() {
     expect(branches.single.name, 'Merkez');
   });
 
+  test('listCompanies parses the company list', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/companies');
+      return ResponseBody.fromString(
+        '[{"id":1,"name":"Test Gym","isActive":true,"branchCount":2}]',
+        200,
+        headers: {'content-type': ['application/json']},
+      );
+    });
+    final repository = RealTenantRepository(dio);
+
+    final companies = await repository.listCompanies();
+
+    expect(companies, hasLength(1));
+    expect(companies.single.name, 'Test Gym');
+    expect(companies.single.branchCount, 2);
+  });
+
+  test('getCompanyDetail parses the company with its branches', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/companies/1');
+      return ResponseBody.fromString(
+        '{"id":1,"name":"Test Gym","isActive":true,"branches":[{"id":5,"name":"Merkez","address":"Adres","isActive":true}]}',
+        200,
+        headers: {'content-type': ['application/json']},
+      );
+    });
+    final repository = RealTenantRepository(dio);
+
+    final detail = await repository.getCompanyDetail(1);
+
+    expect(detail.name, 'Test Gym');
+    expect(detail.branches, hasLength(1));
+    expect(detail.branches.single.name, 'Merkez');
+  });
+
+  test('updateCompanyName patches /api/companies/{id} with the new name', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/companies/1');
+      expect(options.data, {'name': 'New Name'});
+      return ResponseBody.fromString('', 204);
+    });
+    final repository = RealTenantRepository(dio);
+
+    await repository.updateCompanyName(companyId: 1, name: 'New Name');
+  });
+
+  test('setCompanyActive patches /api/companies/{id}/active with the new status', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/companies/1/active');
+      expect(options.data, {'isActive': false});
+      return ResponseBody.fromString('', 204);
+    });
+    final repository = RealTenantRepository(dio);
+
+    await repository.setCompanyActive(companyId: 1, isActive: false);
+  });
+
   test('addStaffMember posts to /api/assignments/staff with the given fields', () async {
     final dio = Dio(BaseOptions(baseUrl: 'https://test'));
     dio.httpClientAdapter = _FakeAdapter((options) {

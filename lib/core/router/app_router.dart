@@ -8,6 +8,8 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/classes/presentation/screens/classes_screen.dart';
 import '../../features/tenant_onboarding/presentation/screens/add_staff_member_screen.dart';
+import '../../features/tenant_onboarding/presentation/screens/company_detail_screen.dart';
+import '../../features/tenant_onboarding/presentation/screens/company_management_screen.dart';
 import '../../features/tenant_onboarding/presentation/screens/create_company_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/membership/presentation/screens/membership_screen.dart';
@@ -57,6 +59,14 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/admin/companies',
+        builder: (context, state) => const CompanyManagementScreen(),
+      ),
+      GoRoute(
+        path: '/admin/companies/:id',
+        builder: (context, state) => CompanyDetailScreen(companyId: int.parse(state.pathParameters['id']!)),
       ),
       GoRoute(
         path: '/admin/create-company',

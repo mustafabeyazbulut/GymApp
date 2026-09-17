@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
 import '../domain/branch_option.dart';
+import '../domain/company_summary.dart';
 import '../domain/tenant_repository.dart';
 
 part 'real_tenant_repository.g.dart';
@@ -30,6 +31,47 @@ class RealTenantRepository implements TenantRepository {
         'gymAdminPhone': gymAdminPhone,
         'gymAdminEmail': gymAdminEmail,
       });
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<List<CompanyListItem>> listCompanies() async {
+    try {
+      final response = await _dio.get<List<dynamic>>('/api/companies');
+      return response.data!
+          .cast<Map<String, dynamic>>()
+          .map(CompanyListItem.fromJson)
+          .toList();
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<CompanyDetail> getCompanyDetail(int companyId) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/api/companies/$companyId');
+      return CompanyDetail.fromJson(response.data!);
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<void> updateCompanyName({required int companyId, required String name}) async {
+    try {
+      await _dio.patch<void>('/api/companies/$companyId', data: {'name': name});
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<void> setCompanyActive({required int companyId, required bool isActive}) async {
+    try {
+      await _dio.patch<void>('/api/companies/$companyId/active', data: {'isActive': isActive});
     } on DioException catch (exception) {
       throw ApiException.fromDioException(exception);
     }

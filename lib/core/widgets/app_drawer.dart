@@ -262,8 +262,8 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                   if (currentUser?.isSuperAdmin ?? false)
                     _DrawerItem(
                       icon: Icons.add_business_outlined,
-                      label: l10n.drawerCreateCompany,
-                      onTap: () => closeThenPush('/admin/create-company'),
+                      label: l10n.drawerCompanyManagement,
+                      onTap: () => closeThenPush('/admin/companies'),
                     ),
                   if (currentUser?.staffAssignment != null)
                     _DrawerItem(
