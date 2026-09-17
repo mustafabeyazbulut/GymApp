@@ -1,0 +1,146 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
+import '../../../../core/network/api_exception.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../l10n/generated/app_localizations.dart';
+import '../../data/real_tenant_repository.dart';
+
+class CreateCompanyScreen extends ConsumerStatefulWidget {
+  const CreateCompanyScreen({super.key});
+
+  @override
+  ConsumerState<CreateCompanyScreen> createState() => _CreateCompanyScreenState();
+}
+
+class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _companyNameController = TextEditingController();
+  final _branchNameController = TextEditingController();
+  final _branchAddressController = TextEditingController();
+  final _gymAdminNameController = TextEditingController();
+  final _gymAdminEmailController = TextEditingController();
+  String? _gymAdminPhone;
+  bool _isSubmitting = false;
+  String? _errorText;
+
+  @override
+  void dispose() {
+    _companyNameController.dispose();
+    _branchNameController.dispose();
+    _branchAddressController.dispose();
+    _gymAdminNameController.dispose();
+    _gymAdminEmailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context)!;
+    if (!_formKey.currentState!.validate()) return;
+    if (_gymAdminPhone == null || _gymAdminPhone!.trim().isEmpty) {
+      setState(() => _errorText = l10n.commonFieldRequired);
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+      _errorText = null;
+    });
+    try {
+      await ref.read(tenantRepositoryProvider).createCompany(
+            companyName: _companyNameController.text.trim(),
+            branchName: _branchNameController.text.trim(),
+            branchAddress: _branchAddressController.text.trim(),
+            gymAdminFullName: _gymAdminNameController.text.trim(),
+            gymAdminPhone: _gymAdminPhone!,
+            gymAdminEmail: _gymAdminEmailController.text.trim().isEmpty
+                ? null
+                : _gymAdminEmailController.text.trim(),
+          );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.createCompanySuccessMessage)));
+      Navigator.of(context).pop();
+    } on ApiException catch (exception) {
+      if (!mounted) return;
+      setState(() => _errorText = exception.message);
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.createCompanyTitle)),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextFormField(
+                  controller: _companyNameController,
+                  decoration: InputDecoration(labelText: l10n.createCompanyNameLabel),
+                  validator: (value) => (value == null || value.trim().isEmpty) ? l10n.commonFieldRequired : null,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                TextFormField(
+                  controller: _branchNameController,
+                  decoration: InputDecoration(labelText: l10n.createCompanyBranchNameLabel),
+                  validator: (value) => (value == null || value.trim().isEmpty) ? l10n.commonFieldRequired : null,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                TextFormField(
+                  controller: _branchAddressController,
+                  decoration: InputDecoration(labelText: l10n.createCompanyBranchAddressLabel),
+                  validator: (value) => (value == null || value.trim().isEmpty) ? l10n.commonFieldRequired : null,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                TextFormField(
+                  controller: _gymAdminNameController,
+                  decoration: InputDecoration(labelText: l10n.createCompanyGymAdminNameLabel),
+                  validator: (value) => (value == null || value.trim().isEmpty) ? l10n.commonFieldRequired : null,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                IntlPhoneField(
+                  initialCountryCode: 'TR',
+                  decoration: InputDecoration(labelText: l10n.createCompanyGymAdminPhoneLabel),
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  onChanged: (phone) => _gymAdminPhone = phone.completeNumber,
+                  validator: (phone) => (phone == null || phone.number.trim().isEmpty) ? l10n.commonFieldRequired : null,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                TextFormField(
+                  controller: _gymAdminEmailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(labelText: l10n.createCompanyGymAdminEmailLabel),
+                ),
+                if (_errorText != null) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  Text(_errorText!, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.error)),
+                ],
+                const SizedBox(height: AppSpacing.xl),
+                ElevatedButton(
+                  onPressed: _isSubmitting ? null : _submit,
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary),
+                        )
+                      : Text(l10n.createCompanySubmitButton),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

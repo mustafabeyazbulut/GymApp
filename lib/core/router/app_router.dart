@@ -7,6 +7,8 @@ import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/classes/presentation/screens/classes_screen.dart';
+import '../../features/tenant_onboarding/presentation/screens/add_staff_member_screen.dart';
+import '../../features/tenant_onboarding/presentation/screens/create_company_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/membership/presentation/screens/membership_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
@@ -55,6 +57,14 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/admin/create-company',
+        builder: (context, state) => const CreateCompanyScreen(),
+      ),
+      GoRoute(
+        path: '/admin/add-staff-member',
+        builder: (context, state) => const AddStaffMemberScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
