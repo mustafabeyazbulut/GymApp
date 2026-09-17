@@ -1,19 +1,15 @@
 // lib/features/membership/presentation/screens/membership_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import '../../../../core/locale/app_locale_provider.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/account_frozen_state.dart';
+import '../../../../core/widgets/app_header_bar.dart';
 import '../../../../core/widgets/empty_membership_state.dart';
-import '../../../../core/widgets/otp_code_dialog.dart';
 import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
-import '../../../auth/data/real_auth_repository.dart';
 import '../../../auth/domain/auth_exceptions.dart';
-import '../../../auth/presentation/providers/auth_state_provider.dart';
 import '../../../auth/presentation/providers/current_user_provider.dart';
 import '../../domain/membership_summary.dart';
 import '../providers/membership_provider.dart';
@@ -27,43 +23,6 @@ class MembershipScreen extends ConsumerStatefulWidget {
 
 class _MembershipScreenState extends ConsumerState<MembershipScreen> {
   bool _isFreezing = false;
-  bool _isDeletingAccount = false;
-  bool _isChangingLanguage = false;
-  bool _isFreezingAccount = false;
-
-  Future<void> _pickLanguage() async {
-    final l10n = AppLocalizations.of(context)!;
-    final selected = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => SimpleDialog(
-        title: Text(l10n.settingsLanguagePickerTitle),
-        children: [
-          SimpleDialogOption(
-            onPressed: () => Navigator.of(dialogContext).pop('tr'),
-            child: const Text('Türkçe'),
-          ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.of(dialogContext).pop('en'),
-            child: const Text('English'),
-          ),
-        ],
-      ),
-    );
-
-    if (selected == null || !mounted) return;
-
-    setState(() => _isChangingLanguage = true);
-    try {
-      await ref.read(authRepositoryProvider).updatePreferredLanguage(selected);
-      if (!mounted) return;
-      ref.read(appLocaleProvider.notifier).setLocale(Locale(selected));
-    } on AuthException catch (exception) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
-    } finally {
-      if (mounted) setState(() => _isChangingLanguage = false);
-    }
-  }
 
   Future<void> _requestFreeze() async {
     setState(() => _isFreezing = true);
@@ -81,201 +40,19 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
     );
   }
 
-  Future<void> _confirmAndDeleteAccount() async {
-    final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.accountDeletionConfirmTitle),
-        content: Text(l10n.accountDeletionConfirmBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.accountDeletionCancelButton),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.accountDeletionConfirmButton),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true || !mounted) return;
-
-    setState(() => _isDeletingAccount = true);
-    try {
-      await ref.read(authRepositoryProvider).requestDeleteAccountOtp();
-      if (!mounted) return;
-      final code = await showOtpCodeDialog(
-        context: context,
-        title: l10n.accountActionOtpTitle,
-        message: l10n.accountActionOtpMessage,
-        codeLabel: l10n.accountActionOtpCodeLabel,
-        submitLabel: l10n.accountActionOtpSubmitButton,
-        cancelLabel: l10n.accountActionOtpCancelButton,
-      );
-      if (code == null || !mounted) return;
-
-      await ref.read(authRepositoryProvider).deleteAccount(code: code);
-      if (!mounted) return;
-      // deleteAccount() already clears the token store; logOut() clears it again.
-      // A second clear() on an already-cleared store is expected to be a no-op.
-      await ref.read(authStateProvider.notifier).logOut();
-    } on AuthException catch (exception) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
-    } finally {
-      if (mounted) setState(() => _isDeletingAccount = false);
-    }
-  }
-
-  Future<void> _confirmAndFreezeAccount() async {
-    final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.accountFreezeConfirmTitle),
-        content: Text(l10n.accountFreezeConfirmBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.accountDeletionCancelButton),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.accountFreezeConfirmButton),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true || !mounted) return;
-
-    setState(() => _isFreezingAccount = true);
-    try {
-      await ref.read(authRepositoryProvider).requestFreezeOtp();
-      if (!mounted) return;
-      final code = await showOtpCodeDialog(
-        context: context,
-        title: l10n.accountActionOtpTitle,
-        message: l10n.accountActionOtpMessage,
-        codeLabel: l10n.accountActionOtpCodeLabel,
-        submitLabel: l10n.accountActionOtpSubmitButton,
-        cancelLabel: l10n.accountActionOtpCancelButton,
-      );
-      if (code == null || !mounted) return;
-
-      await ref.read(authRepositoryProvider).freezeAccount(code: code);
-      if (!mounted) return;
-      // freezeAccount() already revoked every refresh token server-side;
-      // logOut() just clears the now-stale local copy.
-      await ref.read(authStateProvider.notifier).logOut();
-    } on AuthException catch (exception) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
-    } finally {
-      if (mounted) setState(() => _isFreezingAccount = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.membershipTitle),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            tooltip: l10n.notificationsTitle,
-            onPressed: () => context.push('/notifications'),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(child: _buildBody(context, ref, l10n)),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.md),
-              // Same hairline-card language as the Payment History card
-              // below (border: AppColors.border, radius: AppSpacing.radiusLg,
-              // labelSmall eyebrow) - kept here, outside the
-              // active-membership-only ListView, for the same reachability
-              // reason as Log Out: a freshly registered account with no
-              // membership yet must still be able to reach these.
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      border: Border.all(color: AppColors.border),
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: AppSpacing.xs),
-                            child: Text(l10n.settingsAccountSectionTitle, style: Theme.of(context).textTheme.labelSmall),
-                          ),
-                          _SettingsRow(
-                            icon: Icons.language,
-                            label: l10n.settingsLanguageLabel,
-                            trailingText: _languageDisplayName(context),
-                            isLoading: _isChangingLanguage,
-                            onTap: _isChangingLanguage ? null : _pickLanguage,
-                          ),
-                          Container(height: 1, color: AppColors.border),
-                          _SettingsRow(
-                            icon: Icons.pause_circle_outline,
-                            label: l10n.accountFreezeButton,
-                            isLoading: _isFreezingAccount,
-                            onTap: _isFreezingAccount ? null : _confirmAndFreezeAccount,
-                          ),
-                          Container(height: 1, color: AppColors.border),
-                          _SettingsRow(
-                            icon: Icons.delete_outline,
-                            label: l10n.accountDeletionButton,
-                            labelColor: AppColors.error,
-                            isLoading: _isDeletingAccount,
-                            onTap: _isDeletingAccount ? null : _confirmAndDeleteAccount,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  OutlinedButton(
-                    onPressed: () => ref.read(authStateProvider.notifier).logOut(),
-                    child: Text(l10n.commonLogOut),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+      appBar: AppHeaderBar(title: l10n.navMembership),
+      body: _buildBody(context, ref, l10n),
     );
   }
 
-  String _languageDisplayName(BuildContext context) =>
-      Localizations.localeOf(context).languageCode == 'en' ? 'English' : 'Türkçe';
-
-  // Kept as its own persistent bottom element (see build()), reachable
-  // regardless of loading/error/empty-membership/active-membership state -
-  // previously logOut() was only reachable via the delete-account flow deep
-  // inside the active-membership branch, leaving no way out for an account
-  // with no membership yet.
+  // Account settings (language, freeze, delete) and Log Out moved to
+  // AppDrawer — reachable from every screen's header menu button now,
+  // regardless of this screen's loading/error/empty-membership state.
   Widget _buildBody(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     return ref.watch(currentUserProvider).when(
         loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
@@ -432,67 +209,6 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
           );
         },
       );
-  }
-}
-
-/// A tappable settings row matching the mockup's hairline-card language —
-/// label on the left, either a plain chevron or a trailing value (e.g. the
-/// current language name) + chevron on the right, swapped for a spinner
-/// while [isLoading].
-class _SettingsRow extends StatelessWidget {
-  const _SettingsRow({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.trailingText,
-    this.labelColor,
-    this.isLoading = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback? onTap;
-  final String? trailingText;
-  final Color? labelColor;
-  final bool isLoading;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-        child: Row(
-          children: [
-            Icon(icon, size: 18, color: labelColor ?? AppColors.onBackgroundFaint),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text(
-                label,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: labelColor),
-              ),
-            ),
-            if (isLoading)
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBackgroundFaint),
-              )
-            else
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (trailingText != null) ...[
-                    Text(trailingText!, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundFaint)),
-                    const SizedBox(width: AppSpacing.xs),
-                  ],
-                  const Icon(Icons.chevron_right, size: 18, color: AppColors.onBackgroundFaint),
-                ],
-              ),
-          ],
-        ),
-      ),
-    );
   }
 }
 

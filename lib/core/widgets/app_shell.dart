@@ -4,6 +4,13 @@ import 'package:go_router/go_router.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../../l10n/generated/app_localizations.dart';
+import 'app_drawer.dart';
+
+/// Opens [AppDrawer] from [AppHeaderBar], which sits several Scaffolds below
+/// this one (each shell branch has its own) — `Scaffold.of(context)` would
+/// only ever find the nearer, drawer-less branch Scaffold, so the header
+/// reaches this single shared instance directly instead.
+final GlobalKey<ScaffoldState> appShellScaffoldKey = GlobalKey<ScaffoldState>();
 
 class AppShell extends StatelessWidget {
   const AppShell({required this.navigationShell, super.key});
@@ -16,6 +23,8 @@ class AppShell extends StatelessWidget {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
+      key: appShellScaffoldKey,
+      drawer: const AppDrawer(),
       body: SafeArea(child: navigationShell),
       bottomNavigationBar: Padding(
         padding: EdgeInsets.fromLTRB(

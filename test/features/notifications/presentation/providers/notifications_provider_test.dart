@@ -26,4 +26,39 @@ void main() {
     expect(notifications, hasLength(1));
     expect(notifications.single.title, 'Test');
   });
+
+  test('hasUnreadNotifications is true when at least one notification is unread', () async {
+    final repository = _MockNotificationRepository();
+    when(() => repository.getNotifications()).thenAnswer(
+      (_) async => const [
+        NotificationItem(id: '1', title: 'Read', message: 'Test', timeLabel: 'Şimdi', isRead: true),
+        NotificationItem(id: '2', title: 'Unread', message: 'Test', timeLabel: 'Şimdi'),
+      ],
+    );
+    final container = ProviderContainer(
+      overrides: [notificationRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(notificationsProvider.future);
+
+    expect(container.read(hasUnreadNotificationsProvider), isTrue);
+  });
+
+  test('hasUnreadNotifications is false when every notification is read', () async {
+    final repository = _MockNotificationRepository();
+    when(() => repository.getNotifications()).thenAnswer(
+      (_) async => const [
+        NotificationItem(id: '1', title: 'Read', message: 'Test', timeLabel: 'Şimdi', isRead: true),
+      ],
+    );
+    final container = ProviderContainer(
+      overrides: [notificationRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(notificationsProvider.future);
+
+    expect(container.read(hasUnreadNotificationsProvider), isFalse);
+  });
 }

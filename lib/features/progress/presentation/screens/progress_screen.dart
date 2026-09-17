@@ -5,6 +5,7 @@ import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/account_frozen_state.dart';
+import '../../../../core/widgets/app_header_bar.dart';
 import '../../../../core/widgets/circular_stat_gauge.dart';
 import '../../../../core/widgets/empty_membership_state.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -28,7 +29,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.progressTitle)),
+      appBar: AppHeaderBar(title: l10n.progressTitle),
       body: ref.watch(currentUserProvider).when(
         loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (error, stackTrace) => Center(

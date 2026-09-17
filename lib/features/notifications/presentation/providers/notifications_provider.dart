@@ -8,3 +8,9 @@ part 'notifications_provider.g.dart';
 Future<List<NotificationItem>> notifications(Ref ref) {
   return ref.watch(notificationRepositoryProvider).getNotifications();
 }
+
+@riverpod
+bool hasUnreadNotifications(Ref ref) {
+  final notifications = ref.watch(notificationsProvider).asData?.value;
+  return notifications?.any((notification) => !notification.isRead) ?? false;
+}

@@ -12,6 +12,8 @@
   "@commonNetworkError": {},
   "commonLogOut": "Çıkış Yap",
   "@commonLogOut": {},
+  "drawerOpenMenuTooltip": "Menüyü aç",
+  "@drawerOpenMenuTooltip": {},
 
   "navHome": "Ana Sayfa",
   "@navHome": {},
@@ -174,8 +176,6 @@
   "progressCategoryFitness": "Fitness",
   "@progressCategoryFitness": {},
 
-  "membershipTitle": "Üyeliğim",
-  "@membershipTitle": {},
   "settingsLanguageLabel": "Dil",
   "@settingsLanguageLabel": {},
   "settingsLanguagePickerTitle": "Dil Seçin",
@@ -200,8 +200,6 @@
   "@membershipRenewRequested": {},
   "membershipPaymentHistoryLabel": "Ödeme Geçmişi",
   "@membershipPaymentHistoryLabel": {},
-  "settingsAccountSectionTitle": "HESAP",
-  "@settingsAccountSectionTitle": {},
   "membershipEmptyStateTitle": "Henüz aktif üyeliğin yok",
   "@membershipEmptyStateTitle": {},
   "membershipEmptyStateBody": "Bir gym'e üye olduğunda paketin, derslerin ve gelişimin burada görünecek.",
