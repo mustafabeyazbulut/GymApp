@@ -11,6 +11,7 @@ part 'dio_client.g.dart';
 // NOT trigger a refresh-and-retry on 401 (a 401 from /login IS the actual
 // "wrong password" answer, not an expired-session signal).
 const _noAuthPaths = [
+  '/api/auth/register',
   '/api/auth/login',
   '/api/auth/refresh',
   '/api/auth/forgot-password',

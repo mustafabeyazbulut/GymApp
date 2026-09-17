@@ -1,10 +1,23 @@
 import 'me_result.dart';
 
 abstract interface class AuthRepository {
-  // login() keeps a single `identifier` field since the backend accepts
-  // either phone or email there. Accounts are staff-created now (see
-  // TenantRepository.createCompany/addStaffMember) - self-service
-  // registration has been retired.
+  // Two-step registration: request-otp sends a code to phone (and email, if
+  // given) but creates nothing yet; completeRegistration only creates the
+  // account once both codes are proven correct. Phone is required (matches
+  // the backend User entity's required+unique Phone column); email is
+  // optional. login() keeps a single `identifier` field since the backend
+  // accepts either phone or email there.
+  Future<void> requestRegistrationOtp({required String phone, String? email});
+
+  Future<void> completeRegistration({
+    required String fullName,
+    required String phone,
+    required String phoneCode,
+    String? email,
+    String? emailCode,
+    required String password,
+  });
+
   Future<void> login({required String identifier, required String password});
 
   Future<void> logout();

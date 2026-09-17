@@ -197,6 +197,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               onPressed: _isSubmitting ? null : () => context.push('/forgot-password'),
                               child: Text(l10n.loginForgotPassword, textAlign: TextAlign.center),
                             ),
+                            const SizedBox(height: AppSpacing.sm),
+                            TextButton(
+                              onPressed: _isSubmitting ? null : () => context.push('/register'),
+                              child: Text(l10n.loginNoAccount, textAlign: TextAlign.center),
+                            ),
                           ],
                         ),
                       ),

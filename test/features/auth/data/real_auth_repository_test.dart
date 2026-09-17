@@ -71,6 +71,92 @@ void main() {
     );
   });
 
+  test('requestRegistrationOtp on success does not throw', () async {
+    adapter.onPost(
+      '/api/auth/register/request-otp',
+      (server) => server.reply(204, null),
+      data: Matchers.any,
+    );
+
+    await repository.requestRegistrationOtp(phone: '+905551112233', email: 'ayse@test.com');
+  });
+
+  test('requestRegistrationOtp on 409 throws ConflictAuthException with the server message', () async {
+    adapter.onPost(
+      '/api/auth/register/request-otp',
+      (server) => server.reply(409, {
+        'Status': 409,
+        'Errors': ['Bu telefon numarasıyla zaten bir hesap var.'],
+      }),
+      data: Matchers.any,
+    );
+
+    await expectLater(
+      () => repository.requestRegistrationOtp(phone: '+905551112233'),
+      throwsA(isA<ConflictAuthException>().having(
+        (e) => e.message,
+        'message',
+        'Bu telefon numarasıyla zaten bir hesap var.',
+      )),
+    );
+  });
+
+  test('requestRegistrationOtp on 429 throws RateLimitedAuthException', () async {
+    adapter.onPost('/api/auth/register/request-otp', (server) => server.reply(429, ''), data: Matchers.any);
+
+    await expectLater(
+      () => repository.requestRegistrationOtp(phone: '+905551112233'),
+      throwsA(isA<RateLimitedAuthException>()),
+    );
+  });
+
+  test('completeRegistration on success stores the returned token pair', () async {
+    adapter.onPost(
+      '/api/auth/register/complete',
+      (server) => server.reply(201, {
+        'accessToken': 'access-1',
+        'expiresAtUtc': '2026-09-16T13:00:00Z',
+        'refreshToken': 'refresh-1',
+      }),
+      data: Matchers.any,
+    );
+
+    await repository.completeRegistration(
+      fullName: 'Ayşe',
+      phone: '+905551112233',
+      phoneCode: '123456',
+      password: 'Sifre123!',
+    );
+
+    expect(await tokenStore.readAccessToken(), 'access-1');
+    expect(await tokenStore.readRefreshToken(), 'refresh-1');
+  });
+
+  test("completeRegistration on 401 surfaces the server's own message (wrong code, not wrong password)", () async {
+    adapter.onPost(
+      '/api/auth/register/complete',
+      (server) => server.reply(401, {
+        'Status': 401,
+        'Errors': ['Telefon kodu hatalı, süresi dolmuş veya çok fazla deneme yapıldı.'],
+      }),
+      data: Matchers.any,
+    );
+
+    await expectLater(
+      () => repository.completeRegistration(
+        fullName: 'Ayşe',
+        phone: '+905551112233',
+        phoneCode: '000000',
+        password: 'Sifre123!',
+      ),
+      throwsA(isA<GenericAuthException>().having(
+        (e) => e.message,
+        'message',
+        'Telefon kodu hatalı, süresi dolmuş veya çok fazla deneme yapıldı.',
+      )),
+    );
+  });
+
   test('logout clears the token store without calling the backend', () async {
     await tokenStore.saveTokens(accessToken: 'a', refreshToken: 'r');
 
