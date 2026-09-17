@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../features/auth/data/real_auth_repository.dart';
 import '../../features/auth/domain/auth_exceptions.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
@@ -174,6 +175,11 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
       action();
     }
 
+    void closeThenPush(String location) {
+      Navigator.pop(context);
+      context.push(location);
+    }
+
     return Drawer(
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
@@ -253,6 +259,18 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                     isLoading: _isDeletingAccount,
                     onTap: _isDeletingAccount ? null : () => closeThenRun(_confirmAndDeleteAccount),
                   ),
+                  if (currentUser?.isSuperAdmin ?? false)
+                    _DrawerItem(
+                      icon: Icons.add_business_outlined,
+                      label: l10n.drawerCreateCompany,
+                      onTap: () => closeThenPush('/admin/create-company'),
+                    ),
+                  if (currentUser?.staffAssignment != null)
+                    _DrawerItem(
+                      icon: Icons.person_add_alt_outlined,
+                      label: l10n.drawerAddStaffMember,
+                      onTap: () => closeThenPush('/admin/add-staff-member'),
+                    ),
                 ],
               ),
             ),
