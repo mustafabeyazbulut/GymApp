@@ -52,4 +52,20 @@ class MeResult {
   final List<MeAssignment> assignments;
 
   bool get hasActiveMembership => assignments.isNotEmpty;
+
+  bool get isSuperAdmin => assignments.any((a) => a.role == 'SuperAdmin');
+
+  // The one Assignment (if any) that lets this user manage staff - a
+  // GymAdmin oversees every branch of their company (branchId null on their
+  // own assignment); a BranchManager is scoped to exactly one branch. Null
+  // for a plain Member/Trainer, and for a SuperAdmin who isn't ALSO staff
+  // somewhere (SuperAdmin uses "Yeni Firma Ekle" instead, see AppDrawer).
+  MeAssignment? get staffAssignment {
+    for (final assignment in assignments) {
+      if (assignment.role == 'GymAdmin' || assignment.role == 'BranchManager') {
+        return assignment;
+      }
+    }
+    return null;
+  }
 }
