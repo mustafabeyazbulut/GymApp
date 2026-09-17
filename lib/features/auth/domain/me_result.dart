@@ -51,7 +51,13 @@ class MeResult {
   final bool isAccountFrozen;
   final List<MeAssignment> assignments;
 
-  bool get hasActiveMembership => assignments.isNotEmpty;
+  // Only a 'Member' assignment implies an actual membership/package - a
+  // SuperAdmin/GymAdmin/BranchManager/Trainer assignment does not, so those
+  // roles must not fall through to the member-facing Home/Classes/Progress/
+  // Membership mock content just because assignments.isNotEmpty (a bug this
+  // fixed: every logged-in user, including a pure SuperAdmin with zero real
+  // membership, was landing on the same fake "Merhaba, Elnara" Home screen).
+  bool get hasActiveMembership => assignments.any((a) => a.role == 'Member');
 
   bool get isSuperAdmin => assignments.any((a) => a.role == 'SuperAdmin');
 
