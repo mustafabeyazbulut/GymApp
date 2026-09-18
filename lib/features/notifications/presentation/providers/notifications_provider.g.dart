@@ -90,4 +90,4 @@ final class HasUnreadNotificationsProvider
 }
 
 String _$hasUnreadNotificationsHash() =>
-    r'0b8cf08b8488c49046ac579538798139b45de5ae';
+    r'0d615dad5797a347e3714d5496541f9abb27a892';

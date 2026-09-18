@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// Placeholder palette approximated from the user's "MAT & MOVE" reference
-/// mockup. Colors, not craft level, are the placeholder part — see
+/// Kullanıcının "MAT & MOVE" referans mockup'ından yaklaşık olarak alınmış
+/// yer tutucu (placeholder) palet. Burada geçici olan kısım işçilik
+/// seviyesi değil, renklerdir — bkz.
 /// `docs/superpowers/specs/2026-09-14-mobile-foundation-design.md`.
-/// Swapping the real brand palette later is a change to this file only.
+/// Gerçek marka paletine geçiş yalnızca bu dosyada yapılacak bir değişikliktir.
 abstract final class AppColors {
   static const background = Color(0xFF0D0D0F);
   static const surface = Color(0xFF1A1A1D);

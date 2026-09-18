@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-/// Weight/opacity hierarchy on top of the locally-vendored Inter font —
-/// headings bold/semibold, body regular, helper text lower-opacity gray.
-/// Never falls back to Material's default Roboto.
+/// Yerel olarak paketlenmiş Inter fontu üzerine kurulu ağırlık/opaklık
+/// hiyerarşisi — başlıklar bold/semibold, gövde metni regular, yardımcı
+/// metin daha düşük opaklıkta gri. Material'ın varsayılan Roboto fontuna
+/// asla geri düşmez.
 abstract final class AppTypography {
   static const _fontFamily = 'Inter';
 

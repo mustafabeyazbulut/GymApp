@@ -34,10 +34,11 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
     try {
       await ref.read(classListProvider.notifier).reserveSpot(classId);
     } catch (_) {
-      // Realistically only reachable via a fast double-tap before this
-      // button's disabled state has rendered a frame (the repository
-      // throws StateError for an already-full/already-reserved session) —
-      // still needs to surface to the user rather than fail silently.
+      // Gerçekçi olarak yalnızca bu butonun disabled durumu bir kare
+      // render etmeden önce yapılan hızlı bir çift dokunuşla tetiklenebilir
+      // (repository, zaten dolu/zaten rezerve edilmiş bir seans için
+      // StateError fırlatır) — yine de sessizce başarısız olmak yerine
+      // kullanıcıya gösterilmesi gerekir.
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -111,9 +112,9 @@ class _ClassesScreenState extends ConsumerState<ClassesScreen> {
 
               return Column(
                 children: [
-                  // Decorative date strip — per spec, selecting a different day does not
-                  // change which sessions are shown below (deliberate simplification, not
-                  // a missing feature).
+                  // Dekoratif tarih şeridi — spesifikasyona göre farklı bir gün seçmek
+                  // aşağıda gösterilen seansları değiştirmez (eksik bir özellik değil,
+                  // bilinçli bir sadeleştirme).
                   Padding(
                     padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
                     child: Row(

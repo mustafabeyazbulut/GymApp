@@ -7,11 +7,12 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import 'app_shell.dart';
 
-/// The shared top bar for every main shell screen (Home, Classes, Progress,
-/// Membership) — a menu button opening [AppDrawer], a centered title, a
-/// notification bell, and a thin accent-line underneath. Screens that need
-/// their own `bottom` widget (filters, tabs) keep that in the body instead,
-/// since an `AppBar` only has room for one `bottom`.
+/// Her ana shell ekranı (Home, Classes, Progress, Membership) için ortak
+/// kullanılan üst çubuk — [AppDrawer]'ı açan bir menü butonu, ortalanmış bir
+/// başlık, bir bildirim zili ve altında ince bir vurgu çizgisi içerir. Kendi
+/// `bottom` widget'ına ihtiyaç duyan ekranlar (filtreler, sekmeler) bunu
+/// body içinde tutar, çünkü bir `AppBar`'ın yalnızca tek bir `bottom` için
+/// yeri vardır.
 class AppHeaderBar extends ConsumerWidget implements PreferredSizeWidget {
   const AppHeaderBar({required this.title, super.key});
 
@@ -72,9 +73,9 @@ class AppHeaderBar extends ConsumerWidget implements PreferredSizeWidget {
   }
 }
 
-/// A circular, filled icon button used for the header's menu/notification
-/// actions — an outline-icon-on-flat-chip look distinct from Material's
-/// default flat AppBar icon buttons.
+/// Header'ın menü/bildirim eylemleri için kullanılan dairesel, dolgulu bir
+/// ikon butonu — Material'ın varsayılan düz AppBar ikon butonlarından farklı
+/// olarak düz bir çip üzerinde çerçeve çizgili ikon görünümü sağlar.
 class _HeaderIconButton extends StatelessWidget {
   const _HeaderIconButton({
     required this.icon,

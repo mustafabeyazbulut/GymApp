@@ -10,11 +10,12 @@ class ApiException implements Exception {
       ? errors.join('\n')
       : 'Beklenmeyen bir hata oluştu.';
 
-  /// Reads `ExceptionMiddleware`'s response shape, which is deliberately
-  /// PascalCase (`Status`/`Errors`) unlike the rest of the API's camelCase
-  /// success responses — the backend's success JSON uses camelCase but its
-  /// error middleware serializes with default (PascalCase) casing, a known
-  /// asymmetry confirmed directly from the GymAppApi backend source.
+  /// `ExceptionMiddleware`'in yanıt şeklini okur; bu şekil, API'nin geri
+  /// kalanının camelCase başarı yanıtlarının aksine bilinçli olarak
+  /// PascalCase'dir (`Status`/`Errors`) — backend'in başarı JSON'u camelCase
+  /// kullanır ama error middleware'i varsayılan (PascalCase) casing ile
+  /// serialize eder; bu, doğrudan GymAppApi backend kaynağından doğrulanmış
+  /// bilinen bir asimetridir.
   factory ApiException.fromDioException(DioException exception) {
     final data = exception.response?.data;
 

@@ -24,19 +24,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _hasInvalidCredentialsError = false;
   bool _hasNetworkError = false;
 
-  // Reserved bottom space for the network-error bar while it's shown, so the
-  // bar (painted last in the Stack, on top of the scroll view) never overlaps
-  // and swallows taps on the Forgot-password/Sign-up links beneath it.
+  // Ağ hatası çubuğu gösterilirken alt tarafta ayrılan boşluk; böylece çubuk
+  // (Stack içinde en son çizildiği ve scroll view'ın üzerinde olduğu için)
+  // altındaki Forgot-password/Sign-up linklerinin üzerine binip dokunuşları
+  // yutmaz.
   //
-  // A plain fixed constant here would be fragile under large accessibility
-  // text-scale factors: the bar's Row (icon + message + retry button) can
-  // grow taller than a guessed number, which would either force the bar's
-  // real content into a too-small box or leave the reserved padding short of
-  // the bar's actual height — reintroducing the same overlap bug. Instead we
-  // start with a reasonable estimate and correct it to the bar's real
-  // rendered height once it's been laid out (see
-  // `_measureNetworkErrorBarHeight`), so the reserved padding always matches
-  // reality regardless of text scale or locale string length.
+  // Burada sabit bir sayı kullanmak büyük erişilebilirlik metin ölçek
+  // faktörlerinde kırılgan olurdu: çubuğun Row'u (ikon + mesaj + tekrar dene
+  // butonu) tahmin edilen sayıdan daha uzun büyüyebilir; bu da ya çubuğun
+  // gerçek içeriğini çok küçük bir kutuya sıkıştırır ya da ayrılan boşluğu
+  // çubuğun gerçek yüksekliğinden kısa bırakır — aynı örtüşme hatasını tekrar
+  // ortaya çıkarır. Bunun yerine makul bir tahminle başlıyoruz ve çubuk
+  // yerleştirildikten sonra gerçek render yüksekliğine göre düzeltiyoruz
+  // (bkz. `_measureNetworkErrorBarHeight`), böylece ayrılan boşluk metin
+  // ölçeği veya dil dizesi uzunluğu ne olursa olsun gerçekliği yansıtır.
   double _networkErrorBarHeight = 56.0;
 
   @override
@@ -80,7 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       setState(() => _hasNetworkError = true);
     } on AuthException {
       if (!mounted) return;
-      setState(() => _hasNetworkError = true); // any other unmapped failure reads as connectivity, per the mockup's two-state design
+      setState(() => _hasNetworkError = true); // eşlenmemiş diğer tüm hatalar, mockup'ın iki durumlu tasarımına göre bağlantı hatası olarak okunur
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -154,10 +155,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               enabled: !_isSubmitting,
                               decoration: InputDecoration(
                                 labelText: l10n.loginIdentifierLabel,
-                                // Empty string (not null) — forces the red error-state styling and
-                                // reserves the same error-line height as the password field below,
-                                // without duplicating the error message on both fields. The real
-                                // message only shows under the password field, per the approved mockup.
+                                // Boş string (null değil) — kırmızı hata-durumu stilini zorunlu kılar ve
+                                // aşağıdaki password alanıyla aynı hata satırı yüksekliğini ayırır,
+                                // mesajı iki alanda da tekrarlamadan. Gerçek mesaj, onaylanmış mockup'a
+                                // göre sadece password alanının altında gösterilir.
                                 errorText: _hasInvalidCredentialsError ? '' : null,
                               ),
                               validator: (value) => (value == null || value.trim().isEmpty)
@@ -216,10 +217,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   bottom: 0,
                   child: Builder(
                     builder: (context) {
-                      // Re-measure after every frame this bar is shown; the
-                      // setState in _measureNetworkErrorBarHeight only fires
-                      // when the measured height actually changed, so this
-                      // converges after a frame or two instead of looping.
+                      // Bu çubuk gösterildiği sürece her frame'de yeniden ölç;
+                      // _measureNetworkErrorBarHeight içindeki setState sadece
+                      // ölçülen yükseklik gerçekten değiştiğinde tetiklenir, bu yüzden
+                      // döngüye girmek yerine bir iki frame içinde yakınsar.
                       WidgetsBinding.instance.addPostFrameCallback((_) => _measureNetworkErrorBarHeight());
                       return DecoratedBox(
                         key: _networkErrorBarKey,

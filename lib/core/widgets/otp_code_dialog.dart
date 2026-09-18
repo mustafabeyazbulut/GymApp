@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// A single 6-digit code entry dialog, used by any authenticated action that
-/// requires proving control of the account's phone (freeze/reactivate) -
-/// the actual sending of the code and the follow-up submit call are both the
-/// caller's responsibility, this widget only collects the digits.
+/// Hesabın telefonuna sahip olunduğunun kanıtlanmasını gerektiren (dondurma/
+/// yeniden etkinleştirme) her kimliği doğrulanmış eylem tarafından kullanılan
+/// tek bir 6 haneli kod giriş diyaloğu — kodun gerçek gönderimi ve sonrasındaki
+/// gönderme çağrısı çağıranın sorumluluğundadır, bu widget yalnızca rakamları
+/// toplar.
 Future<String?> showOtpCodeDialog({
   required BuildContext context,
   required String title,

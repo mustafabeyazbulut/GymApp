@@ -32,8 +32,9 @@ class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
   @override
   void initState() {
     super.initState();
-    // A Branch Manager's own branch is fixed; a Gym Admin (branchId == null
-    // on their own assignment) picks from their company's branches.
+    // Bir Branch Manager'ın kendi şubesi sabittir; bir Gym Admin (kendi
+    // assignment'ında branchId == null) kendi şirketinin şubeleri arasından
+    // seçim yapar.
     final myAssignment = ref.read(currentUserProvider).asData?.value.staffAssignment;
     if (myAssignment?.branchId != null) {
       _selectedBranchId = myAssignment!.branchId;

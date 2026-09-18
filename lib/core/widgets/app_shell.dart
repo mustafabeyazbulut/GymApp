@@ -6,10 +6,11 @@ import '../theme/app_spacing.dart';
 import '../../l10n/generated/app_localizations.dart';
 import 'app_drawer.dart';
 
-/// Opens [AppDrawer] from [AppHeaderBar], which sits several Scaffolds below
-/// this one (each shell branch has its own) — `Scaffold.of(context)` would
-/// only ever find the nearer, drawer-less branch Scaffold, so the header
-/// reaches this single shared instance directly instead.
+/// [AppHeaderBar]'dan [AppDrawer]'ı açar; header bu Scaffold'un birkaç
+/// seviye altında yer alır (her shell dalının kendi Scaffold'u vardır) —
+/// `Scaffold.of(context)` her zaman yalnızca daha yakın, çekmecesiz dal
+/// Scaffold'unu bulurdu, bu yüzden header bunun yerine doğrudan bu tek
+/// paylaşılan örneğe ulaşır.
 final GlobalKey<ScaffoldState> appShellScaffoldKey = GlobalKey<ScaffoldState>();
 
 class AppShell extends StatelessWidget {

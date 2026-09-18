@@ -1,6 +1,6 @@
-/// Fixed spacing/radius scale — every screen pulls padding, gaps and corner
-/// radii from here instead of hand-picking pixel values, so layouts keep the
-/// same breathing room the reference mockup has.
+/// Sabit boşluk/köşe yarıçapı ölçeği — her ekran, piksel değerlerini elle
+/// seçmek yerine padding, boşluk ve köşe yarıçaplarını buradan alır; böylece
+/// tasarımlar referans mockup'taki aynı nefes alma boşluğunu korur.
 abstract final class AppSpacing {
   static const xs = 4.0;
   static const sm = 8.0;

@@ -4,9 +4,10 @@ import 'token_store.dart';
 
 part 'secure_token_store.g.dart';
 
-/// iOS: Keychain. Android: EncryptedSharedPreferences backed by the
-/// platform Keystore. Both handled internally by flutter_secure_storage —
-/// no extra platform-specific code needed here.
+/// iOS: Keychain. Android: platform Keystore tarafından desteklenen
+/// EncryptedSharedPreferences. Her ikisi de flutter_secure_storage
+/// tarafından dahili olarak yönetilir — burada ekstra platforma özgü
+/// koda gerek yoktur.
 class SecureTokenStore implements TokenStore {
   SecureTokenStore(this._storage);
 
@@ -21,10 +22,11 @@ class SecureTokenStore implements TokenStore {
   @override
   Future<String?> readRefreshToken() => _storage.read(key: _refreshTokenKey);
 
-  // flutter_secure_storage has no transactional write/delete API, so a process
-  // kill between the two writes (or two deletes) below can leave a mismatched
-  // or partial token pair on disk. Consumers must treat a present access token
-  // with a missing refresh token as logged-out, not as an error state.
+  // flutter_secure_storage'ın işlemsel (transactional) bir yazma/silme API'si
+  // yoktur, bu yüzden aşağıdaki iki yazma (veya iki silme) arasında sürecin
+  // öldürülmesi diskte uyumsuz veya eksik bir token çifti bırakabilir.
+  // Kullanan taraflar, refresh token eksikken var olan bir access token'ı
+  // bir hata durumu olarak değil, çıkış yapılmış olarak ele almalıdır.
   @override
   Future<void> saveTokens({required String accessToken, required String refreshToken}) async {
     await _storage.write(key: _accessTokenKey, value: accessToken);

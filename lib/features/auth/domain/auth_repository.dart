@@ -1,12 +1,12 @@
 import 'me_result.dart';
 
 abstract interface class AuthRepository {
-  // Two-step registration: request-otp sends a code to phone (and email, if
-  // given) but creates nothing yet; completeRegistration only creates the
-  // account once both codes are proven correct. Phone is required (matches
-  // the backend User entity's required+unique Phone column); email is
-  // optional. login() keeps a single `identifier` field since the backend
-  // accepts either phone or email there.
+  // İki adımlı kayıt: request-otp telefona (ve verilmişse e-postaya) bir kod
+  // gönderir ama henüz hiçbir şey oluşturmaz; completeRegistration ise ancak
+  // her iki kod da doğru kanıtlandığında hesabı oluşturur. Phone zorunludur
+  // (backend'deki User entity'sinin zorunlu+benzersiz Phone kolonuyla eşleşir);
+  // email opsiyoneldir. login() tek bir `identifier` alanını korur, çünkü
+  // backend orada telefon veya e-postadan herhangi birini kabul eder.
   Future<void> requestRegistrationOtp({required String phone, String? email});
 
   Future<void> completeRegistration({
@@ -32,21 +32,22 @@ abstract interface class AuthRepository {
 
   Future<MeResult> getMe();
 
-  // Irreversible, so it requires proving control of the account's phone
-  // first via a 6-digit code, same as freeze/unfreeze below.
+  // Geri alınamaz olduğu için, aşağıdaki freeze/unfreeze ile aynı şekilde önce
+  // 6 haneli bir kodla hesabın telefonuna sahip olunduğunun kanıtlanmasını gerektirir.
   Future<void> requestDeleteAccountOtp();
 
   Future<void> deleteAccount({required String code});
 
   Future<void> updatePreferredLanguage(String language);
 
-  // Distinct from any membership/package freeze - this temporarily disables
-  // the account's own login access (Instagram-style "deactivate
-  // temporarily"). Login itself still succeeds afterward; the app gates
-  // navigation behind a reactivation screen once getMe() reports
-  // isAccountFrozen. Both freezing and reactivating require proving control
-  // of the account's phone first via a 6-digit code (requestFreezeOtp/
-  // requestUnfreezeOtp send it, freezeAccount/reactivateAccount consume it).
+  // Herhangi bir üyelik/paket dondurmasından farklıdır - bu, hesabın kendi
+  // giriş erişimini geçici olarak devre dışı bırakır (Instagram tarzı
+  // "geçici olarak devre dışı bırak"). Login işlemi yine de başarılı olur;
+  // getMe() isAccountFrozen bildirdiğinde uygulama navigasyonu bir yeniden
+  // etkinleştirme ekranının arkasında tutar. Hem dondurma hem de yeniden
+  // etkinleştirme, önce 6 haneli bir kodla hesabın telefonuna sahip olunduğunun
+  // kanıtlanmasını gerektirir (requestFreezeOtp/requestUnfreezeOtp kodu gönderir,
+  // freezeAccount/reactivateAccount ise onu tüketir).
   Future<void> requestFreezeOtp();
 
   Future<void> freezeAccount({required String code});

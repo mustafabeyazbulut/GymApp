@@ -6,13 +6,14 @@ part 'app_locale_provider.g.dart';
 @riverpod
 class AppLocale extends _$AppLocale {
   @override
-  Locale? build() => null; // null = follow the device's system locale
+  Locale? build() => null; // null = cihazın sistem locale'ini takip et
 
   void setLocale(Locale locale) => state = locale;
 
-  // Called once the account's own preferredLanguage becomes known (e.g.
-  // after login) - only applies it if the viewer hasn't already picked a
-  // language this session, so it never overwrites a manual in-app choice.
+  // Hesabın kendi preferredLanguage değeri öğrenildiğinde (ör. login
+  // sonrası) bir kez çağrılır - yalnızca kullanıcı bu oturumda henüz manuel
+  // bir dil seçmemişse uygulanır, böylece uygulama içi manuel bir seçimin
+  // üzerine asla yazmaz.
   void seedFromAccount(String languageCode) {
     if (state == null) {
       state = Locale(languageCode);

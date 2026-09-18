@@ -80,8 +80,8 @@ class RealAuthRepository implements AuthRepository {
   @override
   Future<MeResult> getMe() async {
     final response = await _guard(() => _dio.get<Map<String, dynamic>>('/api/auth/me'));
-    // MeResult.fromJson runs outside _guard's try/catch, so a JSON-parsing failure (e.g. a cast
-    // error) surfaces as a raw error here, not as an AuthException.
+    // MeResult.fromJson, _guard'ın try/catch bloğunun dışında çalışır, bu yüzden bir JSON ayrıştırma
+    // hatası (ör. bir cast hatası) burada AuthException olarak değil, ham bir hata olarak ortaya çıkar.
     return MeResult.fromJson(response.data!);
   }
 
@@ -149,12 +149,12 @@ class RealAuthRepository implements AuthRepository {
         : 'Beklenmeyen bir hata oluştu.';
 
     if (statusCode == 401) {
-      // These (method, path) calls' 401 means "wrong OTP code", not "wrong
-      // password" - the server's own message already says which channel
-      // failed, so surface it verbatim instead of the hardcoded
-      // InvalidCredentialsException every other 401 uses. DELETE /api/auth/me
-      // is included but GET /api/auth/me (an expired access token) is not -
-      // same path, different method, different meaning.
+      // Bu (method, path) çağrılarının 401'i "yanlış şifre" değil "yanlış OTP kodu"
+      // anlamına gelir - sunucunun kendi mesajı zaten hangi kanalın başarısız
+      // olduğunu söyler, bu yüzden diğer her 401'in kullandığı sabit kodlanmış
+      // InvalidCredentialsException yerine bunu olduğu gibi göster. DELETE
+      // /api/auth/me dahildir ama GET /api/auth/me (süresi dolmuş bir access
+      // token) dahil değildir - aynı path, farklı method, farklı anlam.
       const otpVerifiedCalls = {
         'POST /api/auth/register/complete',
         'POST /api/auth/me/freeze',

@@ -161,8 +161,8 @@ class _HomeContent extends StatelessWidget {
           children: [
             Expanded(
               child: ElevatedButton(
-                // Branch index 1 = Dersler, per Task 16's StatefulShellRoute
-                // branch order (home, classes, progress, membership).
+                // Branch index 1 = Dersler, Task 16'nın StatefulShellRoute
+                // branch sırasına göre (home, classes, progress, membership).
                 onPressed: () => StatefulNavigationShell.of(context).goBranch(1),
                 child: Text(l10n.homeReservationButton),
               ),
@@ -170,9 +170,9 @@ class _HomeContent extends StatelessWidget {
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: OutlinedButton(
-                // Deliberately a no-op — Faz 2 door-access check-in, not
-                // built yet. Per spec, unlike Reservation, this one stays
-                // silent for now.
+                // Bilinçli olarak no-op — Faz 2 kapı erişimi check-in
+                // özelliği henüz oluşturulmadı. Spesifikasyona göre,
+                // Reservation'ın aksine bu şimdilik sessiz kalıyor.
                 onPressed: () {},
                 child: Text(l10n.homeCheckInButton),
               ),
@@ -203,10 +203,10 @@ class _HomeContent extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // Bar + label are read from the same (label, attended)
-                  // pair in one loop — see HomeSummary.weeklyAttendance's
-                  // doc comment for why this isn't two same-length lists
-                  // zipped by position.
+                  // Bar + label, tek bir döngüde aynı (label, attended)
+                  // çiftinden okunur — bunun neden pozisyona göre eşleştirilen
+                  // iki aynı uzunluktaki liste olmadığını görmek için
+                  // HomeSummary.weeklyAttendance'ın doc comment'ine bakın.
                   for (final (label, attended) in summary.weeklyAttendance)
                     Expanded(
                       child: Column(

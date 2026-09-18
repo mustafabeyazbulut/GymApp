@@ -9,12 +9,13 @@ import '../../../../l10n/generated/app_localizations.dart';
 import '../../data/real_tenant_repository.dart';
 import '../../domain/company_summary.dart';
 
-/// Super Admin's entry point for company administration - lists every
-/// company (name, branch count, active/inactive), lets them open one to
-/// rename it or toggle it active, and start a new one via the app bar
-/// action. Replaces going straight from the drawer into a bare create-company
-/// form (feedback: there should be somewhere to see and manage the
-/// companies that already exist, not just add new ones blind).
+/// Super Admin'in şirket yönetimi için giriş noktası - her şirketi
+/// (ad, şube sayısı, aktif/pasif) listeler, birini açıp adını değiştirmesine
+/// veya aktifliğini değiştirmesine izin verir ve app bar action'ı üzerinden
+/// yeni bir şirket başlatılmasını sağlar. Drawer'dan doğrudan boş bir
+/// create-company formuna gitmenin yerini alır (geri bildirim: sadece kör
+/// bir şekilde yeni şirket eklemek değil, mevcut şirketleri görüp
+/// yönetebileceğimiz bir yer olmalı).
 class CompanyManagementScreen extends ConsumerStatefulWidget {
   const CompanyManagementScreen({super.key});
 

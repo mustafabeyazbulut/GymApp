@@ -1,7 +1,8 @@
 import 'token_store.dart';
 
-/// In-memory TokenStore for tests — never used in the real app (see
-/// SecureTokenStore for the real Keychain/Keystore-backed implementation).
+/// Testler için bellek içi (in-memory) TokenStore — gerçek uygulamada asla
+/// kullanılmaz (gerçek Keychain/Keystore destekli implementasyon için
+/// SecureTokenStore'a bakın).
 class FakeTokenStore implements TokenStore {
   String? _accessToken;
   String? _refreshToken;

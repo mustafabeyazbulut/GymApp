@@ -7,9 +7,10 @@ import 'secure_token_store.dart';
 
 part 'dio_client.g.dart';
 
-// Endpoints that must NOT get an Authorization header attached, and must
-// NOT trigger a refresh-and-retry on 401 (a 401 from /login IS the actual
-// "wrong password" answer, not an expired-session signal).
+// Kendisine Authorization başlığı eklenmemesi gereken ve 401 durumunda
+// refresh-and-retry'ı TETİKLEMEMESİ gereken uç noktalar (/login'den gelen
+// bir 401, süresi dolmuş oturum sinyali değil, gerçek "yanlış şifre"
+// cevabının KENDİSİdir).
 const _noAuthPaths = [
   '/api/auth/register',
   '/api/auth/login',
@@ -19,16 +20,17 @@ const _noAuthPaths = [
 ];
 
 void addAuthInterceptor(Dio dio, TokenStore tokenStore) {
-  // Used only for the refresh call and the retry of the failed request.
-  // QueuedInterceptorsWrapper serializes onError handling through a single
-  // shared queue: while the outer 401 handler below is running (and hasn't
-  // called handler.next/resolve yet), that queue is "busy". If the refresh
-  // call itself were issued on `dio` (the same instance this interceptor is
-  // attached to) and it errored, its own onError would be queued behind the
-  // still-running outer handler — which is itself awaiting that inner
-  // call — a permanent deadlock. `rawDio` shares the same transport
-  // (httpClientAdapter) and base options but carries none of `dio`'s
-  // interceptors, so the refresh/retry calls never re-enter this queue.
+  // Sadece refresh çağrısı ve başarısız isteğin tekrarı için kullanılır.
+  // QueuedInterceptorsWrapper, onError işlemesini tek bir paylaşılan kuyruk
+  // üzerinden sıraya koyar: aşağıdaki dış 401 işleyicisi çalışırken (ve henüz
+  // handler.next/resolve çağırmamışken) bu kuyruk "meşgul"dür. Eğer refresh
+  // çağrısının kendisi `dio` üzerinden (bu interceptor'ın bağlı olduğu aynı
+  // instance) yapılsaydı ve hata verseydi, kendi onError'ı hâlâ çalışmakta
+  // olan ve zaten bu iç çağrıyı bekleyen dış işleyicinin arkasına kuyruğa
+  // girerdi — bu da kalıcı bir kilitlenmeye yol açardı. `rawDio` aynı
+  // transport'u (httpClientAdapter) ve base options'ı paylaşır ama `dio`'nun
+  // interceptor'larından hiçbirini taşımaz, bu yüzden refresh/retry çağrıları
+  // asla bu kuyruğa yeniden girmez.
   final rawDio = Dio(dio.options)..httpClientAdapter = dio.httpClientAdapter;
 
   dio.interceptors.add(

@@ -18,22 +18,24 @@ import '../../features/progress/presentation/screens/progress_screen.dart';
 
 part 'app_router.g.dart';
 
-// Routes reachable while NOT authenticated. Every route added here that
-// should be usable before login (register, password-reset flows, etc.)
-// must be added to this set, or `redirect` below will bounce it straight
-// back to /login. Centralized here after Task 6's own review found the
-// original two-line `||` check was already about to be forgotten for
-// Task 7's /forgot-password route.
+// Kimliği doğrulanmamışken (NOT authenticated) erişilebilen rotalar. Burada
+// login öncesi kullanılabilmesi gereken (register, şifre sıfırlama akışları
+// vb.) her yeni rota bu sete de eklenmeli, aksi halde aşağıdaki `redirect`
+// onu doğrudan /login'e geri gönderir. Task 6'nın kendi incelemesi, orijinal
+// iki satırlık `||` kontrolünün Task 7'nin /forgot-password rotası için
+// unutulmak üzere olduğunu bulduktan sonra burada merkezileştirildi.
 const _publicRoutes = {'/login', '/register', '/forgot-password'};
 
 @riverpod
 GoRouter appRouter(Ref ref) {
   final authState = ref.watch(authStateProvider);
   final isAuthed = authState.value ?? false;
-  // While the initial silent-refresh check is still loading (authState is
-  // AsyncLoading), isAuthed defaults to false — briefly showing /login
-  // during app startup rather than blocking on a splash screen. Acceptable
-  // for this plan's scope (a proper splash/loading screen is a follow-up).
+  // İlk sessiz yenileme (silent-refresh) kontrolü henüz yüklenirken
+  // (authState AsyncLoading durumundayken) isAuthed varsayılan olarak false
+  // olur — bu da bir splash ekranında beklemek yerine uygulama başlangıcında
+  // kısa süreliğine /login'in gösterilmesine yol açar. Bu planın kapsamı
+  // için kabul edilebilir (düzgün bir splash/yükleme ekranı sonraki bir
+  // adımdır).
 
   final router = GoRouter(
     initialLocation: isAuthed ? '/home' : '/login',

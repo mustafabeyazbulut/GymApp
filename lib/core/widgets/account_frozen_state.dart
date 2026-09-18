@@ -8,11 +8,11 @@ import '../../features/auth/presentation/providers/current_user_provider.dart';
 import '../../l10n/generated/app_localizations.dart';
 import 'otp_code_dialog.dart';
 
-/// Shown by each of the 4 content screens instead of their normal content
-/// when the logged-in user's own account has been self-service frozen
-/// (distinct from EmptyMembershipState, which is about the membership
-/// package, not the account's login access). Mirrors that widget's "swap
-/// into all 4 screens ahead of their usual content check" pattern.
+/// Giriş yapmış kullanıcının kendi hesabı self-servis olarak dondurulmuşsa
+/// 4 içerik ekranının her birinde normal içerik yerine gösterilir (üyelik
+/// paketiyle ilgili olan ve hesabın giriş erişimiyle ilgili olmayan
+/// EmptyMembershipState'ten farklıdır). Bu widget'ın "4 ekranın tamamına,
+/// normal içerik kontrolünden önce devreye girer" örüntüsünü yansıtır.
 class AccountFrozenState extends ConsumerStatefulWidget {
   const AccountFrozenState({super.key});
 

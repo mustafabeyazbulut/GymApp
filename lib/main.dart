@@ -18,10 +18,11 @@ class GymApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final GoRouter router = ref.watch(appRouterProvider);
 
-    // Seeds the app's locale from the account's own preferredLanguage the
-    // first time it becomes known this session (e.g. after login) - see
-    // AppLocale.seedFromAccount's doc comment for why this never overwrites
-    // a language the viewer already picked manually in-app.
+    // Uygulamanın locale'ini, bu oturumda hesabın kendi preferredLanguage
+    // değeri ilk öğrenildiğinde (ör. login sonrası) başlangıç değeriyle
+    // ayarlar - bunun kullanıcının uygulama içinde manuel olarak seçtiği bir
+    // dilin üzerine neden asla yazmadığı için AppLocale.seedFromAccount'ın
+    // doc comment'ine bakın.
     ref.listen(currentUserProvider, (previous, next) {
       final language = next.value?.preferredLanguage;
       if (language != null) {

@@ -1,9 +1,9 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-/// Android emulator reaches the host machine's localhost via the special
-/// address 10.0.2.2, not localhost itself — Chrome and a real device on the
-/// same network both use localhost/the host's real address instead.
+/// Android emulator, host makinenin localhost'una localhost'un kendisi
+/// yerine özel 10.0.2.2 adresi üzerinden ulaşır — Chrome ve aynı ağdaki
+/// gerçek bir cihaz ise bunun yerine localhost/host'un gerçek adresini kullanır.
 abstract final class ApiConfig {
   static String get baseUrl {
     if (kIsWeb) return 'http://localhost:5195';

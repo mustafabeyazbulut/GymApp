@@ -8,20 +8,23 @@ part of 'auth_state_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Whether the app should show the tab shell (true) or `/login` (false).
-/// On startup, this checks for a stored access token rather than always
-/// resetting to false — real sessions now persist across app launches.
+/// Uygulamanın tab shell'i mi (true) yoksa `/login`'i mi (false) göstereceği.
+/// Başlangıçta bu, her zaman false'a sıfırlamak yerine saklanmış bir access
+/// token olup olmadığını kontrol eder — gerçek oturumlar artık uygulama
+/// başlatmaları arasında kalıcıdır.
 
 @ProviderFor(AuthState)
 final authStateProvider = AuthStateProvider._();
 
-/// Whether the app should show the tab shell (true) or `/login` (false).
-/// On startup, this checks for a stored access token rather than always
-/// resetting to false — real sessions now persist across app launches.
+/// Uygulamanın tab shell'i mi (true) yoksa `/login`'i mi (false) göstereceği.
+/// Başlangıçta bu, her zaman false'a sıfırlamak yerine saklanmış bir access
+/// token olup olmadığını kontrol eder — gerçek oturumlar artık uygulama
+/// başlatmaları arasında kalıcıdır.
 final class AuthStateProvider extends $AsyncNotifierProvider<AuthState, bool> {
-  /// Whether the app should show the tab shell (true) or `/login` (false).
-  /// On startup, this checks for a stored access token rather than always
-  /// resetting to false — real sessions now persist across app launches.
+  /// Uygulamanın tab shell'i mi (true) yoksa `/login`'i mi (false) göstereceği.
+  /// Başlangıçta bu, her zaman false'a sıfırlamak yerine saklanmış bir access
+  /// token olup olmadığını kontrol eder — gerçek oturumlar artık uygulama
+  /// başlatmaları arasında kalıcıdır.
   AuthStateProvider._()
     : super(
         from: null,
@@ -43,9 +46,10 @@ final class AuthStateProvider extends $AsyncNotifierProvider<AuthState, bool> {
 
 String _$authStateHash() => r'e7bf16bd0975fe2a01e4bd96c4f2f7bcd45aa3b2';
 
-/// Whether the app should show the tab shell (true) or `/login` (false).
-/// On startup, this checks for a stored access token rather than always
-/// resetting to false — real sessions now persist across app launches.
+/// Uygulamanın tab shell'i mi (true) yoksa `/login`'i mi (false) göstereceği.
+/// Başlangıçta bu, her zaman false'a sıfırlamak yerine saklanmış bir access
+/// token olup olmadığını kontrol eder — gerçek oturumlar artık uygulama
+/// başlatmaları arasında kalıcıdır.
 
 abstract class _$AuthState extends $AsyncNotifier<bool> {
   FutureOr<bool> build();

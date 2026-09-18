@@ -16,11 +16,12 @@ class HomeSummary {
   final String nextClassTime;
   final String nextClassTrainer;
 
-  /// One (day label, attended) pair per day, Monday first. The label is
-  /// paired directly with its value — deliberately not a separate
-  /// same-length list zipped by position — so a real backend returning
-  /// attendance in a different order can never silently desync from the
-  /// day labels the UI renders next to it.
+  /// Her gün için bir (gün etiketi, katıldı mı) çifti, Pazartesi ilk sırada.
+  /// Etiket doğrudan kendi değeriyle eşleştirilir — bilinçli olarak
+  /// pozisyona göre eşleştirilen ayrı, aynı uzunlukta bir liste değil —
+  /// böylece farklı bir sırada katılım döndüren gerçek bir backend, UI'ın
+  /// yanında render ettiği gün etiketleriyle asla sessizce senkronizasyonunu
+  /// kaybedemez.
   final List<(String, bool)> weeklyAttendance;
 
   int get attendedCount => weeklyAttendance.where((day) => day.$2).length;

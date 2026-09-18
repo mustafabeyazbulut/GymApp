@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
-/// A small ring gauge showing a 0.0–1.0 value as a percentage, with a
-/// centered label below. Used by the Progress screen's three growth-area
-/// stats. `value` is clamped to [0, 1] before both drawing and labeling.
+/// 0.0–1.0 arasındaki bir değeri yüzde olarak gösteren, altında ortalanmış
+/// bir etiket bulunan küçük bir halka gösterge. Progress ekranının üç
+/// gelişim alanı istatistiği tarafından kullanılır. `value`, hem çizimden
+/// hem etiketlemeden önce [0, 1] aralığına sıkıştırılır (clamp).
 class CircularStatGauge extends StatelessWidget {
   const CircularStatGauge({
     required this.value,
@@ -74,7 +75,7 @@ class _GaugePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
-    const startAngle = -1.5707963267948966; // -90deg, 12 o'clock
+    const startAngle = -1.5707963267948966; // -90 derece, saat 12 yönü
     final sweepAngle = 6.283185307179586 * value; // value * 2*pi
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),

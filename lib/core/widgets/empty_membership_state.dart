@@ -3,9 +3,9 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../../l10n/generated/app_localizations.dart';
 
-/// Shown by each of the 4 content screens instead of their normal (mock)
-/// content when the logged-in user has zero active Assignments — an
-/// informative state, not an error.
+/// Giriş yapmış kullanıcının aktif Assignment'ı yoksa 4 içerik ekranının
+/// her birinde normal (mock) içerik yerine gösterilir — bir hata değil,
+/// bilgilendirici bir durumdur.
 class EmptyMembershipState extends StatelessWidget {
   const EmptyMembershipState({super.key});
 

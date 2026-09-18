@@ -3,9 +3,10 @@ import '../../../../core/network/secure_token_store.dart';
 
 part 'auth_state_provider.g.dart';
 
-/// Whether the app should show the tab shell (true) or `/login` (false).
-/// On startup, this checks for a stored access token rather than always
-/// resetting to false — real sessions now persist across app launches.
+/// Uygulamanın tab shell'i mi (true) yoksa `/login`'i mi (false) göstereceği.
+/// Başlangıçta bu, her zaman false'a sıfırlamak yerine saklanmış bir access
+/// token olup olmadığını kontrol eder — gerçek oturumlar artık uygulama
+/// başlatmaları arasında kalıcıdır.
 @riverpod
 class AuthState extends _$AuthState {
   @override
@@ -13,9 +14,10 @@ class AuthState extends _$AuthState {
     final store = ref.watch(tokenStoreProvider);
     final accessToken = await store.readAccessToken();
     final refreshToken = await store.readRefreshToken();
-    // Per SecureTokenStore's own documented contract: a present access token
-    // with a missing refresh token is a partial/mismatched pair (e.g. from a
-    // process kill mid-write), not a valid session — treat it as logged out.
+    // SecureTokenStore'un kendi belgelenmiş sözleşmesine göre: refresh token
+    // eksikken var olan bir access token, kısmi/uyumsuz bir çift anlamına
+    // gelir (ör. yazma sırasında sürecin öldürülmesinden), geçerli bir oturum
+    // değildir — bu durum çıkış yapılmış gibi ele alınmalıdır.
     return accessToken != null && refreshToken != null;
   }
 
