@@ -15,6 +15,10 @@ import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/invitations/presentation/screens/confirm_invitation_screen.dart';
 import '../../features/membership/presentation/screens/membership_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
+import '../../features/package_management/presentation/screens/assign_package_screen.dart';
+import '../../features/package_management/presentation/screens/create_package_screen.dart';
+import '../../features/package_management/presentation/screens/package_assignments_screen.dart';
+import '../../features/package_management/presentation/screens/package_management_screen.dart';
 import '../../features/progress/presentation/screens/progress_screen.dart';
 import '../../features/trainer_schedule/presentation/screens/trainer_schedule_screen.dart';
 
@@ -87,6 +91,22 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/confirm-invitation',
         builder: (context, state) => const ConfirmInvitationScreen(),
+      ),
+      GoRoute(
+        path: '/staff/packages',
+        builder: (context, state) => const PackageManagementScreen(),
+      ),
+      GoRoute(
+        path: '/staff/packages/create',
+        builder: (context, state) => const CreatePackageScreen(),
+      ),
+      GoRoute(
+        path: '/staff/packages/assign',
+        builder: (context, state) => const AssignPackageScreen(),
+      ),
+      GoRoute(
+        path: '/staff/packages/assignments',
+        builder: (context, state) => const PackageAssignmentsScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),

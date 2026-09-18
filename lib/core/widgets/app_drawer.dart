@@ -298,6 +298,12 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       trailingText: hasMultipleStaffCompanies ? activeStaffAssignment?.companyName : null,
                       onTap: () => closeThenPush('/admin/add-staff-member'),
                     ),
+                  if (currentUser?.staffAssignment != null)
+                    _DrawerItem(
+                      icon: Icons.card_membership_outlined,
+                      label: l10n.drawerPackageManagement,
+                      onTap: () => closeThenPush('/staff/packages'),
+                    ),
                   if (currentUser?.isTrainer ?? false)
                     _DrawerItem(
                       icon: Icons.event_note_outlined,
