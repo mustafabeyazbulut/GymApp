@@ -474,6 +474,14 @@
   "@packageAssignmentsCancelConfirmBody": {},
   "packageAssignmentsCancelConfirmButton": "Evet, İptal Et",
   "@packageAssignmentsCancelConfirmButton": {},
+  "packageAssignmentsRemainingSessionsLabel": "{count} seans kaldı",
+  "@packageAssignmentsRemainingSessionsLabel": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "packageAssignmentsCheckInButton": "Check-in Yap",
+  "@packageAssignmentsCheckInButton": {},
+  "packageAssignmentsCheckInSuccessMessage": "Check-in kaydedildi.",
+  "@packageAssignmentsCheckInSuccessMessage": {},
 
   "recordPaymentButtonLabel": "Ödeme Al",
   "@recordPaymentButtonLabel": {},

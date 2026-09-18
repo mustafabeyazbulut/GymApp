@@ -165,6 +165,18 @@ class _AssignmentTile extends ConsumerWidget {
     }
   }
 
+  Future<void> _checkIn(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      await ref.read(packageActionsProvider.notifier).recordGeneralCheckIn(assignment.id);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.packageAssignmentsCheckInSuccessMessage)));
+    } on ApiException catch (exception) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
@@ -207,12 +219,34 @@ class _AssignmentTile extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          Text(
-            assignment.endDate == null
-                ? _dateFormat.format(assignment.startDate)
-                : '${_dateFormat.format(assignment.startDate)} – ${_dateFormat.format(assignment.endDate!)}',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundMuted),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  assignment.endDate == null
+                      ? _dateFormat.format(assignment.startDate)
+                      : '${_dateFormat.format(assignment.startDate)} – ${_dateFormat.format(assignment.endDate!)}',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundMuted),
+                ),
+              ),
+              if (assignment.remainingSessions != null)
+                Text(
+                  l10n.packageAssignmentsRemainingSessionsLabel(assignment.remainingSessions!),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundMuted),
+                ),
+            ],
           ),
+          if (isActive) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                onPressed: () => _checkIn(context, ref),
+                icon: const Icon(Icons.qr_code_scanner_outlined, size: 18),
+                label: Text(l10n.packageAssignmentsCheckInButton),
+              ),
+            ),
+          ],
           const SizedBox(height: AppSpacing.md),
           Container(
             padding: const EdgeInsets.only(top: AppSpacing.md),

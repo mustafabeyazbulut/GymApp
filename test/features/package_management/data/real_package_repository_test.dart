@@ -123,6 +123,17 @@ void main() {
     await repository.cancelPackageAssignment(1);
   });
 
+  test('recordGeneralCheckIn posts to /api/package-assignments/{id}/check-in', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/package-assignments/1/check-in');
+      return ResponseBody.fromString('', 204);
+    });
+    final repository = RealPackageRepository(dio);
+
+    await repository.recordGeneralCheckIn(1);
+  });
+
   test('recordPayment posts to /api/package-assignments/{id}/payments', () async {
     final dio = Dio(BaseOptions(baseUrl: 'https://test'));
     dio.httpClientAdapter = _FakeAdapter((options) {

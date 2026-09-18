@@ -31,6 +31,11 @@ abstract interface class PackageRepository {
   // sadece burada, personel tarafında var.
   Future<void> cancelPackageAssignment(int packageAssignmentId);
 
+  // Rezervasyonsuz/yürüyerek gelen (walk-in) check-in - ön masa personeli
+  // için, TrainerScheduleScreen'in rezervasyon bazlı check-in'inden farklı
+  // (orada Trainer da yapabiliyor, burada sadece personel).
+  Future<void> recordGeneralCheckIn(int packageAssignmentId);
+
   Future<void> recordPayment({
     required int packageAssignmentId,
     required double amount,

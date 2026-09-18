@@ -142,6 +142,19 @@ void main() {
     verify(() => repository.getPackageAssignments(memberPhone: null)).called(2);
   });
 
+  test('PackageActions.recordGeneralCheckIn calls the repository then invalidates packageAssignmentsProvider',
+      () async {
+    when(() => repository.getPackageAssignments(memberPhone: null)).thenAnswer((_) async => [assignment]);
+    when(() => repository.recordGeneralCheckIn(1)).thenAnswer((_) async {});
+
+    await container.read(packageAssignmentsProvider(memberPhone: null).future);
+    await container.read(packageActionsProvider.notifier).recordGeneralCheckIn(1);
+    await container.read(packageAssignmentsProvider(memberPhone: null).future);
+
+    verify(() => repository.recordGeneralCheckIn(1)).called(1);
+    verify(() => repository.getPackageAssignments(memberPhone: null)).called(2);
+  });
+
   test('PackageActions.recordPayment calls the repository then invalidates packageAssignmentsProvider', () async {
     when(() => repository.getPackageAssignments(memberPhone: null)).thenAnswer((_) async => [assignment]);
     when(() => repository.recordPayment(

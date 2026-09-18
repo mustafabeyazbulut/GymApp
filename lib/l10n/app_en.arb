@@ -232,6 +232,9 @@
   "packageAssignmentsCancelConfirmTitle": "Cancel this package assignment?",
   "packageAssignmentsCancelConfirmBody": "This cannot be undone. The member's access to this package ends immediately.",
   "packageAssignmentsCancelConfirmButton": "Yes, Cancel",
+  "packageAssignmentsRemainingSessionsLabel": "{count} sessions left",
+  "packageAssignmentsCheckInButton": "Check In",
+  "packageAssignmentsCheckInSuccessMessage": "Check-in recorded.",
 
   "recordPaymentButtonLabel": "Record Payment",
   "recordPaymentTitle": "Record Payment",

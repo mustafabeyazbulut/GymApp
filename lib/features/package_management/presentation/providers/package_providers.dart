@@ -57,6 +57,11 @@ class PackageActions extends _$PackageActions {
     ref.invalidate(packageAssignmentsProvider);
   }
 
+  Future<void> recordGeneralCheckIn(int packageAssignmentId) async {
+    await ref.read(packageRepositoryProvider).recordGeneralCheckIn(packageAssignmentId);
+    ref.invalidate(packageAssignmentsProvider);
+  }
+
   Future<void> recordPayment({
     required int packageAssignmentId,
     required double amount,
