@@ -164,7 +164,7 @@ final class PackageActionsProvider
   }
 }
 
-String _$packageActionsHash() => r'7772bf6e9ead990421ee9704702ac432ce7c438b';
+String _$packageActionsHash() => r'c8a85a1f9daa4d64f8b7956632296d4c835eb8f9';
 
 abstract class _$PackageActions extends $Notifier<void> {
   void build();
