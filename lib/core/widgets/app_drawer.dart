@@ -289,6 +289,12 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                     ),
                   if (currentUser?.staffAssignment != null)
                     _DrawerItem(
+                      icon: Icons.storefront_outlined,
+                      label: l10n.drawerBranchManagement,
+                      onTap: () => closeThenPush('/staff/branches'),
+                    ),
+                  if (currentUser?.staffAssignment != null)
+                    _DrawerItem(
                       icon: Icons.person_add_alt_outlined,
                       label: l10n.drawerAddStaffMember,
                       // Birden fazla şirket varsa hangi şirketi hedeflediğini

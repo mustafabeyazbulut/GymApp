@@ -238,5 +238,23 @@
   "recordPaymentMethodBankTransfer": "Bank Transfer",
   "recordPaymentNoteLabel": "Note (optional)",
   "recordPaymentSubmitButton": "Save Payment",
-  "recordPaymentSuccessMessage": "Payment recorded."
+  "recordPaymentSuccessMessage": "Payment recorded.",
+
+  "drawerBranchManagement": "My Branches",
+  "branchManagementTitle": "My Branches",
+  "branchManagementAddButton": "New Branch",
+  "branchManagementEmptyMessage": "No branches yet. Create one from the top right before you can add staff or define packages.",
+  "branchDeactivateButton": "Close Branch",
+  "branchDeactivateConfirmTitle": "Are you sure you want to close this branch?",
+  "branchDeactivateConfirmBody": "A closed branch disappears from your list and can only be reopened by platform management.",
+  "branchDeactivateConfirmButton": "Yes, Close",
+
+  "branchFormCreateTitle": "New Branch",
+  "branchFormEditTitle": "Edit Branch",
+  "branchFormNameLabel": "Branch Name",
+  "branchFormAddressLabel": "Address",
+  "branchFormCreateButton": "Create Branch",
+  "branchFormSaveButton": "Save",
+  "branchFormCreateSuccessMessage": "Branch created.",
+  "branchFormUpdateSuccessMessage": "Branch updated."
 }

@@ -1,4 +1,5 @@
 import 'branch_option.dart';
+import 'branch_summary.dart';
 import 'company_summary.dart';
 
 abstract interface class TenantRepository {
@@ -57,4 +58,21 @@ abstract interface class TenantRepository {
     required String role, // 'Member' veya 'Trainer'
     required int branchId,
   });
+
+  // "Şubelerim" ekranı için - listBranches()'ın (dropdown'lar için sadece
+  // id/name) aksine adres ve aktiflik durumunu da döner. Bir GymAdmin'in
+  // daveti onayladıktan SONRA ilk şubesini kendisinin oluşturması gerekir
+  // (bkz. GymAppApi'nin project-branch-ownership-flow.md'si) - bu üçü
+  // olmadan yeni bir GymAdmin uygulamadan hiçbir şey yapamaz.
+  Future<List<BranchSummary>> getManagedBranches();
+
+  Future<void> createBranch({required int companyId, required String name, required String address});
+
+  Future<void> updateBranch({required int branchId, required String name, required String address});
+
+  // Sadece kapatabilir (isActive: false) - backend'de bir kez kapatılan
+  // şube herkesten (kapatan GymAdmin dahil) gizlenir, yalnızca Super Admin
+  // tekrar açabilir (bkz. project-branch-ownership-flow.md'nin Task 6
+  // notu). Bilinçli bir backend kısıtı, mobil tarafta "aç" seçeneği yok.
+  Future<void> setBranchActive({required int branchId, required bool isActive});
 }

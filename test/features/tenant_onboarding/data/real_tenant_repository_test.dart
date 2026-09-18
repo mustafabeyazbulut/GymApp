@@ -143,6 +143,61 @@ void main() {
     await repository.setCompanyActive(companyId: 1, isActive: false);
   });
 
+  test('getManagedBranches parses the list with address and isActive', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/branches');
+      return ResponseBody.fromString(
+        '[{"id":1,"companyId":3,"name":"Merkez","address":"Adres 1","isActive":true}]',
+        200,
+        headers: {'content-type': ['application/json']},
+      );
+    });
+    final repository = RealTenantRepository(dio);
+
+    final branches = await repository.getManagedBranches();
+
+    expect(branches, hasLength(1));
+    expect(branches.single.address, 'Adres 1');
+    expect(branches.single.isActive, isTrue);
+  });
+
+  test('createBranch posts to /api/branches with the given fields', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/branches');
+      expect(options.data, {'companyId': 3, 'name': 'Merkez', 'address': 'Adres 1'});
+      return ResponseBody.fromString('{}', 201, headers: {'content-type': ['application/json']});
+    });
+    final repository = RealTenantRepository(dio);
+
+    await repository.createBranch(companyId: 3, name: 'Merkez', address: 'Adres 1');
+  });
+
+  test('updateBranch patches /api/branches/{id} with the given fields', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/branches/1');
+      expect(options.data, {'name': 'Yeni Ad', 'address': 'Yeni Adres'});
+      return ResponseBody.fromString('', 204);
+    });
+    final repository = RealTenantRepository(dio);
+
+    await repository.updateBranch(branchId: 1, name: 'Yeni Ad', address: 'Yeni Adres');
+  });
+
+  test('setBranchActive patches /api/branches/{id}/active', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/branches/1/active');
+      expect(options.data, {'isActive': false});
+      return ResponseBody.fromString('', 204);
+    });
+    final repository = RealTenantRepository(dio);
+
+    await repository.setBranchActive(branchId: 1, isActive: false);
+  });
+
   test('addStaffMember posts to /api/assignments/staff with the given fields', () async {
     final dio = Dio(BaseOptions(baseUrl: 'https://test'));
     dio.httpClientAdapter = _FakeAdapter((options) {

@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
 import '../domain/branch_option.dart';
+import '../domain/branch_summary.dart';
 import '../domain/company_summary.dart';
 import '../domain/tenant_repository.dart';
 
@@ -115,6 +116,53 @@ class RealTenantRepository implements TenantRepository {
         'role': role,
         'branchId': branchId,
       });
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<List<BranchSummary>> getManagedBranches() async {
+    try {
+      final response = await _dio.get<List<dynamic>>('/api/branches');
+      return response.data!
+          .cast<Map<String, dynamic>>()
+          .map(BranchSummary.fromJson)
+          .toList();
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<void> createBranch({required int companyId, required String name, required String address}) async {
+    try {
+      await _dio.post<void>('/api/branches', data: {
+        'companyId': companyId,
+        'name': name,
+        'address': address,
+      });
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<void> updateBranch({required int branchId, required String name, required String address}) async {
+    try {
+      await _dio.patch<void>('/api/branches/$branchId', data: {
+        'name': name,
+        'address': address,
+      });
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<void> setBranchActive({required int branchId, required bool isActive}) async {
+    try {
+      await _dio.patch<void>('/api/branches/$branchId/active', data: {'isActive': isActive});
     } on DioException catch (exception) {
       throw ApiException.fromDioException(exception);
     }

@@ -8,6 +8,7 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/classes/presentation/screens/classes_screen.dart';
 import '../../features/tenant_onboarding/presentation/screens/add_staff_member_screen.dart';
+import '../../features/tenant_onboarding/presentation/screens/branch_management_screen.dart';
 import '../../features/tenant_onboarding/presentation/screens/company_detail_screen.dart';
 import '../../features/tenant_onboarding/presentation/screens/company_management_screen.dart';
 import '../../features/tenant_onboarding/presentation/screens/create_company_screen.dart';
@@ -83,6 +84,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/admin/add-staff-member',
         builder: (context, state) => const AddStaffMemberScreen(),
+      ),
+      GoRoute(
+        path: '/staff/branches',
+        builder: (context, state) => const BranchManagementScreen(),
       ),
       GoRoute(
         path: '/trainer/schedule',
