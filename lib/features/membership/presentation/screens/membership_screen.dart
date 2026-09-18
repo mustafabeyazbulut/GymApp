@@ -1,6 +1,7 @@
 // lib/features/membership/presentation/screens/membership_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -14,34 +15,14 @@ import '../../../auth/presentation/providers/current_user_provider.dart';
 import '../../domain/membership_summary.dart';
 import '../providers/membership_provider.dart';
 
-class MembershipScreen extends ConsumerStatefulWidget {
+final _dateFormat = DateFormat('dd.MM.yyyy');
+final _priceFormat = NumberFormat.currency(locale: 'tr_TR', symbol: '₺', decimalDigits: 0);
+
+class MembershipScreen extends ConsumerWidget {
   const MembershipScreen({super.key});
 
   @override
-  ConsumerState<MembershipScreen> createState() => _MembershipScreenState();
-}
-
-class _MembershipScreenState extends ConsumerState<MembershipScreen> {
-  bool _isFreezing = false;
-
-  Future<void> _requestFreeze() async {
-    setState(() => _isFreezing = true);
-    try {
-      await ref.read(membershipProvider.notifier).requestFreeze();
-    } finally {
-      if (mounted) setState(() => _isFreezing = false);
-    }
-  }
-
-  void _renew() {
-    final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.membershipRenewRequested)),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -50,165 +31,225 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
     );
   }
 
-  // Account settings (language, freeze, delete) and Log Out moved to
-  // AppDrawer — reachable from every screen's header menu button now,
-  // regardless of this screen's loading/error/empty-membership state.
+  // Hesap ayarları (dil, dondurma, silme) ve Çıkış Yap, AppDrawer'a
+  // taşındı — artık bu ekranın loading/error/empty-membership durumundan
+  // bağımsız olarak her ekranın header menü butonundan erişilebilir.
   Widget _buildBody(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
-    return ref.watch(currentUserProvider).when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-        error: (error, stackTrace) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  error is AuthException ? error.message : l10n.commonError,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                OutlinedButton(
-                  onPressed: () => ref.invalidate(currentUserProvider),
-                  child: Text(l10n.commonRetry),
-                ),
-              ],
-            ),
-          ),
-        ),
-        data: (currentUser) {
-          if (currentUser.isAccountFrozen) {
-            return const AccountFrozenState();
-          }
-          if (!currentUser.hasActiveMembership) {
-            return const EmptyMembershipState();
-          }
-          final membershipAsync = ref.watch(membershipProvider);
-          return membershipAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-            error: (error, stackTrace) => Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      error is ApiException ? error.message : l10n.commonError,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    OutlinedButton(
-                      onPressed: () => ref.invalidate(membershipProvider),
-                      child: Text(l10n.commonRetry),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            data: (summary) => ListView(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    border: Border.all(color: AppColors.border),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(summary.packageName, style: Theme.of(context).textTheme.titleMedium),
-                            ),
-                            StatusPill(
-                              text: summary.status == MembershipStatus.active
-                                  ? l10n.membershipActiveStatus
-                                  : l10n.membershipFrozenStatus,
-                              isPositive: summary.status == MembershipStatus.active,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(
-                          '${summary.startDate} – ${summary.endDate}',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        Container(
-                          padding: const EdgeInsets.only(top: AppSpacing.md),
-                          decoration: const BoxDecoration(
-                            border: Border(top: BorderSide(color: AppColors.border)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(summary.price, style: Theme.of(context).textTheme.titleMedium),
-                              if (summary.isPaid)
-                                StatusPill(text: l10n.membershipPaidStatus, isPositive: true),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                ElevatedButton(onPressed: _renew, child: Text(l10n.membershipRenewButton)),
-                const SizedBox(height: AppSpacing.md),
-                OutlinedButton(
-                  onPressed: summary.status == MembershipStatus.frozen || _isFreezing
-                      ? null
-                      : _requestFreeze,
-                  child: _isFreezing
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBackground),
-                        )
-                      : Text(
-                          summary.status == MembershipStatus.frozen
-                              ? l10n.membershipFrozenButton
-                              : l10n.membershipFreezeButton,
-                        ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    border: Border.all(color: AppColors.border),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(l10n.membershipPaymentHistoryLabel, style: Theme.of(context).textTheme.labelSmall),
-                        const SizedBox(height: AppSpacing.sm),
-                        for (final entry in summary.paymentHistory)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(entry.date, style: Theme.of(context).textTheme.bodyMedium),
-                                Text(entry.amount, style: Theme.of(context).textTheme.bodyLarge),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
+    final currentUserAsync = ref.watch(currentUserProvider);
+    if (currentUserAsync.hasError) {
+      final error = currentUserAsync.error;
+      return _ErrorRetry(
+        message: error is AuthException ? error.message : l10n.commonError,
+        onRetry: () => ref.invalidate(currentUserProvider),
       );
+    }
+    if (currentUserAsync.value?.isAccountFrozen ?? false) {
+      return const AccountFrozenState();
+    }
+
+    final membershipsAsync = ref.watch(membershipsProvider);
+    return membershipsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      error: (error, stackTrace) => _ErrorRetry(
+        message: error is ApiException ? error.message : l10n.commonError,
+        onRetry: () => ref.invalidate(membershipsProvider),
+      ),
+      data: (memberships) {
+        if (memberships.isEmpty) {
+          return const EmptyMembershipState();
+        }
+
+        final selectedId = ref.watch(selectedMembershipIdProvider) ?? memberships.first.id;
+        final selected = memberships.firstWhere(
+          (m) => m.id == selectedId,
+          orElse: () => memberships.first,
+        );
+
+        return ListView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          children: [
+            if (memberships.length > 1) ...[
+              Text(l10n.membershipSwitcherLabel, style: Theme.of(context).textTheme.labelSmall),
+              const SizedBox(height: AppSpacing.sm),
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
+                children: memberships
+                    .map((m) => ChoiceChip(
+                          label: Text('${m.companyName} · ${m.packageName}'),
+                          selected: m.id == selected.id,
+                          onSelected: (_) =>
+                              ref.read(selectedMembershipIdProvider.notifier).select(m.id),
+                        ))
+                    .toList(),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+            ],
+            _MembershipCard(summary: selected, l10n: l10n),
+            const SizedBox(height: AppSpacing.md),
+            _PaymentHistoryCard(packageAssignmentId: selected.id, l10n: l10n),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              l10n.membershipStaffContactNote,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundFaint),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
+class _MembershipCard extends StatelessWidget {
+  const _MembershipCard({required this.summary, required this.l10n});
+
+  final MembershipSummary summary;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(summary.packageName, style: Theme.of(context).textTheme.titleMedium),
+                      Text(summary.companyName, style: Theme.of(context).textTheme.bodyMedium),
+                    ],
+                  ),
+                ),
+                StatusPill(
+                  text: summary.status == MembershipStatus.active
+                      ? l10n.membershipActiveStatus
+                      : l10n.membershipFrozenStatus,
+                  isPositive: summary.status == MembershipStatus.active,
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              summary.endDate == null
+                  ? _dateFormat.format(summary.startDate)
+                  : '${_dateFormat.format(summary.startDate)} – ${_dateFormat.format(summary.endDate!)}',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            if (summary.sessionCount != null) ...[
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                l10n.membershipSessionsRemainingLabel(summary.remainingSessions ?? 0, summary.sessionCount!),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+            const SizedBox(height: AppSpacing.md),
+            Container(
+              padding: const EdgeInsets.only(top: AppSpacing.md),
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: AppColors.border)),
+              ),
+              child: Text(_priceFormat.format(summary.price), style: Theme.of(context).textTheme.titleMedium),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PaymentHistoryCard extends ConsumerWidget {
+  const _PaymentHistoryCard({required this.packageAssignmentId, required this.l10n});
+
+  final int packageAssignmentId;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final paymentsAsync = ref.watch(membershipPaymentsProvider(packageAssignmentId));
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.membershipPaymentHistoryLabel, style: Theme.of(context).textTheme.labelSmall),
+            const SizedBox(height: AppSpacing.sm),
+            paymentsAsync.when(
+              loading: () => const Padding(
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+                child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
+              ),
+              error: (error, stackTrace) => Text(
+                error is ApiException ? error.message : l10n.commonError,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              data: (payments) {
+                if (payments.isEmpty) {
+                  return Text(l10n.membershipNoPaymentsMessage, style: Theme.of(context).textTheme.bodyMedium);
+                }
+                return Column(
+                  children: [
+                    for (final entry in payments)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(_dateFormat.format(entry.date), style: Theme.of(context).textTheme.bodyMedium),
+                            Text(_priceFormat.format(entry.amount), style: Theme.of(context).textTheme.bodyLarge),
+                          ],
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ErrorRetry extends StatelessWidget {
+  const _ErrorRetry({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: AppSpacing.lg),
+            OutlinedButton(onPressed: onRetry, child: Text(l10n.commonRetry)),
+          ],
+        ),
+      ),
+    );
+  }
+}

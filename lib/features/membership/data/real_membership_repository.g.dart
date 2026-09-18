@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'fake_membership_repository.dart';
+part of 'real_membership_repository.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -55,4 +55,4 @@ final class MembershipRepositoryProvider
 }
 
 String _$membershipRepositoryHash() =>
-    r'a7e47ec6ba3c3f2d0859a0dd1cfed98918d27607';
+    r'67054499ac3222a053ee48c375a2ce5744666c96';
