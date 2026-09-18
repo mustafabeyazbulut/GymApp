@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -24,6 +26,9 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
   bool _isSavingName = false;
   bool _isTogglingActive = false;
   String? _errorText;
+
+  String? _inviteGymAdminPhone;
+  bool _isInvitingGymAdmin = false;
 
   @override
   void initState() {
@@ -87,6 +92,24 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
     } finally {
       if (mounted) setState(() => _isTogglingActive = false);
+    }
+  }
+
+  Future<void> _inviteGymAdmin() async {
+    final l10n = AppLocalizations.of(context)!;
+    final phone = _inviteGymAdminPhone;
+    if (phone == null || phone.trim().isEmpty) return;
+
+    setState(() => _isInvitingGymAdmin = true);
+    try {
+      await ref.read(tenantRepositoryProvider).inviteGymAdmin(companyId: widget.companyId, phone: phone);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.companyDetailInviteGymAdminSuccessMessage)));
+    } on ApiException catch (exception) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+    } finally {
+      if (mounted) setState(() => _isInvitingGymAdmin = false);
     }
   }
 
@@ -184,6 +207,31 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
             _BranchTile(branch: branch),
             const SizedBox(height: AppSpacing.sm),
           ],
+          const SizedBox(height: AppSpacing.xl),
+          Text(l10n.companyDetailInviteGymAdminTitle, style: Theme.of(context).textTheme.labelSmall),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            l10n.companyDetailInviteGymAdminHint,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundFaint),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          IntlPhoneField(
+            initialCountryCode: 'TR',
+            decoration: InputDecoration(labelText: l10n.companyDetailInviteGymAdminPhoneLabel),
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            onChanged: (phone) => _inviteGymAdminPhone = phone.completeNumber,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          OutlinedButton(
+            onPressed: _isInvitingGymAdmin ? null : _inviteGymAdmin,
+            child: _isInvitingGymAdmin
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBackground),
+                  )
+                : Text(l10n.companyDetailInviteGymAdminButton),
+          ),
         ],
       ),
     );

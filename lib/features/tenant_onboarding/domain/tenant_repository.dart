@@ -16,9 +16,17 @@ abstract interface class TenantRepository {
 
   // Çağıranın kendi telefonuna gelen bir davet kodunu onaylar - hem
   // createCompany (GymAdmin daveti) hem addStaffMember (Member/Trainer
-  // daveti) hem de InviteGymAdmin'in (henüz mobil UI'ı yok) ürettiği
-  // davetler için tek, ortak onay noktası (POST /api/assignments/confirm).
+  // daveti) hem de inviteGymAdmin'in ürettiği davetler için tek, ortak onay
+  // noktası (POST /api/assignments/confirm).
   Future<void> confirmAssignmentInvitation(String code);
+
+  // ZATEN KAYITLI bir kullanıcıyı bu şirkete İKİNCİ (veya üçüncü...) bir
+  // GymAdmin olarak davet eder - bir şirketin birden fazla GymAdmin'i
+  // olabilir (ör. iş ortakları). Sadece mevcut bir GymAdmin/Super Admin,
+  // sunucu tarafında zorunlu kılınır. Assignment hemen oluşmaz - davet
+  // edilen kişi kendi confirmAssignmentInvitation çağrısıyla onaylayana
+  // kadar sadece bekler.
+  Future<void> inviteGymAdmin({required int companyId, required String phone});
 
   // Company Management liste ekranı için tüm şirketler - sadece Super Admin.
   Future<List<CompanyListItem>> listCompanies();

@@ -56,6 +56,11 @@
   "companyDetailNameUpdatedMessage": "Company name updated.",
   "companyDetailActiveLabel": "Company Active",
   "companyDetailBranchesTitle": "Branches",
+  "companyDetailInviteGymAdminTitle": "Invite GymAdmin",
+  "companyDetailInviteGymAdminHint": "This number must already belong to a registered user - they are invited as a second GymAdmin (e.g. a business partner) for this company.",
+  "companyDetailInviteGymAdminPhoneLabel": "Phone",
+  "companyDetailInviteGymAdminButton": "Send Invite",
+  "companyDetailInviteGymAdminSuccessMessage": "Invitation sent. They become a GymAdmin once they confirm with the code sent to their phone.",
 
   "navHome": "Home",
   "navClasses": "Classes",

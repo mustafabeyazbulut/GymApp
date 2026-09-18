@@ -51,6 +51,18 @@ void main() {
     await repository.confirmAssignmentInvitation('123456');
   });
 
+  test('inviteGymAdmin posts to /api/assignments/gym-admin with the given fields', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/assignments/gym-admin');
+      expect(options.data, {'companyId': 1, 'phone': '+905551112233'});
+      return ResponseBody.fromString('{}', 201, headers: {'content-type': ['application/json']});
+    });
+    final repository = RealTenantRepository(dio);
+
+    await repository.inviteGymAdmin(companyId: 1, phone: '+905551112233');
+  });
+
   test('listBranches parses the branch list', () async {
     final dio = Dio(BaseOptions(baseUrl: 'https://test'));
     dio.httpClientAdapter = _FakeAdapter((options) {

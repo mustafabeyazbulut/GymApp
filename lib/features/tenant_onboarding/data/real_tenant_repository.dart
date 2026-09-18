@@ -38,6 +38,18 @@ class RealTenantRepository implements TenantRepository {
   }
 
   @override
+  Future<void> inviteGymAdmin({required int companyId, required String phone}) async {
+    try {
+      await _dio.post<void>('/api/assignments/gym-admin', data: {
+        'companyId': companyId,
+        'phone': phone,
+      });
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
   Future<List<CompanyListItem>> listCompanies() async {
     try {
       final response = await _dio.get<List<dynamic>>('/api/companies');
