@@ -311,6 +311,20 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
                       child: Divider(color: AppColors.border, height: 1),
                     ),
+                  // Herkese açık - herhangi bir kullanıcı bir firmaya, şubeye
+                  // veya pakete davet edilmiş olabilir; CreateCompany/
+                  // AddStaffMember/CreatePackageAssignment hiçbiri Assignment/
+                  // PackageAssignment'ı hemen oluşturmuyor, buradan onay
+                  // gerekiyor.
+                  _DrawerItem(
+                    icon: Icons.mark_email_read_outlined,
+                    label: l10n.drawerConfirmInvitation,
+                    onTap: () => closeThenPush('/confirm-invitation'),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                    child: Divider(color: AppColors.border, height: 1),
+                  ),
                   _DrawerItem(
                     icon: Icons.language,
                     label: l10n.settingsLanguageLabel,

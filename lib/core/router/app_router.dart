@@ -12,6 +12,7 @@ import '../../features/tenant_onboarding/presentation/screens/company_detail_scr
 import '../../features/tenant_onboarding/presentation/screens/company_management_screen.dart';
 import '../../features/tenant_onboarding/presentation/screens/create_company_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/invitations/presentation/screens/confirm_invitation_screen.dart';
 import '../../features/membership/presentation/screens/membership_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/progress/presentation/screens/progress_screen.dart';
@@ -82,6 +83,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/trainer/schedule',
         builder: (context, state) => const TrainerScheduleScreen(),
+      ),
+      GoRoute(
+        path: '/confirm-invitation',
+        builder: (context, state) => const ConfirmInvitationScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),

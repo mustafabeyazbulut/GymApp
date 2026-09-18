@@ -20,8 +20,6 @@ class AddStaffMemberScreen extends ConsumerStatefulWidget {
 
 class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
   String? _phone;
   String _role = 'Member';
   int? _selectedBranchId;
@@ -66,12 +64,6 @@ class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
     }
   }
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    super.dispose();
-  }
 
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context)!;
@@ -87,9 +79,7 @@ class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
     });
     try {
       await ref.read(tenantRepositoryProvider).addStaffMember(
-            fullName: _nameController.text.trim(),
             phone: _phone!,
-            email: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
             role: _role,
             branchId: _selectedBranchId!,
           );
@@ -121,12 +111,6 @@ class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TextFormField(
-                  controller: _nameController,
-                  decoration: InputDecoration(labelText: l10n.addStaffMemberNameLabel),
-                  validator: (value) => (value == null || value.trim().isEmpty) ? l10n.commonFieldRequired : null,
-                ),
-                const SizedBox(height: AppSpacing.lg),
                 IntlPhoneField(
                   initialCountryCode: 'TR',
                   decoration: InputDecoration(labelText: l10n.addStaffMemberPhoneLabel),
@@ -134,11 +118,12 @@ class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
                   onChanged: (phone) => _phone = phone.completeNumber,
                   validator: (phone) => (phone == null || phone.number.trim().isEmpty) ? l10n.commonFieldRequired : null,
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(labelText: l10n.addStaffMemberEmailLabel),
+                Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.xs),
+                  child: Text(
+                    l10n.addStaffMemberPhoneHint,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundFaint),
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 DropdownButtonFormField<String>(

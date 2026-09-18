@@ -18,10 +18,6 @@ class CreateCompanyScreen extends ConsumerStatefulWidget {
 class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
   final _formKey = GlobalKey<FormState>();
   final _companyNameController = TextEditingController();
-  final _branchNameController = TextEditingController();
-  final _branchAddressController = TextEditingController();
-  final _gymAdminNameController = TextEditingController();
-  final _gymAdminEmailController = TextEditingController();
   String? _gymAdminPhone;
   bool _isSubmitting = false;
   String? _errorText;
@@ -29,10 +25,6 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
   @override
   void dispose() {
     _companyNameController.dispose();
-    _branchNameController.dispose();
-    _branchAddressController.dispose();
-    _gymAdminNameController.dispose();
-    _gymAdminEmailController.dispose();
     super.dispose();
   }
 
@@ -51,13 +43,7 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
     try {
       await ref.read(tenantRepositoryProvider).createCompany(
             companyName: _companyNameController.text.trim(),
-            branchName: _branchNameController.text.trim(),
-            branchAddress: _branchAddressController.text.trim(),
-            gymAdminFullName: _gymAdminNameController.text.trim(),
             gymAdminPhone: _gymAdminPhone!,
-            gymAdminEmail: _gymAdminEmailController.text.trim().isEmpty
-                ? null
-                : _gymAdminEmailController.text.trim(),
           );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.createCompanySuccessMessage)));
@@ -90,24 +76,6 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                   validator: (value) => (value == null || value.trim().isEmpty) ? l10n.commonFieldRequired : null,
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                TextFormField(
-                  controller: _branchNameController,
-                  decoration: InputDecoration(labelText: l10n.createCompanyBranchNameLabel),
-                  validator: (value) => (value == null || value.trim().isEmpty) ? l10n.commonFieldRequired : null,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                TextFormField(
-                  controller: _branchAddressController,
-                  decoration: InputDecoration(labelText: l10n.createCompanyBranchAddressLabel),
-                  validator: (value) => (value == null || value.trim().isEmpty) ? l10n.commonFieldRequired : null,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                TextFormField(
-                  controller: _gymAdminNameController,
-                  decoration: InputDecoration(labelText: l10n.createCompanyGymAdminNameLabel),
-                  validator: (value) => (value == null || value.trim().isEmpty) ? l10n.commonFieldRequired : null,
-                ),
-                const SizedBox(height: AppSpacing.lg),
                 IntlPhoneField(
                   initialCountryCode: 'TR',
                   decoration: InputDecoration(labelText: l10n.createCompanyGymAdminPhoneLabel),
@@ -115,11 +83,12 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                   onChanged: (phone) => _gymAdminPhone = phone.completeNumber,
                   validator: (phone) => (phone == null || phone.number.trim().isEmpty) ? l10n.commonFieldRequired : null,
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                TextFormField(
-                  controller: _gymAdminEmailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(labelText: l10n.createCompanyGymAdminEmailLabel),
+                Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.xs),
+                  child: Text(
+                    l10n.createCompanyGymAdminPhoneHint,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundFaint),
+                  ),
                 ),
                 if (_errorText != null) ...[
                   const SizedBox(height: AppSpacing.md),

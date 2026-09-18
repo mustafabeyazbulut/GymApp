@@ -7,29 +7,19 @@ import 'package:gym_app/core/network/api_exception.dart';
 import 'package:gym_app/features/tenant_onboarding/data/real_tenant_repository.dart';
 
 void main() {
-  test('createCompany posts to /api/companies with the given fields', () async {
+  test('createCompany posts to /api/companies with just the company name and admin phone', () async {
     final dio = Dio(BaseOptions(baseUrl: 'https://test'));
     dio.httpClientAdapter = _FakeAdapter((options) {
       expect(options.path, '/api/companies');
       expect(options.data, {
         'companyName': 'Test Gym',
-        'branchName': 'Merkez',
-        'branchAddress': 'Adres',
-        'gymAdminFullName': 'Ada Admin',
         'gymAdminPhone': '+905551112233',
-        'gymAdminEmail': null,
       });
       return ResponseBody.fromString('{}', 201, headers: {'content-type': ['application/json']});
     });
     final repository = RealTenantRepository(dio);
 
-    await repository.createCompany(
-      companyName: 'Test Gym',
-      branchName: 'Merkez',
-      branchAddress: 'Adres',
-      gymAdminFullName: 'Ada Admin',
-      gymAdminPhone: '+905551112233',
-    );
+    await repository.createCompany(companyName: 'Test Gym', gymAdminPhone: '+905551112233');
   });
 
   test('createCompany rethrows a DioException as ApiException', () async {
@@ -44,12 +34,21 @@ void main() {
     final repository = RealTenantRepository(dio);
 
     await expectLater(
-      () => repository.createCompany(
-        companyName: 'x', branchName: 'x', branchAddress: 'x',
-        gymAdminFullName: 'x', gymAdminPhone: 'x',
-      ),
+      () => repository.createCompany(companyName: 'x', gymAdminPhone: 'x'),
       throwsA(isA<ApiException>().having((e) => e.message, 'message', 'Bu işlem için yetkiniz yok.')),
     );
+  });
+
+  test('confirmAssignmentInvitation posts to /api/assignments/confirm with the code', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/assignments/confirm');
+      expect(options.data, {'code': '123456'});
+      return ResponseBody.fromString('{}', 201, headers: {'content-type': ['application/json']});
+    });
+    final repository = RealTenantRepository(dio);
+
+    await repository.confirmAssignmentInvitation('123456');
   });
 
   test('listBranches parses the branch list', () async {
@@ -137,9 +136,7 @@ void main() {
     dio.httpClientAdapter = _FakeAdapter((options) {
       expect(options.path, '/api/assignments/staff');
       expect(options.data, {
-        'fullName': 'New Trainer',
         'phone': '+905550003333',
-        'email': null,
         'role': 'Trainer',
         'branchId': 10,
       });
@@ -148,7 +145,6 @@ void main() {
     final repository = RealTenantRepository(dio);
 
     await repository.addStaffMember(
-      fullName: 'New Trainer',
       phone: '+905550003333',
       role: 'Trainer',
       branchId: 10,

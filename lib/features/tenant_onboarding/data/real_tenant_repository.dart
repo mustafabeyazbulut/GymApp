@@ -16,21 +16,22 @@ class RealTenantRepository implements TenantRepository {
   @override
   Future<void> createCompany({
     required String companyName,
-    required String branchName,
-    required String branchAddress,
-    required String gymAdminFullName,
     required String gymAdminPhone,
-    String? gymAdminEmail,
   }) async {
     try {
       await _dio.post<void>('/api/companies', data: {
         'companyName': companyName,
-        'branchName': branchName,
-        'branchAddress': branchAddress,
-        'gymAdminFullName': gymAdminFullName,
         'gymAdminPhone': gymAdminPhone,
-        'gymAdminEmail': gymAdminEmail,
       });
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<void> confirmAssignmentInvitation(String code) async {
+    try {
+      await _dio.post<void>('/api/assignments/confirm', data: {'code': code});
     } on DioException catch (exception) {
       throw ApiException.fromDioException(exception);
     }
@@ -92,17 +93,13 @@ class RealTenantRepository implements TenantRepository {
 
   @override
   Future<void> addStaffMember({
-    required String fullName,
     required String phone,
-    String? email,
     required String role,
     required int branchId,
   }) async {
     try {
       await _dio.post<void>('/api/assignments/staff', data: {
-        'fullName': fullName,
         'phone': phone,
-        'email': email,
         'role': role,
         'branchId': branchId,
       });
