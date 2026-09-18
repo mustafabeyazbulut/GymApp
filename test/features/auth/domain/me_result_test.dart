@@ -27,6 +27,20 @@ void main() {
     expect(me.isSuperAdmin, isFalse);
   });
 
+  test('isTrainer is true when any assignment is Trainer', () {
+    final me = _withAssignments([
+      const MeAssignment(companyId: 1, companyName: 'Co', branchId: 2, role: 'Trainer'),
+    ]);
+    expect(me.isTrainer, isTrue);
+  });
+
+  test('isTrainer is false for a plain Member', () {
+    final me = _withAssignments([
+      const MeAssignment(companyId: 1, companyName: 'Co', branchId: 2, role: 'Member'),
+    ]);
+    expect(me.isTrainer, isFalse);
+  });
+
   test('staffAssignment returns the GymAdmin assignment', () {
     final gymAdmin = const MeAssignment(companyId: 1, companyName: 'Co', branchId: null, role: 'GymAdmin');
     final me = _withAssignments([gymAdmin]);

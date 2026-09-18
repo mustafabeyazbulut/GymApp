@@ -115,6 +115,10 @@ class MeResult {
 
   bool get isSuperAdmin => assignments.any((a) => a.role == 'SuperAdmin');
 
+  // Bir Trainer'ın kendi programını görebileceği drawer girişini göstermek
+  // için (bkz. TrainerScheduleScreen, GET /api/reservations/mine).
+  bool get isTrainer => assignments.any((a) => a.role == 'Trainer');
+
   // Bu kullanıcının personel yönetmesine izin veren tek Assignment (varsa) - bir
   // GymAdmin şirketinin her şubesini denetler (kendi atamasında branchId null'dur);
   // bir BranchManager ise tam olarak tek bir şubeyle sınırlıdır. Sıradan bir

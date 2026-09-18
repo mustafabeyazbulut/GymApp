@@ -15,6 +15,7 @@ import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/membership/presentation/screens/membership_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/progress/presentation/screens/progress_screen.dart';
+import '../../features/trainer_schedule/presentation/screens/trainer_schedule_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -77,6 +78,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/admin/add-staff-member',
         builder: (context, state) => const AddStaffMemberScreen(),
+      ),
+      GoRoute(
+        path: '/trainer/schedule',
+        builder: (context, state) => const TrainerScheduleScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),

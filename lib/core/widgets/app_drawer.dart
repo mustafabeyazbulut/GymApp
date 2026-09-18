@@ -298,7 +298,15 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       trailingText: hasMultipleStaffCompanies ? activeStaffAssignment?.companyName : null,
                       onTap: () => closeThenPush('/admin/add-staff-member'),
                     ),
-                  if ((currentUser?.isSuperAdmin ?? false) || currentUser?.staffAssignment != null)
+                  if (currentUser?.isTrainer ?? false)
+                    _DrawerItem(
+                      icon: Icons.event_note_outlined,
+                      label: l10n.drawerTrainerSchedule,
+                      onTap: () => closeThenPush('/trainer/schedule'),
+                    ),
+                  if ((currentUser?.isSuperAdmin ?? false) ||
+                      currentUser?.staffAssignment != null ||
+                      (currentUser?.isTrainer ?? false))
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
                       child: Divider(color: AppColors.border, height: 1),
