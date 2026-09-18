@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../progress/presentation/widgets/add_progress_note_sheet.dart';
 import '../../domain/my_reservation.dart';
 import '../providers/my_reservations_provider.dart';
 
@@ -127,6 +128,8 @@ class TrainerScheduleScreen extends ConsumerWidget {
               reservation: reservations[index],
               l10n: l10n,
               onAction: (action) => _handleAction(context, ref, l10n, reservations[index], action),
+              onAddProgressNote: () =>
+                  showAddProgressNoteSheet(context, packageAssignmentId: reservations[index].packageAssignmentId),
             ),
           );
         },
@@ -136,11 +139,17 @@ class TrainerScheduleScreen extends ConsumerWidget {
 }
 
 class _ReservationCard extends StatelessWidget {
-  const _ReservationCard({required this.reservation, required this.l10n, required this.onAction});
+  const _ReservationCard({
+    required this.reservation,
+    required this.l10n,
+    required this.onAction,
+    required this.onAddProgressNote,
+  });
 
   final MyReservation reservation;
   final AppLocalizations l10n;
   final ValueChanged<_ReservationAction> onAction;
+  final VoidCallback onAddProgressNote;
 
   @override
   Widget build(BuildContext context) {
@@ -152,6 +161,8 @@ class _ReservationCard extends StatelessWidget {
       MyReservationStatus.noShow => (l10n.classesStatusNoShow, false),
     };
     final isBooked = reservation.status == MyReservationStatus.booked;
+    final canAddProgressNote =
+        reservation.status == MyReservationStatus.booked || reservation.status == MyReservationStatus.checkedIn;
 
     return Container(
       decoration: BoxDecoration(
@@ -181,6 +192,12 @@ class _ReservationCard extends StatelessWidget {
             ),
             const SizedBox(width: AppSpacing.sm),
             StatusPill(text: statusLabel, isPositive: isPositive),
+            if (canAddProgressNote)
+              IconButton(
+                tooltip: l10n.progressAddNoteButton,
+                icon: const Icon(Icons.note_add_outlined, size: 20, color: AppColors.onBackgroundMuted),
+                onPressed: onAddProgressNote,
+              ),
             if (isBooked)
               PopupMenuButton<_ReservationAction>(
                 icon: const Icon(Icons.more_vert, size: 20, color: AppColors.onBackgroundMuted),

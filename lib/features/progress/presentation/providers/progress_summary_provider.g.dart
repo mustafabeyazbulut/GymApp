@@ -9,8 +9,85 @@ part of 'progress_summary_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(progressNotes)
+final progressNotesProvider = ProgressNotesFamily._();
+
+final class ProgressNotesProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<ProgressNote>>,
+          List<ProgressNote>,
+          FutureOr<List<ProgressNote>>
+        >
+    with
+        $FutureModifier<List<ProgressNote>>,
+        $FutureProvider<List<ProgressNote>> {
+  ProgressNotesProvider._({
+    required ProgressNotesFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'progressNotesProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$progressNotesHash();
+
+  @override
+  String toString() {
+    return r'progressNotesProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<ProgressNote>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<ProgressNote>> create(Ref ref) {
+    final argument = this.argument as int;
+    return progressNotes(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ProgressNotesProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$progressNotesHash() => r'09c09574fc4a2f19b1b20aa9e5839015dad41e90';
+
+final class ProgressNotesFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<ProgressNote>>, int> {
+  ProgressNotesFamily._()
+    : super(
+        retry: null,
+        name: r'progressNotesProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  ProgressNotesProvider call(int packageAssignmentId) =>
+      ProgressNotesProvider._(argument: packageAssignmentId, from: this);
+
+  @override
+  String toString() => r'progressNotesProvider';
+}
+
 @ProviderFor(progressSummary)
-final progressSummaryProvider = ProgressSummaryFamily._();
+final progressSummaryProvider = ProgressSummaryProvider._();
 
 final class ProgressSummaryProvider
     extends
@@ -20,26 +97,19 @@ final class ProgressSummaryProvider
           FutureOr<ProgressSummary>
         >
     with $FutureModifier<ProgressSummary>, $FutureProvider<ProgressSummary> {
-  ProgressSummaryProvider._({
-    required ProgressSummaryFamily super.from,
-    required ProgressCategory super.argument,
-  }) : super(
-         retry: null,
-         name: r'progressSummaryProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
+  ProgressSummaryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'progressSummaryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$progressSummaryHash();
-
-  @override
-  String toString() {
-    return r'progressSummaryProvider'
-        ''
-        '($argument)';
-  }
 
   @$internal
   @override
@@ -49,38 +119,8 @@ final class ProgressSummaryProvider
 
   @override
   FutureOr<ProgressSummary> create(Ref ref) {
-    final argument = this.argument as ProgressCategory;
-    return progressSummary(ref, argument);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is ProgressSummaryProvider && other.argument == argument;
-  }
-
-  @override
-  int get hashCode {
-    return argument.hashCode;
+    return progressSummary(ref);
   }
 }
 
-String _$progressSummaryHash() => r'8459159e6f23b52685f053009316effeee3658d3';
-
-final class ProgressSummaryFamily extends $Family
-    with
-        $FunctionalFamilyOverride<FutureOr<ProgressSummary>, ProgressCategory> {
-  ProgressSummaryFamily._()
-    : super(
-        retry: null,
-        name: r'progressSummaryProvider',
-        dependencies: null,
-        $allTransitiveDependencies: null,
-        isAutoDispose: true,
-      );
-
-  ProgressSummaryProvider call(ProgressCategory category) =>
-      ProgressSummaryProvider._(argument: category, from: this);
-
-  @override
-  String toString() => r'progressSummaryProvider';
-}
+String _$progressSummaryHash() => r'876a5c9962cd8c765cba46146cb1c6cb360dd0b2';

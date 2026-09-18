@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'fake_progress_repository.dart';
+part of 'real_progress_repository.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -55,4 +55,4 @@ final class ProgressRepositoryProvider
 }
 
 String _$progressRepositoryHash() =>
-    r'b0eb87edf442441fd9faae2e19c8aed73a8248ea';
+    r'7f3c123f02c379166a7b79ea82d19624bb4ae3ba';
