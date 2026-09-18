@@ -91,3 +91,56 @@ final class HasUnreadNotificationsProvider
 
 String _$hasUnreadNotificationsHash() =>
     r'0d615dad5797a347e3714d5496541f9abb27a892';
+
+@ProviderFor(NotificationActions)
+final notificationActionsProvider = NotificationActionsProvider._();
+
+final class NotificationActionsProvider
+    extends $NotifierProvider<NotificationActions, void> {
+  NotificationActionsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'notificationActionsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$notificationActionsHash();
+
+  @$internal
+  @override
+  NotificationActions create() => NotificationActions();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(void value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<void>(value),
+    );
+  }
+}
+
+String _$notificationActionsHash() =>
+    r'555660b69c504495b8f49d2991e65964a5471efc';
+
+abstract class _$NotificationActions extends $Notifier<void> {
+  void build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<void, void>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<void, void>,
+              void,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

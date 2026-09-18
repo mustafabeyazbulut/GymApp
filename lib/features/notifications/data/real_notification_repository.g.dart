@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'fake_notification_repository.dart';
+part of 'real_notification_repository.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -55,4 +55,4 @@ final class NotificationRepositoryProvider
 }
 
 String _$notificationRepositoryHash() =>
-    r'31cfb5cb430cb7dba967ce56d83ecb17fecfe825';
+    r'c5c7fe89eea5f5296bb608ed251c54726455d576';
