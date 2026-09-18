@@ -86,3 +86,55 @@ final class MembershipPaymentsFamily extends $Family
   @override
   String toString() => r'membershipPaymentsProvider';
 }
+
+@ProviderFor(MembershipActions)
+final membershipActionsProvider = MembershipActionsProvider._();
+
+final class MembershipActionsProvider
+    extends $NotifierProvider<MembershipActions, void> {
+  MembershipActionsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'membershipActionsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$membershipActionsHash();
+
+  @$internal
+  @override
+  MembershipActions create() => MembershipActions();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(void value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<void>(value),
+    );
+  }
+}
+
+String _$membershipActionsHash() => r'4d87bd7267e523e9e2737220628d47d5a4ffc3c4';
+
+abstract class _$MembershipActions extends $Notifier<void> {
+  void build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<void, void>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<void, void>,
+              void,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

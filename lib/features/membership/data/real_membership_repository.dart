@@ -28,6 +28,33 @@ class RealMembershipRepository implements MembershipRepository {
       throw ApiException.fromDioException(exception);
     }
   }
+
+  @override
+  Future<void> requestFreeze(int packageAssignmentId) async {
+    try {
+      await _dio.post<void>('/api/package-assignments/$packageAssignmentId/freeze');
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<void> requestUnfreeze(int packageAssignmentId) async {
+    try {
+      await _dio.post<void>('/api/package-assignments/$packageAssignmentId/unfreeze');
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<void> confirmPackageAssignment(String code) async {
+    try {
+      await _dio.post<void>('/api/package-assignments/confirm', data: {'code': code});
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
 }
 
 @riverpod

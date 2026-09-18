@@ -31,4 +31,20 @@ void main() {
     expect(result.single.amount, 1500);
     verify(() => membershipRepository.getPayments(20)).called(1);
   });
+
+  test('MembershipActions.requestFreeze calls the repository', () async {
+    when(() => membershipRepository.requestFreeze(20)).thenAnswer((_) async {});
+
+    await container.read(membershipActionsProvider.notifier).requestFreeze(20);
+
+    verify(() => membershipRepository.requestFreeze(20)).called(1);
+  });
+
+  test('MembershipActions.requestUnfreeze calls the repository', () async {
+    when(() => membershipRepository.requestUnfreeze(20)).thenAnswer((_) async {});
+
+    await container.read(membershipActionsProvider.notifier).requestUnfreeze(20);
+
+    verify(() => membershipRepository.requestUnfreeze(20)).called(1);
+  });
 }

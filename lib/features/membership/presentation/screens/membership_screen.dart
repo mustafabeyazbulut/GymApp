@@ -20,11 +20,61 @@ import '../widgets/membership_switcher.dart';
 final _dateFormat = DateFormat('dd.MM.yyyy');
 final _priceFormat = NumberFormat.currency(locale: 'tr_TR', symbol: '₺', decimalDigits: 0);
 
-class MembershipScreen extends ConsumerWidget {
+class MembershipScreen extends ConsumerStatefulWidget {
   const MembershipScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MembershipScreen> createState() => _MembershipScreenState();
+}
+
+class _MembershipScreenState extends ConsumerState<MembershipScreen> {
+  bool _isTogglingFreeze = false;
+
+  Future<void> _toggleFreeze(MembershipSummary summary) async {
+    final l10n = AppLocalizations.of(context)!;
+    final isFrozen = summary.status == MembershipStatus.frozen;
+
+    if (!isFrozen) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(l10n.membershipFreezeConfirmTitle),
+          content: Text(l10n.membershipFreezeConfirmBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(l10n.accountDeletionCancelButton),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(l10n.membershipFreezeConfirmButton),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+    }
+
+    if (!mounted) return;
+    setState(() => _isTogglingFreeze = true);
+    try {
+      final actions = ref.read(membershipActionsProvider.notifier);
+      if (isFrozen) {
+        await actions.requestUnfreeze(summary.id);
+      } else {
+        await actions.requestFreeze(summary.id);
+      }
+    } on ApiException catch (exception) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+    } finally {
+      if (mounted) setState(() => _isTogglingFreeze = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -77,6 +127,21 @@ class MembershipScreen extends ConsumerWidget {
               onSelect: (id) => ref.read(selectedMembershipIdProvider.notifier).select(id),
             ),
             _MembershipCard(summary: selected, l10n: l10n),
+            const SizedBox(height: AppSpacing.md),
+            OutlinedButton(
+              onPressed: _isTogglingFreeze ? null : () => _toggleFreeze(selected),
+              child: _isTogglingFreeze
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBackground),
+                    )
+                  : Text(
+                      selected.status == MembershipStatus.frozen
+                          ? l10n.membershipUnfreezeButton
+                          : l10n.membershipFreezeButton,
+                    ),
+            ),
             const SizedBox(height: AppSpacing.md),
             _PaymentHistoryCard(packageAssignmentId: selected.id, l10n: l10n),
             const SizedBox(height: AppSpacing.md),

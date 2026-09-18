@@ -1,10 +1,10 @@
 import 'membership_summary.dart';
 
-// Not: freeze/unfreeze/cancel bilerek burada yok - backend'de
-// FreezePackageAssignmentCommand vb. sadece [Authorize(Policy =
-// "StaffManagement")] (bkz. GymAppApi PackageAssignmentsController), bir
-// Member kendi üyeliğini kendi kendine dondurma/iptal etme yetkisine sahip
-// değil. Ekran bunun yerine [membershipStaffContactNote] gösterir.
+// Not: cancel (kalıcı iptal) bilerek burada yok - backend'de
+// CancelPackageAssignmentCommand hâlâ sadece StaffManagement policy'siyle
+// korunuyor (bkz. GymAppApi PackageAssignmentsController) - dondurma/açmanın
+// aksine iptal geri alınamaz olduğu için üyenin kendi kendine yapabileceği
+// bir işlem değil.
 //
 // Not: burada bir getMemberships() yok - çağıranın PackageAssignment
 // listesi zaten GET /api/auth/me üzerinden currentUserProvider tarafından
@@ -13,4 +13,12 @@ import 'membership_summary.dart';
 // kullanıyoruz.
 abstract interface class MembershipRepository {
   Future<List<PaymentHistoryEntry>> getPayments(int packageAssignmentId);
+
+  Future<void> requestFreeze(int packageAssignmentId);
+  Future<void> requestUnfreeze(int packageAssignmentId);
+
+  // Çağıranın kendi telefonuna gelen bir paket daveti kodunu onaylar
+  // (POST /api/package-assignments/confirm) - onay sonrası PackageAssignment
+  // gerçekten var olur.
+  Future<void> confirmPackageAssignment(String code);
 }

@@ -47,6 +47,40 @@ void main() {
       )),
     );
   });
+
+  test('requestFreeze posts to /api/package-assignments/{id}/freeze', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/package-assignments/20/freeze');
+      return ResponseBody.fromString('', 204);
+    });
+    final repository = RealMembershipRepository(dio);
+
+    await repository.requestFreeze(20);
+  });
+
+  test('requestUnfreeze posts to /api/package-assignments/{id}/unfreeze', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/package-assignments/20/unfreeze');
+      return ResponseBody.fromString('', 204);
+    });
+    final repository = RealMembershipRepository(dio);
+
+    await repository.requestUnfreeze(20);
+  });
+
+  test('confirmPackageAssignment posts to /api/package-assignments/confirm with the code', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/package-assignments/confirm');
+      expect(options.data, {'code': '654321'});
+      return ResponseBody.fromString('{}', 201, headers: {'content-type': ['application/json']});
+    });
+    final repository = RealMembershipRepository(dio);
+
+    await repository.confirmPackageAssignment('654321');
+  });
 }
 
 typedef _ResponseBuilder = ResponseBody Function(RequestOptions options);
