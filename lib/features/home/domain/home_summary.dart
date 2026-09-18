@@ -1,28 +1,31 @@
+class NextReservation {
+  const NextReservation({required this.trainerName, required this.scheduledAt});
+
+  final String trainerName;
+  final DateTime scheduledAt;
+}
+
 class HomeSummary {
   const HomeSummary({
-    required this.greetingName,
-    required this.activePackageName,
-    required this.daysLeft,
-    required this.nextClassName,
-    required this.nextClassTime,
-    required this.nextClassTrainer,
+    required this.companyName,
+    required this.packageName,
+    required this.endDate,
+    required this.nextReservation,
     required this.weeklyAttendance,
   });
 
-  final String greetingName;
-  final String activePackageName;
-  final int daysLeft;
-  final String nextClassName;
-  final String nextClassTime;
-  final String nextClassTrainer;
+  final String companyName;
+  final String packageName;
+  // null = süresiz paket (ör. session-based bir paket, EndDate hiç set
+  // edilmemiş olabilir) - bkz. GymAppApi'nin PackageAssignment.EndDate'i.
+  final DateTime? endDate;
+  final NextReservation? nextReservation;
 
-  /// Her gün için bir (gün etiketi, katıldı mı) çifti, Pazartesi ilk sırada.
-  /// Etiket doğrudan kendi değeriyle eşleştirilir — bilinçli olarak
-  /// pozisyona göre eşleştirilen ayrı, aynı uzunlukta bir liste değil —
-  /// böylece farklı bir sırada katılım döndüren gerçek bir backend, UI'ın
-  /// yanında render ettiği gün etiketleriyle asla sessizce senkronizasyonunu
-  /// kaybedemez.
-  final List<(String, bool)> weeklyAttendance;
+  /// Son 7 gün için bir (gün, o gün check-in var mı) çifti, en eskisi ilk
+  /// sırada, bugün son sırada.
+  final List<(DateTime, bool)> weeklyAttendance;
+
+  int? get daysLeft => endDate?.difference(DateTime.now()).inDays;
 
   int get attendedCount => weeklyAttendance.where((day) => day.$2).length;
 }
