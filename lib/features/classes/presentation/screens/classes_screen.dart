@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../../../core/network/api_exception.dart';
+import '../../../../core/providers/membership_context_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/account_frozen_state.dart';
@@ -10,244 +12,176 @@ import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/domain/auth_exceptions.dart';
 import '../../../auth/presentation/providers/current_user_provider.dart';
-import '../../domain/class_session.dart';
-import '../providers/class_list_provider.dart';
+import '../../../membership/domain/membership_summary.dart';
+import '../../../membership/presentation/widgets/membership_switcher.dart';
+import '../../domain/reservation.dart';
+import '../../domain/trainer.dart';
+import '../providers/class_providers.dart';
+import '../widgets/new_reservation_sheet.dart';
 
-class ClassesScreen extends ConsumerStatefulWidget {
+final _dateTimeFormat = DateFormat('dd.MM.yyyy HH:mm');
+
+class ClassesScreen extends ConsumerWidget {
   const ClassesScreen({super.key});
 
-  @override
-  ConsumerState<ClassesScreen> createState() => _ClassesScreenState();
-}
-
-class _ClassesScreenState extends ConsumerState<ClassesScreen> {
-  ClassCategory? _selectedCategory;
-  int _reservingId = -1;
-  int _selectedDayIndex = 1;
-
-  static const _weekDates = [
-    ('22', 'Pzt'), ('23', 'Sal'), ('24', 'Çar'), ('25', 'Per'), ('26', 'Cum'),
-  ];
-
-  Future<void> _reserve(int classId) async {
-    setState(() => _reservingId = classId);
+  Future<void> _cancel(BuildContext context, WidgetRef ref, int reservationId) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
-      await ref.read(classListProvider.notifier).reserveSpot(classId);
-    } catch (_) {
-      // Gerçekçi olarak yalnızca bu butonun disabled durumu bir kare
-      // render etmeden önce yapılan hızlı bir çift dokunuşla tetiklenebilir
-      // (repository, zaten dolu/zaten rezerve edilmiş bir seans için
-      // StateError fırlatır) — yine de sessizce başarısız olmak yerine
-      // kullanıcıya gösterilmesi gerekir.
-      if (!mounted) return;
-      final l10n = AppLocalizations.of(context)!;
+      await ref.read(classReservationsProvider.notifier).cancelReservation(reservationId);
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.commonError)),
+        SnackBar(content: Text(l10n.classesReservationCancelledMessage)),
       );
-    } finally {
-      if (mounted) setState(() => _reservingId = -1);
+    } on ApiException catch (exception) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppHeaderBar(title: l10n.classesTitle),
-      body: ref.watch(currentUserProvider).when(
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-        error: (error, stackTrace) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  error is AuthException ? error.message : l10n.commonError,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                OutlinedButton(
-                  onPressed: () => ref.invalidate(currentUserProvider),
-                  child: Text(l10n.commonRetry),
-                ),
-              ],
-            ),
-          ),
-        ),
-        data: (currentUser) {
-          if (currentUser.isAccountFrozen) {
-            return const AccountFrozenState();
-          }
-          if (!currentUser.hasActiveMembership) {
-            return const EmptyMembershipState();
-          }
-          final sessionsAsync = ref.watch(classListProvider);
-          return sessionsAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-            error: (error, stackTrace) => Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      error is ApiException ? error.message : l10n.commonError,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    OutlinedButton(
-                      onPressed: () => ref.invalidate(classListProvider),
-                      child: Text(l10n.commonRetry),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            data: (sessions) {
-              final filtered = _selectedCategory == null
-                  ? sessions
-                  : sessions.where((s) => s.category == _selectedCategory).toList();
+      body: _buildBody(context, ref, l10n),
+    );
+  }
 
-              return Column(
-                children: [
-                  // Dekoratif tarih şeridi — spesifikasyona göre farklı bir gün seçmek
-                  // aşağıda gösterilen seansları değiştirmez (eksik bir özellik değil,
-                  // bilinçli bir sadeleştirme).
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
-                    child: Row(
-                      children: [
-                        for (var i = 0; i < _weekDates.length; i++)
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => setState(() => _selectedDayIndex = i),
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 3),
-                                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                                decoration: BoxDecoration(
-                                  color: i == _selectedDayIndex ? AppColors.primary : Colors.transparent,
-                                  border: i == _selectedDayIndex ? null : Border.all(color: AppColors.border),
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      _weekDates[i].$1,
-                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                            color: i == _selectedDayIndex
-                                                ? AppColors.onPrimary
-                                                : AppColors.onBackground,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                    ),
-                                    Text(
-                                      _weekDates[i].$2,
-                                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                            color: i == _selectedDayIndex
-                                                ? AppColors.onPrimary.withValues(alpha: 0.7)
-                                                : AppColors.onBackgroundFaint,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
-                    child: Row(
-                      children: [
-                        ChoiceChip(
-                          label: Text(l10n.classesFilterAll),
-                          selected: _selectedCategory == null,
-                          onSelected: (_) => setState(() => _selectedCategory = null),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        ChoiceChip(
-                          label: Text(l10n.classesCategoryBjj),
-                          selected: _selectedCategory == ClassCategory.bjj,
-                          onSelected: (_) => setState(() => _selectedCategory = ClassCategory.bjj),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        ChoiceChip(
-                          label: Text(l10n.classesCategoryFitness),
-                          selected: _selectedCategory == ClassCategory.fitness,
-                          onSelected: (_) => setState(() => _selectedCategory = ClassCategory.fitness),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: filtered.isEmpty
-                        ? Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(AppSpacing.xl),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.event_busy_outlined,
-                                    size: 40,
-                                    color: AppColors.onBackgroundFaint,
-                                  ),
-                                  const SizedBox(height: AppSpacing.md),
-                                  Text(
-                                    l10n.classesEmptyFilterMessage,
-                                    textAlign: TextAlign.center,
-                                    style: Theme.of(context).textTheme.bodyMedium,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        : ListView.separated(
-                            padding: const EdgeInsets.all(AppSpacing.lg),
-                            itemCount: filtered.length,
-                            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
-                            itemBuilder: (context, index) => _ClassCard(
-                              session: filtered[index],
-                              isReserving: _reservingId == filtered[index].id,
-                              onReserve: () => _reserve(filtered[index].id),
-                              l10n: l10n,
-                            ),
-                          ),
-                  ),
-                ],
-              );
-            },
-          );
-        },
+  Widget _buildBody(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
+    final currentUserAsync = ref.watch(currentUserProvider);
+    if (currentUserAsync.hasError) {
+      final error = currentUserAsync.error;
+      return _ErrorRetry(
+        message: error is AuthException ? error.message : l10n.commonError,
+        onRetry: () => ref.invalidate(currentUserProvider),
+      );
+    }
+    if (currentUserAsync.value?.isAccountFrozen ?? false) {
+      return const AccountFrozenState();
+    }
+
+    final membershipsAsync = ref.watch(membershipsProvider);
+    return membershipsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      error: (error, stackTrace) => _ErrorRetry(
+        message: error is ApiException ? error.message : l10n.commonError,
+        onRetry: () => ref.invalidate(membershipsProvider),
       ),
+      data: (memberships) {
+        if (memberships.isEmpty) {
+          return const EmptyMembershipState();
+        }
+
+        final selectedId = ref.watch(selectedMembershipIdProvider) ?? memberships.first.id;
+        final selected = memberships.firstWhere((m) => m.id == selectedId, orElse: () => memberships.first);
+        final isEligibleForBooking =
+            selected.status == MembershipStatus.active && (selected.remainingSessions ?? 0) > 0;
+
+        final trainersAsync = ref.watch(classTrainersProvider(selected.id));
+        final reservationsAsync = ref.watch(classReservationsProvider);
+
+        return ListView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          children: [
+            MembershipSwitcher(
+              label: l10n.membershipSwitcherLabel,
+              memberships: memberships,
+              selectedId: selected.id,
+              onSelect: (id) => ref.read(selectedMembershipIdProvider.notifier).select(id),
+            ),
+            ElevatedButton(
+              onPressed: isEligibleForBooking
+                  ? () => showNewReservationSheet(context, packageAssignmentId: selected.id)
+                  : null,
+              child: Text(l10n.classesNewReservationButton),
+            ),
+            if (!isEligibleForBooking) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                l10n.classesNotEligibleMessage,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundFaint),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.lg),
+            reservationsAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+              error: (error, stackTrace) => Text(
+                error is ApiException ? error.message : l10n.commonError,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              data: (reservations) {
+                if (reservations.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+                      child: Column(
+                        children: [
+                          const Icon(Icons.event_busy_outlined, size: 40, color: AppColors.onBackgroundFaint),
+                          const SizedBox(height: AppSpacing.md),
+                          Text(l10n.classesEmptyMessage, style: Theme.of(context).textTheme.bodyMedium),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                final trainers = trainersAsync.asData?.value ?? const <Trainer>[];
+                final trainerNames = {for (final trainer in trainers) trainer.id: trainer.fullName};
+
+                final sorted = [...reservations]..sort((a, b) => b.scheduledAt.compareTo(a.scheduledAt));
+                return Column(
+                  children: [
+                    for (final reservation in sorted)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                        child: _ReservationCard(
+                          reservation: reservation,
+                          trainerName: trainerNames[reservation.trainerId] ??
+                              l10n.classesTrainerFallbackLabel(reservation.trainerId),
+                          l10n: l10n,
+                          onCancel: () => _cancel(context, ref, reservation.id),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
 
-class _ClassCard extends StatelessWidget {
-  const _ClassCard({
-    required this.session,
-    required this.isReserving,
-    required this.onReserve,
+class _ReservationCard extends StatelessWidget {
+  const _ReservationCard({
+    required this.reservation,
+    required this.trainerName,
     required this.l10n,
+    required this.onCancel,
   });
 
-  final ClassSession session;
-  final bool isReserving;
-  final VoidCallback onReserve;
+  final Reservation reservation;
+  final String trainerName;
   final AppLocalizations l10n;
+  final VoidCallback onCancel;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final categoryLabel =
-        session.category == ClassCategory.bjj ? l10n.classesCategoryBjj : l10n.classesCategoryFitness;
+    final (statusLabel, isPositive) = switch (reservation.status) {
+      ReservationStatus.booked => (l10n.classesStatusBooked, true),
+      ReservationStatus.checkedIn => (l10n.classesStatusCheckedIn, true),
+      ReservationStatus.cancelled => (l10n.classesStatusCancelled, false),
+      ReservationStatus.noShow => (l10n.classesStatusNoShow, false),
+    };
 
     return Container(
       decoration: BoxDecoration(
+        color: AppColors.surface,
         border: Border.all(color: AppColors.border),
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
       ),
@@ -259,32 +193,41 @@ class _ClassCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(session.name, style: textTheme.titleMedium),
-                StatusPill(text: categoryLabel, isPositive: true),
+                Text(_dateTimeFormat.format(reservation.scheduledAt), style: textTheme.titleMedium),
+                StatusPill(text: statusLabel, isPositive: isPositive),
               ],
             ),
             const SizedBox(height: AppSpacing.xs),
-            Text(
-              '${session.timeRange} · ${session.trainerName} · '
-              '${l10n.classesCapacityLabel(session.enrolledCount, session.capacity)}',
-              style: textTheme.bodyMedium,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            if (session.isReservedByMe)
-              ElevatedButton(onPressed: null, child: Text(l10n.classesReservedButton))
-            else if (session.isFull)
-              OutlinedButton(onPressed: null, child: Text(l10n.classesWaitlistButton))
-            else
-              ElevatedButton(
-                onPressed: isReserving ? null : onReserve,
-                child: isReserving
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary),
-                      )
-                    : Text(l10n.classesReserveButton),
-              ),
+            Text(trainerName, style: textTheme.bodyMedium),
+            if (reservation.status == ReservationStatus.booked) ...[
+              const SizedBox(height: AppSpacing.md),
+              OutlinedButton(onPressed: onCancel, child: Text(l10n.classesCancelReservationButton)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ErrorRetry extends StatelessWidget {
+  const _ErrorRetry({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: AppSpacing.lg),
+            OutlinedButton(onPressed: onRetry, child: Text(l10n.commonRetry)),
           ],
         ),
       ),

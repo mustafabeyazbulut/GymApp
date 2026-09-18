@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'fake_class_repository.dart';
+part of 'real_class_repository.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -49,4 +49,4 @@ final class ClassRepositoryProvider
   }
 }
 
-String _$classRepositoryHash() => r'ea764e9ea4de0fa49892ecb945e5d014f2f02d3a';
+String _$classRepositoryHash() => r'1a1e92501fbf97d8e7e0b22d861286cfede7c8fe';
