@@ -520,5 +520,28 @@
   "branchFormCreateSuccessMessage": "Şube oluşturuldu.",
   "@branchFormCreateSuccessMessage": {},
   "branchFormUpdateSuccessMessage": "Şube güncellendi.",
-  "@branchFormUpdateSuccessMessage": {}
+  "@branchFormUpdateSuccessMessage": {},
+
+  "drawerStaffManagement": "Personelim",
+  "@drawerStaffManagement": {},
+  "staffManagementTitle": "Personelim",
+  "@staffManagementTitle": {},
+  "staffManagementEmptyMessage": "Henüz personel eklenmemiş. Sağ üstten ekleyebilirsiniz.",
+  "@staffManagementEmptyMessage": {},
+  "staffManagementRoleGymAdmin": "GymAdmin",
+  "@staffManagementRoleGymAdmin": {},
+  "staffManagementRoleBranchManager": "Şube Müdürü",
+  "@staffManagementRoleBranchManager": {},
+  "staffManagementRoleTrainer": "Antrenör",
+  "@staffManagementRoleTrainer": {},
+  "staffManagementRemoveButton": "Kaldır",
+  "@staffManagementRemoveButton": {},
+  "staffManagementRemoveConfirmTitle": "{name} kaldırılsın mı?",
+  "@staffManagementRemoveConfirmTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "staffManagementRemoveConfirmBody": "Bu kişinin erişimi hemen kaldırılır. Gerekirse daha sonra tekrar davet edebilirsiniz.",
+  "@staffManagementRemoveConfirmBody": {},
+  "staffManagementRemoveConfirmButton": "Evet, Kaldır",
+  "@staffManagementRemoveConfirmButton": {}
 }

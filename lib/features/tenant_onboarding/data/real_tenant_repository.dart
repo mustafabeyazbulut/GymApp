@@ -5,6 +5,7 @@ import '../../../core/network/dio_client.dart';
 import '../domain/branch_option.dart';
 import '../domain/branch_summary.dart';
 import '../domain/company_summary.dart';
+import '../domain/staff_member_summary.dart';
 import '../domain/tenant_repository.dart';
 
 part 'real_tenant_repository.g.dart';
@@ -163,6 +164,28 @@ class RealTenantRepository implements TenantRepository {
   Future<void> setBranchActive({required int branchId, required bool isActive}) async {
     try {
       await _dio.patch<void>('/api/branches/$branchId/active', data: {'isActive': isActive});
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<List<StaffMemberSummary>> getStaffMembers() async {
+    try {
+      final response = await _dio.get<List<dynamic>>('/api/assignments');
+      return response.data!
+          .cast<Map<String, dynamic>>()
+          .map(StaffMemberSummary.fromJson)
+          .toList();
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<void> removeAssignment(int assignmentId) async {
+    try {
+      await _dio.delete<void>('/api/assignments/$assignmentId');
     } on DioException catch (exception) {
       throw ApiException.fromDioException(exception);
     }

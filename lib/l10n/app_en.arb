@@ -256,5 +256,16 @@
   "branchFormCreateButton": "Create Branch",
   "branchFormSaveButton": "Save",
   "branchFormCreateSuccessMessage": "Branch created.",
-  "branchFormUpdateSuccessMessage": "Branch updated."
+  "branchFormUpdateSuccessMessage": "Branch updated.",
+
+  "drawerStaffManagement": "My Staff",
+  "staffManagementTitle": "My Staff",
+  "staffManagementEmptyMessage": "No staff added yet. Add one from the top right.",
+  "staffManagementRoleGymAdmin": "GymAdmin",
+  "staffManagementRoleBranchManager": "Branch Manager",
+  "staffManagementRoleTrainer": "Trainer",
+  "staffManagementRemoveButton": "Remove",
+  "staffManagementRemoveConfirmTitle": "Remove {name}?",
+  "staffManagementRemoveConfirmBody": "This person's access is removed immediately. You can invite them again later if needed.",
+  "staffManagementRemoveConfirmButton": "Yes, Remove"
 }

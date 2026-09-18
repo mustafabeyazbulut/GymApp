@@ -198,6 +198,38 @@ void main() {
     await repository.setBranchActive(branchId: 1, isActive: false);
   });
 
+  test('getStaffMembers parses the list from GET /api/assignments', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/assignments');
+      return ResponseBody.fromString(
+        '[{"assignmentId":1,"userId":7,"fullName":"Ayşe Yılmaz","phone":"+905551112233",'
+        '"role":"Trainer","companyId":3,"branchId":10,"branchName":"Merkez"}]',
+        200,
+        headers: {'content-type': ['application/json']},
+      );
+    });
+    final repository = RealTenantRepository(dio);
+
+    final staff = await repository.getStaffMembers();
+
+    expect(staff, hasLength(1));
+    expect(staff.single.fullName, 'Ayşe Yılmaz');
+    expect(staff.single.branchName, 'Merkez');
+  });
+
+  test('removeAssignment sends DELETE to /api/assignments/{id}', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/assignments/1');
+      expect(options.method, 'DELETE');
+      return ResponseBody.fromString('', 204);
+    });
+    final repository = RealTenantRepository(dio);
+
+    await repository.removeAssignment(1);
+  });
+
   test('addStaffMember posts to /api/assignments/staff with the given fields', () async {
     final dio = Dio(BaseOptions(baseUrl: 'https://test'));
     dio.httpClientAdapter = _FakeAdapter((options) {

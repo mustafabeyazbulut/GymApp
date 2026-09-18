@@ -306,6 +306,12 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                     ),
                   if (currentUser?.staffAssignment != null)
                     _DrawerItem(
+                      icon: Icons.groups_outlined,
+                      label: l10n.drawerStaffManagement,
+                      onTap: () => closeThenPush('/staff/members'),
+                    ),
+                  if (currentUser?.staffAssignment != null)
+                    _DrawerItem(
                       icon: Icons.card_membership_outlined,
                       label: l10n.drawerPackageManagement,
                       onTap: () => closeThenPush('/staff/packages'),

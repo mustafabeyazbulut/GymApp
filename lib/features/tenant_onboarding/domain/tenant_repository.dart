@@ -1,6 +1,7 @@
 import 'branch_option.dart';
 import 'branch_summary.dart';
 import 'company_summary.dart';
+import 'staff_member_summary.dart';
 
 abstract interface class TenantRepository {
   // Sadece Company oluşturur ve GymAdmin'e bir davet gönderir (telefon
@@ -75,4 +76,11 @@ abstract interface class TenantRepository {
   // tekrar açabilir (bkz. project-branch-ownership-flow.md'nin Task 6
   // notu). Bilinçli bir backend kısıtı, mobil tarafta "aç" seçeneği yok.
   Future<void> setBranchActive({required int branchId, required bool isActive});
+
+  // "Personelim" ekranı için - personel eklemenin (addStaffMember/
+  // inviteGymAdmin) ve kaldırmanın (removeAssignment) arasında "şu an
+  // kimler çalışıyor" sorusunun cevabıydı bu.
+  Future<List<StaffMemberSummary>> getStaffMembers();
+
+  Future<void> removeAssignment(int assignmentId);
 }
