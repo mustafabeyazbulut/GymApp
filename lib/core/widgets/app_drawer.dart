@@ -11,11 +11,11 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import 'otp_code_dialog.dart';
 
-/// The app's side navigation drawer, shared across every shell branch (see
-/// `appShellScaffoldKey`) and opened from the header's menu button. Only
-/// holds destinations that aren't already reachable elsewhere in the header
-/// or bottom nav (Home/Classes/Progress/Profile, Notifications' own bell
-/// icon) — account settings (moved here from the Profile screen) and Log Out.
+/// Uygulamanın yan navigasyon çekmecesi; her shell dalında ortak kullanılır
+/// (bkz. `appShellScaffoldKey`) ve header'daki menü butonundan açılır.
+/// Yalnızca header veya alt navigasyonda (Home/Classes/Progress/Profile,
+/// Notifications'ın kendi zil ikonu) zaten erişilebilir olmayan hedefleri
+/// içerir — hesap ayarları (Profile ekranından buraya taşındı) ve çıkış yap.
 class AppDrawer extends ConsumerStatefulWidget {
   const AppDrawer({super.key});
 
@@ -104,8 +104,8 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
 
       await ref.read(authRepositoryProvider).freezeAccount(code: code);
       if (!mounted) return;
-      // freezeAccount() already revoked every refresh token server-side;
-      // logOut() just clears the now-stale local copy.
+      // freezeAccount() sunucu tarafında zaten tüm refresh token'ları iptal
+      // etti; logOut() ise artık geçersiz olan yerel kopyayı temizliyor.
       await ref.read(authStateProvider.notifier).logOut();
     } on AuthException catch (exception) {
       if (!mounted) return;
@@ -154,8 +154,9 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
 
       await ref.read(authRepositoryProvider).deleteAccount(code: code);
       if (!mounted) return;
-      // deleteAccount() already clears the token store; logOut() clears it again.
-      // A second clear() on an already-cleared store is expected to be a no-op.
+      // deleteAccount() zaten token deposunu temizliyor; logOut() onu tekrar
+      // temizliyor. Zaten temizlenmiş bir depoda ikinci bir clear() çağrısının
+      // hiçbir etkisi olmaması (no-op) beklenir.
       await ref.read(authStateProvider.notifier).logOut();
     } on AuthException catch (exception) {
       if (!mounted) return;
@@ -247,6 +248,15 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                     _DrawerItem(
                       icon: Icons.person_add_alt_outlined,
                       label: l10n.drawerAddStaffMember,
+                      // Kullanıcı birden fazla şirkette personel yönetiyorsa
+                      // (staffAssignments.length > 1), hangi şirketi
+                      // hedeflediğini görünür kıl - backend'in tenant
+                      // resolution'ı hâlâ her zaman İLKİ seçtiğinden (bkz.
+                      // TenantResolutionService), bu buton her zaman
+                      // staffAssignment'ın (ilk eşleşme) şirketine gider.
+                      trailingText: (currentUser?.staffAssignments.length ?? 0) > 1
+                          ? currentUser?.staffAssignment?.companyName
+                          : null,
                       onTap: () => closeThenPush('/admin/add-staff-member'),
                     ),
                   if ((currentUser?.isSuperAdmin ?? false) || currentUser?.staffAssignment != null)
@@ -304,9 +314,9 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
   }
 }
 
-/// A tappable drawer row — icon, label, and either nothing, a chevron, a
-/// trailing value + chevron (e.g. the current language), or a spinner while
-/// [isLoading].
+/// Tıklanabilir bir çekmece satırı — ikon, etiket ve ardından ya hiçbir şey,
+/// ya bir chevron, ya bir sondaki değer + chevron (ör. geçerli dil) ya da
+/// [isLoading] sırasında bir spinner gösterir.
 class _DrawerItem extends StatelessWidget {
   const _DrawerItem({
     required this.icon,

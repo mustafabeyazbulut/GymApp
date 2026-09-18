@@ -13,7 +13,7 @@ void main() {
     final repository = _MockAuthRepository();
     when(() => repository.getMe()).thenAnswer((_) async => const MeResult(
           id: 1, fullName: 'Ayşe', phone: '+905551112233', email: null, preferredLanguage: 'tr',
-          isAccountFrozen: false, assignments: [],
+          isAccountFrozen: false, assignments: [], packageAssignments: [],
         ));
     final container = ProviderContainer(overrides: [authRepositoryProvider.overrideWithValue(repository)]);
     addTearDown(container.dispose);

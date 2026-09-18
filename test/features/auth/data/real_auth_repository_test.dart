@@ -178,6 +178,7 @@ void main() {
         'assignments': [
           {'companyId': 3, 'companyName': 'MAT & MOVE Kadıköy', 'branchId': null, 'role': 'Member'},
         ],
+        'packageAssignments': [],
       }),
     );
 
@@ -185,6 +186,46 @@ void main() {
 
     expect(result.hasActiveMembership, isTrue);
     expect(result.assignments.single.companyName, 'MAT & MOVE Kadıköy');
+  });
+
+  test('getMe parses the packageAssignments list', () async {
+    adapter.onGet(
+      '/api/auth/me',
+      (server) => server.reply(200, {
+        'id': 1,
+        'fullName': 'Ayşe Yılmaz',
+        'phone': '+905551112233',
+        'email': 'ayse@test.com',
+        'preferredLanguage': 'tr',
+        'isAccountFrozen': false,
+        'assignments': [],
+        'packageAssignments': [
+          {
+            'id': 20,
+            'companyId': 3,
+            'companyName': 'MAT & MOVE Kadıköy',
+            'branchId': null,
+            'packageId': 5,
+            'packageName': '10 Seans',
+            'price': 1500,
+            'status': 'Active',
+            'startDate': '2026-01-01T00:00:00',
+            'endDate': null,
+            'sessionCount': 10,
+            'remainingSessions': 7,
+          },
+        ],
+      }),
+    );
+
+    final result = await repository.getMe();
+
+    final assignment = result.packageAssignments.single;
+    expect(assignment.id, 20);
+    expect(assignment.companyName, 'MAT & MOVE Kadıköy');
+    expect(assignment.packageName, '10 Seans');
+    expect(assignment.price, 1500.0);
+    expect(assignment.remainingSessions, 7);
   });
 
   test('getMe parses a null companyId/companyName without throwing (e.g. a SuperAdmin assignment)', () async {
@@ -198,6 +239,7 @@ void main() {
           'assignments': [
             {'companyId': null, 'companyName': null, 'branchId': null, 'role': 'SuperAdmin'},
           ],
+          'packageAssignments': [],
         }));
 
     final result = await repository.getMe();

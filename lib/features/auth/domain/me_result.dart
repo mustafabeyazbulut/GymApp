@@ -13,11 +13,60 @@ class MeAssignment {
         role: json['role'] as String,
       );
 
-  // Null for a platform-wide assignment (e.g. SuperAdmin), which is not tied to a single company.
+  // Platform genelinde bir atama için null olur (ör. SuperAdmin); tek bir şirkete bağlı değildir.
   final int? companyId;
   final String? companyName;
   final int? branchId;
   final String role;
+}
+
+class MePackageAssignment {
+  const MePackageAssignment({
+    required this.id,
+    required this.companyId,
+    required this.companyName,
+    required this.branchId,
+    required this.packageId,
+    required this.packageName,
+    required this.price,
+    required this.status,
+    required this.startDate,
+    required this.endDate,
+    required this.sessionCount,
+    required this.remainingSessions,
+  });
+
+  factory MePackageAssignment.fromJson(Map<String, dynamic> json) => MePackageAssignment(
+        id: json['id'] as int,
+        companyId: json['companyId'] as int,
+        companyName: json['companyName'] as String?,
+        branchId: json['branchId'] as int?,
+        packageId: json['packageId'] as int,
+        packageName: json['packageName'] as String?,
+        price: (json['price'] as num).toDouble(),
+        status: json['status'] as String,
+        startDate: DateTime.parse(json['startDate'] as String),
+        endDate: json['endDate'] == null ? null : DateTime.parse(json['endDate'] as String),
+        sessionCount: json['sessionCount'] as int?,
+        remainingSessions: json['remainingSessions'] as int?,
+      );
+
+  final int id;
+  final int companyId;
+  final String? companyName;
+  final int? branchId;
+  final int packageId;
+  final String? packageName;
+  final double price;
+  // Backend'in ham enum ismi ("Active"/"Frozen") - Cancelled olanlar zaten
+  // GetMeQueryHandler tarafından filtrelenir, bu yüzden burada asla görünmez.
+  final String status;
+  final DateTime startDate;
+  final DateTime? endDate;
+  final int? sessionCount;
+  final int? remainingSessions;
+
+  bool get isFrozen => status == 'Frozen';
 }
 
 class MeResult {
@@ -29,6 +78,7 @@ class MeResult {
     required this.preferredLanguage,
     required this.isAccountFrozen,
     required this.assignments,
+    required this.packageAssignments,
   });
 
   factory MeResult.fromJson(Map<String, dynamic> json) => MeResult(
@@ -41,6 +91,9 @@ class MeResult {
         assignments: (json['assignments'] as List)
             .map((e) => MeAssignment.fromJson(e as Map<String, dynamic>))
             .toList(),
+        packageAssignments: (json['packageAssignments'] as List)
+            .map((e) => MePackageAssignment.fromJson(e as Map<String, dynamic>))
+            .toList(),
       );
 
   final int id;
@@ -50,22 +103,24 @@ class MeResult {
   final String preferredLanguage;
   final bool isAccountFrozen;
   final List<MeAssignment> assignments;
+  final List<MePackageAssignment> packageAssignments;
 
-  // Only a 'Member' assignment implies an actual membership/package - a
-  // SuperAdmin/GymAdmin/BranchManager/Trainer assignment does not, so those
-  // roles must not fall through to the member-facing Home/Classes/Progress/
-  // Membership mock content just because assignments.isNotEmpty (a bug this
-  // fixed: every logged-in user, including a pure SuperAdmin with zero real
-  // membership, was landing on the same fake "Merhaba, Elnara" Home screen).
+  // Sadece bir 'Member' ataması gerçek bir üyelik/paket anlamına gelir - bir
+  // SuperAdmin/GymAdmin/BranchManager/Trainer ataması bunu ifade etmez, bu yüzden
+  // bu roller sadece assignments.isNotEmpty diye üye tarafına özel Home/Classes/
+  // Progress/Membership mock içeriğine düşmemelidir (bu düzeltilen bir hataydı:
+  // gerçek bir üyeliği olmayan saf bir SuperAdmin dahil her giriş yapan kullanıcı
+  // aynı sahte "Merhaba, Elnara" Home ekranına iniyordu).
   bool get hasActiveMembership => assignments.any((a) => a.role == 'Member');
 
   bool get isSuperAdmin => assignments.any((a) => a.role == 'SuperAdmin');
 
-  // The one Assignment (if any) that lets this user manage staff - a
-  // GymAdmin oversees every branch of their company (branchId null on their
-  // own assignment); a BranchManager is scoped to exactly one branch. Null
-  // for a plain Member/Trainer, and for a SuperAdmin who isn't ALSO staff
-  // somewhere (SuperAdmin uses "Yeni Firma Ekle" instead, see AppDrawer).
+  // Bu kullanıcının personel yönetmesine izin veren tek Assignment (varsa) - bir
+  // GymAdmin şirketinin her şubesini denetler (kendi atamasında branchId null'dur);
+  // bir BranchManager ise tam olarak tek bir şubeyle sınırlıdır. Sıradan bir
+  // Member/Trainer için ve herhangi bir yerde AYRICA personel olmayan bir
+  // SuperAdmin için null döner (SuperAdmin bunun yerine "Yeni Firma Ekle"
+  // kullanır, bkz. AppDrawer).
   MeAssignment? get staffAssignment {
     for (final assignment in assignments) {
       if (assignment.role == 'GymAdmin' || assignment.role == 'BranchManager') {
@@ -74,4 +129,14 @@ class MeResult {
     }
     return null;
   }
+
+  // Aynı [staffAssignment] mantığının çoklu-şirket farkındalıklı sürümü -
+  // GymAdmin/BranchManager olduğu HER şirketi döner (sadece ilkini değil).
+  // Şu an sadece AppDrawer'da hangi şirketlerde personel yönetebildiğini
+  // göstermek için kullanılır; backend'in kendi TenantResolutionService'i
+  // hâlâ "ilkini seç" davranışında olduğundan (bkz. GymAppApi'deki
+  // project-member-package-linkage-design.md), personel eklemek her zaman
+  // [staffAssignment] (ilk eşleşme) üzerinden çözümlenen şirketi hedefler.
+  List<MeAssignment> get staffAssignments =>
+      assignments.where((a) => a.role == 'GymAdmin' || a.role == 'BranchManager').toList();
 }
