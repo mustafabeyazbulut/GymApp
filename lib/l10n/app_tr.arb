@@ -466,6 +466,14 @@
   "@packageAssignmentsRemainingBalanceLabel": {
     "placeholders": { "balance": { "type": "String" } }
   },
+  "packageAssignmentsCancelButton": "Paketi İptal Et",
+  "@packageAssignmentsCancelButton": {},
+  "packageAssignmentsCancelConfirmTitle": "Bu paket ataması iptal edilsin mi?",
+  "@packageAssignmentsCancelConfirmTitle": {},
+  "packageAssignmentsCancelConfirmBody": "Bu işlem geri alınamaz. Üyenin bu paketi kullanma hakkı hemen sona erer.",
+  "@packageAssignmentsCancelConfirmBody": {},
+  "packageAssignmentsCancelConfirmButton": "Evet, İptal Et",
+  "@packageAssignmentsCancelConfirmButton": {},
 
   "recordPaymentButtonLabel": "Ödeme Al",
   "@recordPaymentButtonLabel": {},

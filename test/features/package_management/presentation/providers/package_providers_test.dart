@@ -129,6 +129,19 @@ void main() {
     verify(() => repository.assignPackage(packageId: 1, memberPhone: '+905551112233')).called(1);
   });
 
+  test('PackageActions.cancelPackageAssignment calls the repository then invalidates packageAssignmentsProvider',
+      () async {
+    when(() => repository.getPackageAssignments(memberPhone: null)).thenAnswer((_) async => [assignment]);
+    when(() => repository.cancelPackageAssignment(1)).thenAnswer((_) async {});
+
+    await container.read(packageAssignmentsProvider(memberPhone: null).future);
+    await container.read(packageActionsProvider.notifier).cancelPackageAssignment(1);
+    await container.read(packageAssignmentsProvider(memberPhone: null).future);
+
+    verify(() => repository.cancelPackageAssignment(1)).called(1);
+    verify(() => repository.getPackageAssignments(memberPhone: null)).called(2);
+  });
+
   test('PackageActions.recordPayment calls the repository then invalidates packageAssignmentsProvider', () async {
     when(() => repository.getPackageAssignments(memberPhone: null)).thenAnswer((_) async => [assignment]);
     when(() => repository.recordPayment(

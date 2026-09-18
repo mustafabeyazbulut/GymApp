@@ -26,6 +26,11 @@ abstract interface class PackageRepository {
 
   Future<List<PackageAssignmentSummary>> getPackageAssignments({String? memberPhone});
 
+  // Kalıcı iptal - freeze/unfreeze'in aksine geri alınamaz, bu yüzden
+  // (MembershipRepository'nin kasıtlı olarak dışarıda bıraktığı gibi)
+  // sadece burada, personel tarafında var.
+  Future<void> cancelPackageAssignment(int packageAssignmentId);
+
   Future<void> recordPayment({
     required int packageAssignmentId,
     required double amount,

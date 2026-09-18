@@ -112,6 +112,17 @@ void main() {
     expect(assignments.single.isFullyPaid, isFalse);
   });
 
+  test('cancelPackageAssignment posts to /api/package-assignments/{id}/cancel', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/package-assignments/1/cancel');
+      return ResponseBody.fromString('', 204);
+    });
+    final repository = RealPackageRepository(dio);
+
+    await repository.cancelPackageAssignment(1);
+  });
+
   test('recordPayment posts to /api/package-assignments/{id}/payments', () async {
     final dio = Dio(BaseOptions(baseUrl: 'https://test'));
     dio.httpClientAdapter = _FakeAdapter((options) {

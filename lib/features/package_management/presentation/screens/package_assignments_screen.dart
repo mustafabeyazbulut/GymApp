@@ -130,15 +130,46 @@ class _PackageAssignmentsScreenState extends ConsumerState<PackageAssignmentsScr
   }
 }
 
-class _AssignmentTile extends StatelessWidget {
+class _AssignmentTile extends ConsumerWidget {
   const _AssignmentTile({required this.assignment});
 
   final PackageAssignmentSummary assignment;
 
+  Future<void> _confirmAndCancel(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.packageAssignmentsCancelConfirmTitle),
+        content: Text(l10n.packageAssignmentsCancelConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.accountDeletionCancelButton),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.packageAssignmentsCancelConfirmButton),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await ref.read(packageActionsProvider.notifier).cancelPackageAssignment(assignment.id);
+    } on ApiException catch (exception) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final isActive = assignment.status == 'Active';
+    final isCancelled = assignment.status == 'Cancelled';
     final statusText = switch (assignment.status) {
       'Active' => l10n.membershipActiveStatus,
       'Frozen' => l10n.membershipFrozenStatus,
@@ -167,6 +198,12 @@ class _AssignmentTile extends StatelessWidget {
                 ),
               ),
               StatusPill(text: statusText, isPositive: isActive),
+              if (!isCancelled)
+                IconButton(
+                  icon: const Icon(Icons.cancel_outlined, size: 18, color: AppColors.error),
+                  tooltip: l10n.packageAssignmentsCancelButton,
+                  onPressed: () => _confirmAndCancel(context, ref),
+                ),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),

@@ -91,6 +91,15 @@ class RealPackageRepository implements PackageRepository {
   }
 
   @override
+  Future<void> cancelPackageAssignment(int packageAssignmentId) async {
+    try {
+      await _dio.post<void>('/api/package-assignments/$packageAssignmentId/cancel');
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
   Future<void> recordPayment({
     required int packageAssignmentId,
     required double amount,

@@ -52,6 +52,11 @@ class PackageActions extends _$PackageActions {
     await ref.read(packageRepositoryProvider).assignPackage(packageId: packageId, memberPhone: memberPhone);
   }
 
+  Future<void> cancelPackageAssignment(int packageAssignmentId) async {
+    await ref.read(packageRepositoryProvider).cancelPackageAssignment(packageAssignmentId);
+    ref.invalidate(packageAssignmentsProvider);
+  }
+
   Future<void> recordPayment({
     required int packageAssignmentId,
     required double amount,

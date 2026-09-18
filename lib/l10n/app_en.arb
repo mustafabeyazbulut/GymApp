@@ -228,6 +228,10 @@
   "packageAssignmentsCancelledStatus": "Cancelled",
   "packageAssignmentsPaidOfPriceLabel": "{paid} / {price} paid",
   "packageAssignmentsRemainingBalanceLabel": "Remaining: {balance}",
+  "packageAssignmentsCancelButton": "Cancel Package",
+  "packageAssignmentsCancelConfirmTitle": "Cancel this package assignment?",
+  "packageAssignmentsCancelConfirmBody": "This cannot be undone. The member's access to this package ends immediately.",
+  "packageAssignmentsCancelConfirmButton": "Yes, Cancel",
 
   "recordPaymentButtonLabel": "Record Payment",
   "recordPaymentTitle": "Record Payment",
