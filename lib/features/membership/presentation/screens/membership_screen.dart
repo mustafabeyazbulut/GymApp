@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/network/api_exception.dart';
+import '../../../../core/providers/membership_context_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/account_frozen_state.dart';
@@ -14,6 +15,7 @@ import '../../../auth/domain/auth_exceptions.dart';
 import '../../../auth/presentation/providers/current_user_provider.dart';
 import '../../domain/membership_summary.dart';
 import '../providers/membership_provider.dart';
+import '../widgets/membership_switcher.dart';
 
 final _dateFormat = DateFormat('dd.MM.yyyy');
 final _priceFormat = NumberFormat.currency(locale: 'tr_TR', symbol: '₺', decimalDigits: 0);
@@ -68,23 +70,12 @@ class MembershipScreen extends ConsumerWidget {
         return ListView(
           padding: const EdgeInsets.all(AppSpacing.lg),
           children: [
-            if (memberships.length > 1) ...[
-              Text(l10n.membershipSwitcherLabel, style: Theme.of(context).textTheme.labelSmall),
-              const SizedBox(height: AppSpacing.sm),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.sm,
-                children: memberships
-                    .map((m) => ChoiceChip(
-                          label: Text('${m.companyName} · ${m.packageName}'),
-                          selected: m.id == selected.id,
-                          onSelected: (_) =>
-                              ref.read(selectedMembershipIdProvider.notifier).select(m.id),
-                        ))
-                    .toList(),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-            ],
+            MembershipSwitcher(
+              label: l10n.membershipSwitcherLabel,
+              memberships: memberships,
+              selectedId: selected.id,
+              onSelect: (id) => ref.read(selectedMembershipIdProvider.notifier).select(id),
+            ),
             _MembershipCard(summary: selected, l10n: l10n),
             const SizedBox(height: AppSpacing.md),
             _PaymentHistoryCard(packageAssignmentId: selected.id, l10n: l10n),
