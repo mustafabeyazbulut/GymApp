@@ -58,6 +58,29 @@ void main() {
     expect(me.staffAssignments, [gymAdminA, branchManagerB]);
   });
 
+  test('staffAssignmentFor returns the assignment matching the given companyId', () {
+    final companyA = const MeAssignment(companyId: 1, companyName: 'A', branchId: null, role: 'GymAdmin');
+    final companyB = const MeAssignment(companyId: 2, companyName: 'B', branchId: 9, role: 'BranchManager');
+    final me = _withAssignments([companyA, companyB]);
+
+    expect(me.staffAssignmentFor(2), same(companyB));
+  });
+
+  test('staffAssignmentFor falls back to the first staff assignment when companyId is null', () {
+    final companyA = const MeAssignment(companyId: 1, companyName: 'A', branchId: null, role: 'GymAdmin');
+    final companyB = const MeAssignment(companyId: 2, companyName: 'B', branchId: 9, role: 'BranchManager');
+    final me = _withAssignments([companyA, companyB]);
+
+    expect(me.staffAssignmentFor(null), same(companyA));
+  });
+
+  test('staffAssignmentFor falls back to the first staff assignment when companyId matches none', () {
+    final companyA = const MeAssignment(companyId: 1, companyName: 'A', branchId: null, role: 'GymAdmin');
+    final me = _withAssignments([companyA]);
+
+    expect(me.staffAssignmentFor(999), same(companyA));
+  });
+
   test('staffAssignments is empty for a plain Member', () {
     final me = _withAssignments([
       const MeAssignment(companyId: 1, companyName: 'Co', branchId: 2, role: 'Member'),

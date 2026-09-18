@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/data/real_auth_repository.dart';
 import '../../features/auth/domain/auth_exceptions.dart';
+import '../../features/auth/domain/me_result.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
 import '../../features/auth/presentation/providers/current_user_provider.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../locale/app_locale_provider.dart';
+import '../providers/active_staff_company_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import 'otp_code_dialog.dart';
@@ -63,6 +65,35 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     } finally {
       if (mounted) setState(() => _isChangingLanguage = false);
     }
+  }
+
+  // Çok şirketli bir GymAdmin/BranchManager'ın şu an personel yönetimi
+  // için hangi şirketi "aktif" olarak kullandığını seçmesi - seçim
+  // dioProvider'ın her isteğe eklediği X-Active-Company-Id header'ını
+  // besler (bkz. core/providers/active_staff_company_provider.dart).
+  Future<void> _pickActiveCompany(List<MeAssignment> staffAssignments, int? currentCompanyId) async {
+    final selected = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) => SimpleDialog(
+        title: Text(AppLocalizations.of(dialogContext)!.drawerActiveCompanyPickerTitle),
+        children: [
+          for (final assignment in staffAssignments)
+            SimpleDialogOption(
+              onPressed: () => Navigator.of(dialogContext).pop(assignment.companyId),
+              child: Row(
+                children: [
+                  Expanded(child: Text(assignment.companyName ?? '')),
+                  if (assignment.companyId == currentCompanyId)
+                    const Icon(Icons.check, size: 18, color: AppColors.primary),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+
+    if (selected == null || !mounted) return;
+    ref.read(activeStaffCompanyIdProvider.notifier).select(selected);
   }
 
   Future<void> _confirmAndFreezeAccount() async {
@@ -170,6 +201,9 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final currentUser = ref.watch(currentUserProvider).asData?.value;
+    final activeCompanyId = ref.watch(activeStaffCompanyIdProvider);
+    final activeStaffAssignment = currentUser?.staffAssignmentFor(activeCompanyId);
+    final hasMultipleStaffCompanies = (currentUser?.staffAssignments.length ?? 0) > 1;
 
     void closeThenRun(Future<void> Function() action) {
       Navigator.pop(context);
@@ -244,19 +278,24 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       label: l10n.drawerCompanyManagement,
                       onTap: () => closeThenPush('/admin/companies'),
                     ),
+                  if (hasMultipleStaffCompanies)
+                    _DrawerItem(
+                      icon: Icons.apartment_outlined,
+                      label: l10n.drawerActiveCompanyLabel,
+                      trailingText: activeStaffAssignment?.companyName,
+                      showChevron: true,
+                      onTap: () =>
+                          _pickActiveCompany(currentUser!.staffAssignments, activeStaffAssignment?.companyId),
+                    ),
                   if (currentUser?.staffAssignment != null)
                     _DrawerItem(
                       icon: Icons.person_add_alt_outlined,
                       label: l10n.drawerAddStaffMember,
-                      // Kullanıcı birden fazla şirkette personel yönetiyorsa
-                      // (staffAssignments.length > 1), hangi şirketi
-                      // hedeflediğini görünür kıl - backend'in tenant
-                      // resolution'ı hâlâ her zaman İLKİ seçtiğinden (bkz.
-                      // TenantResolutionService), bu buton her zaman
-                      // staffAssignment'ın (ilk eşleşme) şirketine gider.
-                      trailingText: (currentUser?.staffAssignments.length ?? 0) > 1
-                          ? currentUser?.staffAssignment?.companyName
-                          : null,
+                      // Birden fazla şirket varsa hangi şirketi hedeflediğini
+                      // görünür kıl - artık gerçekten yukarıdaki "Aktif
+                      // Şirket" seçimini yansıtıyor (bkz.
+                      // MeResult.staffAssignmentFor, X-Active-Company-Id).
+                      trailingText: hasMultipleStaffCompanies ? activeStaffAssignment?.companyName : null,
                       onTap: () => closeThenPush('/admin/add-staff-member'),
                     ),
                   if ((currentUser?.isSuperAdmin ?? false) || currentUser?.staffAssignment != null)

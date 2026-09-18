@@ -5,6 +5,7 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/providers/active_staff_company_provider.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/presentation/providers/current_user_provider.dart';
 import '../../data/real_tenant_repository.dart';
@@ -34,8 +35,13 @@ class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
     super.initState();
     // Bir Branch Manager'ın kendi şubesi sabittir; bir Gym Admin (kendi
     // assignment'ında branchId == null) kendi şirketinin şubeleri arasından
-    // seçim yapar.
-    final myAssignment = ref.read(currentUserProvider).asData?.value.staffAssignment;
+    // seçim yapar. staffAssignmentFor, çok şirketli bir GymAdmin'in
+    // drawer'dan seçtiği "Aktif Şirket"i yansıtır (bkz.
+    // active_staff_company_provider.dart) - aynı seçim dioProvider
+    // tarafından X-Active-Company-Id header'ı olarak zaten gönderiliyor, bu
+    // yüzden listBranches()'ın döndürdüğü şubeler de bu şirkete ait olacak.
+    final activeCompanyId = ref.read(activeStaffCompanyIdProvider);
+    final myAssignment = ref.read(currentUserProvider).asData?.value.staffAssignmentFor(activeCompanyId);
     if (myAssignment?.branchId != null) {
       _selectedBranchId = myAssignment!.branchId;
     } else {
@@ -101,7 +107,8 @@ class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final myAssignment = ref.watch(currentUserProvider).asData?.value.staffAssignment;
+    final activeCompanyId = ref.watch(activeStaffCompanyIdProvider);
+    final myAssignment = ref.watch(currentUserProvider).asData?.value.staffAssignmentFor(activeCompanyId);
     final fixedBranchId = myAssignment?.branchId;
 
     return Scaffold(

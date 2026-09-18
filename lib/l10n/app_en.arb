@@ -17,6 +17,8 @@
   "createCompanySubmitButton": "Create Company",
   "createCompanySuccessMessage": "Company created. The admin can set their password via 'Forgot Password' using their phone number.",
   "drawerAddStaffMember": "Add Member/Trainer",
+  "drawerActiveCompanyLabel": "Active Company",
+  "drawerActiveCompanyPickerTitle": "Which company are you acting for?",
   "addStaffMemberTitle": "Add Member/Trainer",
   "addStaffMemberNameLabel": "Full Name",
   "addStaffMemberPhoneLabel": "Phone",

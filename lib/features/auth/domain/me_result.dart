@@ -132,11 +132,23 @@ class MeResult {
 
   // Aynı [staffAssignment] mantığının çoklu-şirket farkındalıklı sürümü -
   // GymAdmin/BranchManager olduğu HER şirketi döner (sadece ilkini değil).
-  // Şu an sadece AppDrawer'da hangi şirketlerde personel yönetebildiğini
-  // göstermek için kullanılır; backend'in kendi TenantResolutionService'i
-  // hâlâ "ilkini seç" davranışında olduğundan (bkz. GymAppApi'deki
-  // project-member-package-linkage-design.md), personel eklemek her zaman
-  // [staffAssignment] (ilk eşleşme) üzerinden çözümlenen şirketi hedefler.
+  // AppDrawer'ın "Aktif Şirket" seçicisini doldurmak için kullanılır.
   List<MeAssignment> get staffAssignments =>
       assignments.where((a) => a.role == 'GymAdmin' || a.role == 'BranchManager').toList();
+
+  // [staffAssignments] içinden [companyId]'ye eşleşen olanı döner - backend
+  // artık X-Active-Company-Id header'ını (bkz.
+  // core/providers/active_staff_company_provider.dart) çağıranın gerçekten
+  // sahip olduğu bir şirketle eşleştiği sürece onurlandırıyor, bu yüzden bir
+  // ekranın hangi şirket için işlem yaptığını göstermesi de aynı seçimi
+  // yansıtmalı. companyId null'sa veya eşleşme bulunamazsa [staffAssignment]
+  // (ilk eşleşme) davranışına geri döner - backend'in kendi fallback'iyle
+  // aynı.
+  MeAssignment? staffAssignmentFor(int? companyId) {
+    if (companyId == null) return staffAssignment;
+    for (final assignment in staffAssignments) {
+      if (assignment.companyId == companyId) return assignment;
+    }
+    return staffAssignment;
+  }
 }

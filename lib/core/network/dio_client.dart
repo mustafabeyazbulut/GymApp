@@ -1,11 +1,17 @@
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../providers/active_staff_company_provider.dart';
 import 'api_config.dart';
 import 'token_store.dart';
 import 'secure_token_store.dart';
 
 part 'dio_client.g.dart';
+
+// Backend'in TenantContextMiddleware'inin okuduğu header adıyla birebir
+// aynı olmalı (bkz. GymAppApi Presentation/GymAppApi.WebApi/Middleware/
+// TenantContextMiddleware.cs'deki ActiveCompanyHeaderName sabiti).
+const activeCompanyHeaderName = 'X-Active-Company-Id';
 
 // Kendisine Authorization başlığı eklenmemesi gereken ve 401 durumunda
 // refresh-and-retry'ı TETİKLEMEMESİ gereken uç noktalar (/login'den gelen
@@ -94,5 +100,21 @@ Dio dio(Ref ref) {
     ),
   );
   addAuthInterceptor(dio, ref.watch(tokenStoreProvider));
+  // addAuthInterceptor'dan ayrı bir interceptor - bunun kendi test dosyası
+  // Riverpod'suz plain bir Dio/TokenStore çifti kuruyor, bu yüzden ref'e
+  // ihtiyaç duyan bu mantığı oraya karıştırmıyoruz. ref.read (watch değil):
+  // değeri her istekte YENİDEN okumak istiyoruz, Dio ilk oluşturulduğunda
+  // sabitlenmiş bir değeri değil.
+  dio.interceptors.add(
+    InterceptorsWrapper(
+      onRequest: (options, handler) {
+        final companyId = ref.read(activeStaffCompanyIdProvider);
+        if (companyId != null) {
+          options.headers[activeCompanyHeaderName] = companyId.toString();
+        }
+        handler.next(options);
+      },
+    ),
+  );
   return dio;
 }
