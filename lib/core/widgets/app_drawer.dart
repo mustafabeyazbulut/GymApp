@@ -340,6 +340,18 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       label: l10n.drawerCreateClassSession,
                       onTap: () => closeThenPush('/staff/classes/create'),
                     ),
+                  // Analiz ekranı SuperAdmin'i de kapsıyor (backend'in
+                  // StaffManagement policy'si zaten BranchManager/GymAdmin/
+                  // SuperAdmin'i kapsıyor) - sadece `staffAssignment != null`
+                  // koşulu SuperAdmin'i (staffAssignment'ı hep null döner)
+                  // dışarıda bırakırdı, bu yüzden isSuperAdmin ile OR'lanıyor
+                  // (üstteki "Yeni Firma Ekle" girişiyle aynı desen).
+                  if ((currentUser?.isSuperAdmin ?? false) || currentUser?.staffAssignment != null)
+                    _DrawerItem(
+                      icon: Icons.analytics_outlined,
+                      label: l10n.drawerAnalytics,
+                      onTap: () => closeThenPush('/staff/analytics'),
+                    ),
                   if (currentUser?.isTrainer ?? false)
                     _DrawerItem(
                       icon: Icons.event_note_outlined,

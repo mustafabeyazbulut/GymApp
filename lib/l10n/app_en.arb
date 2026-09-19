@@ -31,6 +31,7 @@
   "drawerActiveCompanyPickerTitle": "Which company are you acting for?",
   "drawerTrainerSchedule": "My Trainer Schedule",
   "drawerCreateClassSession": "Create Class Schedule",
+  "drawerAnalytics": "Analytics",
   "trainerScheduleTitle": "My Schedule",
   "trainerScheduleEmptyMessage": "You have no upcoming sessions yet.",
   "trainerScheduleUnknownMemberLabel": "Member",
@@ -315,5 +316,22 @@
   "staffManagementRemoveButton": "Remove",
   "staffManagementRemoveConfirmTitle": "Remove {name}?",
   "staffManagementRemoveConfirmBody": "This person's access is removed immediately. You can invite them again later if needed.",
-  "staffManagementRemoveConfirmButton": "Yes, Remove"
+  "staffManagementRemoveConfirmButton": "Yes, Remove",
+
+  "analyticsTitle": "Analytics",
+  "analyticsActiveMembersLabel": "Active Members",
+  "analyticsActiveMembersPreviousLabel": "30 days ago: {count}",
+  "analyticsTrendUp": "{percentage}% up",
+  "analyticsTrendDown": "{percentage}% down",
+  "analyticsTrendFlat": "No change",
+  "analyticsTrendUnavailable": "New (not comparable)",
+  "analyticsClassOccupancyLabel": "Class Occupancy Rate",
+  "analyticsClassOccupancyEmptyMessage": "No classes in the last 30 days.",
+  "analyticsClassOccupancySessionCount": "{count} sessions",
+  "analyticsClassOccupancyEnrolledOfCapacity": "{enrolled}/{capacity} people",
+  "analyticsPackageSalesLabel": "Package Sales (Last 30 Days)",
+  "analyticsPackageSalesEmptyMessage": "No packages sold in the last 30 days.",
+  "analyticsPackageCategoryOther": "Other (Uncategorized)",
+  "analyticsTrainerStudentsLabel": "Active Students per Trainer",
+  "analyticsTrainerStudentsEmptyMessage": "No students linked to a trainer yet."
 }

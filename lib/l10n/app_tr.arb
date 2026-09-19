@@ -62,6 +62,8 @@
   "@drawerTrainerSchedule": {},
   "drawerCreateClassSession": "Ders Programı Oluştur",
   "@drawerCreateClassSession": {},
+  "drawerAnalytics": "Analiz",
+  "@drawerAnalytics": {},
   "trainerScheduleTitle": "Programım",
   "@trainerScheduleTitle": {},
   "trainerScheduleEmptyMessage": "Henüz planlanmış bir randevunuz yok.",
@@ -659,5 +661,51 @@
   "staffManagementRemoveConfirmBody": "Bu kişinin erişimi hemen kaldırılır. Gerekirse daha sonra tekrar davet edebilirsiniz.",
   "@staffManagementRemoveConfirmBody": {},
   "staffManagementRemoveConfirmButton": "Evet, Kaldır",
-  "@staffManagementRemoveConfirmButton": {}
+  "@staffManagementRemoveConfirmButton": {},
+
+  "analyticsTitle": "Analiz",
+  "@analyticsTitle": {},
+  "analyticsActiveMembersLabel": "Aktif Üye Sayısı",
+  "@analyticsActiveMembersLabel": {},
+  "analyticsActiveMembersPreviousLabel": "30 gün önce: {count}",
+  "@analyticsActiveMembersPreviousLabel": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "analyticsTrendUp": "%{percentage} artış",
+  "@analyticsTrendUp": {
+    "placeholders": { "percentage": { "type": "String" } }
+  },
+  "analyticsTrendDown": "%{percentage} düşüş",
+  "@analyticsTrendDown": {
+    "placeholders": { "percentage": { "type": "String" } }
+  },
+  "analyticsTrendFlat": "Değişim yok",
+  "@analyticsTrendFlat": {},
+  "analyticsTrendUnavailable": "Yeni (karşılaştırılamaz)",
+  "@analyticsTrendUnavailable": {},
+  "analyticsClassOccupancyLabel": "Ders Doluluk Oranı",
+  "@analyticsClassOccupancyLabel": {},
+  "analyticsClassOccupancyEmptyMessage": "Son 30 günde ders programı yok.",
+  "@analyticsClassOccupancyEmptyMessage": {},
+  "analyticsClassOccupancySessionCount": "{count} ders",
+  "@analyticsClassOccupancySessionCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "analyticsClassOccupancyEnrolledOfCapacity": "{enrolled}/{capacity} kişi",
+  "@analyticsClassOccupancyEnrolledOfCapacity": {
+    "placeholders": {
+      "enrolled": { "type": "int" },
+      "capacity": { "type": "int" }
+    }
+  },
+  "analyticsPackageSalesLabel": "Paket Satış Sayısı (Son 30 Gün)",
+  "@analyticsPackageSalesLabel": {},
+  "analyticsPackageSalesEmptyMessage": "Son 30 günde satılan paket yok.",
+  "@analyticsPackageSalesEmptyMessage": {},
+  "analyticsPackageCategoryOther": "Diğer (Kategorisiz)",
+  "@analyticsPackageCategoryOther": {},
+  "analyticsTrainerStudentsLabel": "Antrenör Başına Aktif Öğrenci",
+  "@analyticsTrainerStudentsLabel": {},
+  "analyticsTrainerStudentsEmptyMessage": "Henüz bir antrenöre bağlı öğrenci yok.",
+  "@analyticsTrainerStudentsEmptyMessage": {}
 }
