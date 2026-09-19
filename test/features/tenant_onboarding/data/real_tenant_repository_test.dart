@@ -111,7 +111,7 @@ void main() {
       expect(options.path, '/api/companies/1');
       return ResponseBody.fromString(
         '{"id":1,"name":"Test Gym","isActive":true,'
-        '"branches":[{"id":5,"name":"Merkez","address":"Adres","isActive":true}],'
+        '"branches":[{"id":5,"name":"Merkez","address":"Adres","isActive":true,"managerName":"Ayşe Yılmaz"}],'
         '"gymAdminCount":1,"branchManagerCount":1,"trainerCount":2,"memberCount":10}',
         200,
         headers: {'content-type': ['application/json']},
@@ -124,6 +124,7 @@ void main() {
     expect(detail.name, 'Test Gym');
     expect(detail.branches, hasLength(1));
     expect(detail.branches.single.name, 'Merkez');
+    expect(detail.branches.single.managerName, 'Ayşe Yılmaz');
     expect(detail.gymAdminCount, 1);
     expect(detail.branchManagerCount, 1);
     expect(detail.trainerCount, 2);

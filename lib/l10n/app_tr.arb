@@ -136,6 +136,12 @@
   "@companyDetailActiveLabel": {},
   "companyDetailBranchesTitle": "Şubeler",
   "@companyDetailBranchesTitle": {},
+  "companyDetailBranchManagerLabel": "Şube yöneticisi: {name}",
+  "@companyDetailBranchManagerLabel": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "companyDetailBranchNoManagerLabel": "Şube yöneticisi atanmadı",
+  "@companyDetailBranchNoManagerLabel": {},
   "companyDetailInviteGymAdminTitle": "GymAdmin Davet Et",
   "@companyDetailInviteGymAdminTitle": {},
   "companyDetailInviteGymAdminHint": "Bu numara zaten kayıtlı bir kullanıcıya ait olmalı - bu firmaya ikinci bir GymAdmin (ör. iş ortağı) olarak davet edilir.",

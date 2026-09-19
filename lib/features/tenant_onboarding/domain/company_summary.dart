@@ -37,6 +37,7 @@ class CompanyBranchSummary {
     required this.name,
     required this.address,
     required this.isActive,
+    this.managerName,
   });
 
   factory CompanyBranchSummary.fromJson(Map<String, dynamic> json) => CompanyBranchSummary(
@@ -44,12 +45,15 @@ class CompanyBranchSummary {
         name: json['name'] as String,
         address: json['address'] as String,
         isActive: json['isActive'] as bool,
+        managerName: json['managerName'] as String?,
       );
 
   final int id;
   final String name;
   final String address;
   final bool isActive;
+  // Bu şubenin BranchManager'ı - henüz atanmadıysa null.
+  final String? managerName;
 }
 
 class CompanyDetail {

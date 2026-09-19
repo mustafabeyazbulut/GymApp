@@ -276,6 +276,13 @@ class _BranchTile extends StatelessWidget {
                   branch.address,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundMuted),
                 ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  branch.managerName != null
+                      ? l10n.companyDetailBranchManagerLabel(branch.managerName!)
+                      : l10n.companyDetailBranchNoManagerLabel,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.onBackgroundFaint),
+                ),
               ],
             ),
           ),
