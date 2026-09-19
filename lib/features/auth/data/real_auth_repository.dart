@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/network/dio_client.dart';
@@ -128,7 +130,17 @@ class RealAuthRepository implements AuthRepository {
 
   Future<Response<T>> _guard<T>(Future<Response<T>> Function() call) async {
     try {
-      return await call();
+      // Dio'nun kendi connectTimeout/receiveTimeout'u sadece istek GERÇEKTEN
+      // ağa çıktıktan sonraki fazı ölçüyor - istek, dio_client.dart'taki
+      // auth interceptor'ın kendi await zincirinde (token okuma, 401'de
+      // refresh çağrısı) askıda kalırsa bu süre hiç işlemiyor. Docker/WSL2
+      // NAT'ın sessizce düşürdüğü bir bağlantı yüzünden bu tür bir askıda
+      // kalma yaşanırsa, bu son çare zaman aşımı olmadan ekran (ör. Home)
+      // sonsuza kadar dönmeye devam ediyordu - "kapatıp açtığımda dönüp
+      // duruyor, kimin hesabı belli değil" şikayetinin kök nedeni buydu.
+      return await call().timeout(const Duration(seconds: 15));
+    } on TimeoutException {
+      throw const NetworkAuthException();
     } on DioException catch (exception) {
       throw _mapException(exception);
     }
