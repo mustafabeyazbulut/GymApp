@@ -45,7 +45,19 @@ class GymApp extends ConsumerWidget {
       // öğesi çalışmayan yarı-oturum-açık bir Home ekranında sıkışıp
       // kalıyordu - logOut() burada çağrılıp router'ın gerçekten /login'e
       // yönlendirmesi sağlanıyor.
-      if (next.hasError && next.error is SessionExpiredException) {
+      //
+      // KRİTİK: logOut() bu ref.listen'i BOZAN bir currentUserProvider
+      // invalidate() çağırıyor - listener burada hala aktif olduğundan bu,
+      // provider'ı HEMEN yeniden inşa ediyor (getMe() tekrar çağrılıyor).
+      // Hiç token yokken (ör. zaten /login ekranındayken - bu widget HER
+      // rotada, /login dahil, build ediliyor) bu da yine 401/SessionExpired
+      // üretip logOut()'u tekrar tetikliyor - authState kontrolü olmadan bu,
+      // backend'i /api/auth/me ile bombalayan SONSUZ bir döngüye dönüşüyordu
+      // (canlı testte 190+ art arda istek gözlemlendi). Sadece GERÇEKTEN
+      // oturum açıkken (authState true) tepki vererek döngü bir kez sonra
+      // kendiliğinden kırılıyor.
+      final wasAuthenticated = ref.read(authStateProvider).value ?? false;
+      if (wasAuthenticated && next.hasError && next.error is SessionExpiredException) {
         ref.read(authStateProvider.notifier).logOut();
       }
     });
