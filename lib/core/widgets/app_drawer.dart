@@ -213,8 +213,24 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     final hasMultipleStaffCompanies = (currentUser?.staffAssignments.length ?? 0) > 1;
 
     void closeThenPush(String location) {
+      // Drawer'ın GoRouter'ı: bu widget'ın kendi context'i degil, cunku
+      // Navigator.pop(context) burada drawer'i kapatma animasyonunu
+      // BASLATIYOR (senkron donuyor, animasyonu BEKLEMIYOR) - hemen
+      // ardindan context.push cagrilirsa yeni sayfa drawer'i tam kapanma
+      // animasyonu bitmeden ustune biniyor. Flutter, tamamen ortulmus bir
+      // route'un animasyonunu duraklatiyor - yani drawer'in kapanma
+      // animasyonu YARIM kalip DURUYOR, geri tusuna basilip bu sayfa
+      // tekrar gorunur olunca da KALDIGI YERDEN devam ediyor. Sonuc:
+      // kullanici "geri" tusuna bastiginda beklenmedik sekilde drawer'in
+      // kapanma animasyonunu goruyor - "asiri kotu kalitesiz bir izlenim".
+      // Router referansini ONCE (drawer widget'i hala tam mounted'ken)
+      // aliyoruz cunku push, drawer kapanma animasyonu bittikten (asagidaki
+      // gecikme kadar) SONRA calisiyor - o noktada bu widget'in kendi
+      // context'i coktan dispose olmus olabilir, ama GoRouter nesnesi
+      // (uygulama kokunde yasiyor) hala gecerli.
+      final router = GoRouter.of(context);
       Navigator.pop(context);
-      context.push(location);
+      Future.delayed(const Duration(milliseconds: 250), () => router.push(location));
     }
 
     return Drawer(
