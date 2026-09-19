@@ -61,6 +61,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     // bağlantı sorunu yaşayan bir kullanıcının hiçbir zaman arayüz dilini
     // değiştirememesine yol açıyordu.
     ref.read(appLocaleProvider.notifier).setLocale(Locale(selected));
+    Navigator.of(context).pop();
 
     setState(() => _isChangingLanguage = true);
     try {
@@ -211,11 +212,6 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     final activeStaffAssignment = currentUser?.staffAssignmentFor(activeCompanyId);
     final hasMultipleStaffCompanies = (currentUser?.staffAssignments.length ?? 0) > 1;
 
-    void closeThenRun(Future<void> Function() action) {
-      Navigator.pop(context);
-      action();
-    }
-
     void closeThenPush(String location) {
       Navigator.pop(context);
       context.push(location);
@@ -354,14 +350,22 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                     label: l10n.settingsLanguageLabel,
                     trailingText: _languageDisplayName(context),
                     isLoading: _isChangingLanguage,
-                    onTap: _isChangingLanguage ? null : () => closeThenRun(_pickLanguage),
+                    // closeThenRun KULLANMA - çekmece burada hemen kapatılırsa
+                    // (Navigator.pop), _pickLanguage'ın showDialog'unu
+                    // beklerken _AppDrawerState çoktan dispose olmuş oluyor;
+                    // dialogdan dönen sonuçtaki "if (!mounted) return" bu
+                    // yüzden HER ZAMAN erken çıkıyor ve setLocale hiç
+                    // çalışmıyordu. Çekmece, dialog süresince açık kalmalı.
+                    onTap: _isChangingLanguage ? null : _pickLanguage,
                   ),
                   _DrawerItem(
                     icon: Icons.pause_circle_outline,
                     label: l10n.accountFreezeButton,
                     showChevron: true,
                     isLoading: _isFreezingAccount,
-                    onTap: _isFreezingAccount ? null : () => closeThenRun(_confirmAndFreezeAccount),
+                    // Aynı neden: onay dialogu/OTP dialogu süresince çekmece
+                    // açık kalmalı, bkz. yukarıdaki dil seçici notu.
+                    onTap: _isFreezingAccount ? null : _confirmAndFreezeAccount,
                   ),
                   _DrawerItem(
                     icon: Icons.delete_outline,
@@ -369,7 +373,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                     color: AppColors.error,
                     showChevron: true,
                     isLoading: _isDeletingAccount,
-                    onTap: _isDeletingAccount ? null : () => closeThenRun(_confirmAndDeleteAccount),
+                    onTap: _isDeletingAccount ? null : _confirmAndDeleteAccount,
                   ),
                 ],
               ),
