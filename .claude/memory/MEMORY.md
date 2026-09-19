@@ -1,6 +1,6 @@
 # Memory Index
 
-- [Turkish comments and commits](feedback-turkish-comments-and-commits.md) — ALL new code comments and ALL commit messages, in both repos, go in Turkish from 2026-09-19 onward. Read before writing any comment or commit.
+- [Turkish comments and commits](feedback-turkish-comments-and-commits.md) — ALL code comments, commit messages, AND chat replies to the user go in Turkish only, no exceptions. Read before writing anything.
 - [Membership real-data status](project-membership-real-data-status.md) — Membership, Home AND Classes screens all wired to real backend data + shared context switcher (2026-09-18/19), mobile half of the backend's Package roadmap step 5. Read first before touching any of the three or resuming step 5 (only Progress still mock).
 - [Never remove registration](feedback-never-remove-registration.md) — self-service registration is permanent; a 2026-09-17 attempt to remove it was reverted. Read before touching Register/CreateCompany/AddStaffMember.
 - [Tenant Onboarding mobile status](project-tenant-onboarding-mobile-status.md) — Tasks 1-5 done + Company Management addition; Task 6 (retire registration) REVERTED, do not redo. Read this first if asked about company/staff management screens.
