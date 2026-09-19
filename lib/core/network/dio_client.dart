@@ -68,12 +68,36 @@ void addAuthInterceptor(Dio dio, TokenStore tokenStore) {
           return;
         }
 
+        // Yerel Docker/WSL2 ortamında Postgres bağlantısı ara sıra birkaç
+        // saniye gecikebiliyor (bkz. GymAppApi Registration.cs'teki Npgsql
+        // KeepAlive notu) - refresh isteği TAMAMEN geçerli bir refresh
+        // token'la bile bu yüzden zaman zaman yavaşlayıp zaman aşımına
+        // uğrayabiliyor. Sunucunun token'ı GERÇEKTEN reddettiği (bir yanıt
+        // döndüğü, statusCode 400/401 gibi) durumla, isteğin hiç yanıt
+        // ALAMADIĞI (bağlantı/zaman aşımı) durumu ayırt edip sadece ikincisi
+        // için kısa bir bekleyişle yeniden deniyoruz - tek bir geçici ağ
+        // sorunu kullanıcıyı gereksiz yere kalıcı olarak çıkışa zorlamamalı.
+        Response<Map<String, dynamic>>? refreshResponse;
+        for (var attempt = 1; attempt <= 3; attempt++) {
+          try {
+            refreshResponse = await rawDio.post<Map<String, dynamic>>(
+              '/api/auth/refresh',
+              data: {'refreshToken': refreshToken},
+            );
+            break;
+          } on DioException catch (refreshError) {
+            final isDefinitiveRejection = refreshError.response != null;
+            if (isDefinitiveRejection || attempt == 3) {
+              await tokenStore.clear();
+              handler.next(error);
+              return;
+            }
+            await Future.delayed(const Duration(seconds: 1));
+          }
+        }
+
         try {
-          final refreshResponse = await rawDio.post<Map<String, dynamic>>(
-            '/api/auth/refresh',
-            data: {'refreshToken': refreshToken},
-          );
-          final data = refreshResponse.data!;
+          final data = refreshResponse!.data!;
           await tokenStore.saveTokens(
             accessToken: data['accessToken'] as String,
             refreshToken: data['refreshToken'] as String,

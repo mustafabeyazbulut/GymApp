@@ -1,8 +1,58 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_app/core/network/fake_token_store.dart';
 import 'package:gym_app/core/network/dio_client.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
+
+/// http_mock_adapter bir rotayı sadece KAYIT anında, sabit bir yanıtla
+/// eşleştirir - aynı isteğin ilk denemede başarısız, ikinci denemede başarılı
+/// olduğu bir senaryoyu (deneme sayacına göre dallanan) modelleyemez. Bu
+/// yüzden refresh'in "geçici hata sonrası kendiliğinden toparlanma" davranışı
+/// için elle yazılmış, deneme sayısını sayan bu minik adapter kullanılıyor.
+class _FlakyRefreshAdapter implements HttpClientAdapter {
+  _FlakyRefreshAdapter({required this.failFirstNRefreshAttempts});
+
+  final int failFirstNRefreshAttempts;
+  int refreshAttempts = 0;
+
+  ResponseBody _json(String body, int statusCode) => ResponseBody.fromString(
+        body,
+        statusCode,
+        headers: {
+          Headers.contentTypeHeader: [Headers.jsonContentType],
+        },
+      );
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    if (options.path == '/api/protected') {
+      final isFresh = options.headers['Authorization'] == 'Bearer fresh-access';
+      return isFresh
+          ? _json('{"ok":true}', 200)
+          : _json('{"Status":401,"Errors":["expired"]}', 401);
+    }
+    if (options.path == '/api/auth/refresh') {
+      refreshAttempts += 1;
+      if (refreshAttempts <= failFirstNRefreshAttempts) {
+        throw DioException.connectionError(requestOptions: options, reason: 'simulated flaky Postgres/Docker NAT');
+      }
+      return _json(
+        '{"accessToken":"fresh-access","expiresAtUtc":"2026-01-01T00:00:00Z","refreshToken":"fresh-refresh"}',
+        200,
+      );
+    }
+    throw UnimplementedError('beklenmeyen path: ${options.path}');
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
 
 void main() {
   late Dio dio;
@@ -105,6 +155,50 @@ void main() {
         throwsA(isA<DioException>()),
       );
       expect(await tokenStore.readAccessToken(), isNull);
+    },
+  );
+
+  test(
+    'refresh bir kez geçici bağlantı hatası alsa bile (Postgres/Docker gecikmesi gibi) '
+    'ikinci denemede toparlanır ve kullanıcıyı yanlışlıkla çıkışa zorlamaz',
+    () async {
+      // addAuthInterceptor kendi rawDio'sunu (refresh/retry çağrıları için)
+      // OLUŞTURULDUĞU ANDA dio.httpClientAdapter'ın o anki değerini yakalar
+      // - bu yüzden flaky adapter, addAuthInterceptor çağrılmadan ÖNCE
+      // atanmalı, paylaşılan setUp()'ın kurduğu dio/adapter yerine kendi
+      // taze çiftini kuruyoruz.
+      final freshTokenStore = FakeTokenStore();
+      await freshTokenStore.saveTokens(accessToken: 'expired-access', refreshToken: 'valid-refresh');
+      final freshDio = Dio(BaseOptions(baseUrl: 'http://test.local'));
+      final flakyAdapter = _FlakyRefreshAdapter(failFirstNRefreshAttempts: 1);
+      freshDio.httpClientAdapter = flakyAdapter;
+      addAuthInterceptor(freshDio, freshTokenStore);
+
+      final response = await freshDio.get('/api/protected');
+
+      expect(response.statusCode, 200);
+      expect(flakyAdapter.refreshAttempts, 2);
+      expect(await freshTokenStore.readAccessToken(), 'fresh-access');
+    },
+  );
+
+  test(
+    '3 denemenin hepsi de geçici bağlantı hatasıyla başarısız olursa '
+    'nihayetinde vazgeçip token deposunu temizler',
+    () async {
+      final freshTokenStore = FakeTokenStore();
+      await freshTokenStore.saveTokens(accessToken: 'expired-access', refreshToken: 'valid-refresh');
+      final freshDio = Dio(BaseOptions(baseUrl: 'http://test.local'));
+      final flakyAdapter = _FlakyRefreshAdapter(failFirstNRefreshAttempts: 3);
+      freshDio.httpClientAdapter = flakyAdapter;
+      addAuthInterceptor(freshDio, freshTokenStore);
+
+      await expectLater(
+        () => freshDio.get('/api/protected'),
+        throwsA(isA<DioException>()),
+      );
+      expect(flakyAdapter.refreshAttempts, 3);
+      expect(await freshTokenStore.readAccessToken(), isNull);
     },
   );
 }
