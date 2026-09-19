@@ -57,14 +57,21 @@ class CompanyBranchSummary {
 }
 
 class CompanyGymAdmin {
-  const CompanyGymAdmin({required this.userId, required this.fullName, required this.phone});
+  const CompanyGymAdmin({
+    required this.assignmentId,
+    required this.userId,
+    required this.fullName,
+    required this.phone,
+  });
 
   factory CompanyGymAdmin.fromJson(Map<String, dynamic> json) => CompanyGymAdmin(
+        assignmentId: json['assignmentId'] as int,
         userId: json['userId'] as int,
         fullName: json['fullName'] as String,
         phone: json['phone'] as String,
       );
 
+  final int assignmentId;
   final int userId;
   final String fullName;
   final String phone;

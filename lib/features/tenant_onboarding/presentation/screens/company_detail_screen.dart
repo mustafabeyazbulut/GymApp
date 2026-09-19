@@ -30,6 +30,7 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
 
   String? _inviteGymAdminPhone;
   bool _isInvitingGymAdmin = false;
+  int? _removingAssignmentId;
 
   @override
   void initState() {
@@ -111,6 +112,41 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     } finally {
       if (mounted) setState(() => _isInvitingGymAdmin = false);
+    }
+  }
+
+  Future<void> _confirmAndRemoveGymAdmin(CompanyGymAdmin admin) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.staffManagementRemoveConfirmTitle(admin.fullName)),
+        content: Text(l10n.staffManagementRemoveConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.accountDeletionCancelButton),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.staffManagementRemoveConfirmButton),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _removingAssignmentId = admin.assignmentId);
+    try {
+      await ref.read(tenantRepositoryProvider).removeAssignment(admin.assignmentId);
+      if (!mounted) return;
+      await _load();
+    } on ApiException catch (exception) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
+    } finally {
+      if (mounted) setState(() => _removingAssignmentId = null);
     }
   }
 
@@ -219,7 +255,11 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
             )
           else
             for (final admin in company.gymAdmins) ...[
-              _GymAdminTile(admin: admin),
+              _GymAdminTile(
+                admin: admin,
+                isRemoving: _removingAssignmentId == admin.assignmentId,
+                onRemove: () => _confirmAndRemoveGymAdmin(admin),
+              ),
               const SizedBox(height: AppSpacing.sm),
             ],
           const SizedBox(height: AppSpacing.xl),
@@ -311,12 +351,15 @@ class _BranchTile extends StatelessWidget {
 }
 
 class _GymAdminTile extends StatelessWidget {
-  const _GymAdminTile({required this.admin});
+  const _GymAdminTile({required this.admin, required this.isRemoving, required this.onRemove});
 
   final CompanyGymAdmin admin;
+  final bool isRemoving;
+  final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -341,6 +384,19 @@ class _GymAdminTile extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(width: AppSpacing.sm),
+          if (isRemoving)
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.error),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.person_remove_outlined, color: AppColors.error),
+              tooltip: l10n.staffManagementRemoveConfirmButton,
+              onPressed: onRemove,
+            ),
         ],
       ),
     );
