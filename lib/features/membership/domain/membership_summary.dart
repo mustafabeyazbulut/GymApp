@@ -15,6 +15,7 @@ class MembershipSummary {
     required this.id,
     required this.companyName,
     required this.packageName,
+    required this.category,
     required this.status,
     required this.startDate,
     required this.endDate,
@@ -31,6 +32,9 @@ class MembershipSummary {
   final int id;
   final String companyName;
   final String packageName;
+  // Backend'in ham enum ismi ("GroupClass"/"MartialArts") ya da null (bu
+  // paket hiçbir grup dersi için uygun değil) - bkz. MePackageAssignment.category.
+  final String? category;
   final MembershipStatus status;
   final DateTime startDate;
   final DateTime? endDate;

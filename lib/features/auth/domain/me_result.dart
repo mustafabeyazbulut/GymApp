@@ -28,6 +28,7 @@ class MePackageAssignment {
     required this.branchId,
     required this.packageId,
     required this.packageName,
+    required this.category,
     required this.price,
     required this.status,
     required this.startDate,
@@ -45,6 +46,7 @@ class MePackageAssignment {
         branchId: json['branchId'] as int?,
         packageId: json['packageId'] as int,
         packageName: json['packageName'] as String?,
+        category: json['category'] as String?,
         price: (json['price'] as num).toDouble(),
         status: json['status'] as String,
         startDate: DateTime.parse(json['startDate'] as String),
@@ -61,6 +63,10 @@ class MePackageAssignment {
   final int? branchId;
   final int packageId;
   final String? packageName;
+  // Backend'in ham enum ismi ("GroupClass"/"MartialArts") - null ise bu paket
+  // hiçbir grup dersi/kapasiteli ders için uygun değil (ör. 1:1 PT paketi).
+  // Ders programı ekranı "Katıl" butonunun etkinliğini buna göre belirler.
+  final String? category;
   final double price;
   // Backend'in ham enum ismi ("Active"/"Frozen") - Cancelled olanlar zaten
   // GetMeQueryHandler tarafından filtrelenir, bu yüzden burada asla görünmez.

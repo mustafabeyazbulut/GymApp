@@ -48,7 +48,7 @@ final class MembershipsProvider
   }
 }
 
-String _$membershipsHash() => r'b4000c332acc216f676daaec4f26b6fd8c11cf1c';
+String _$membershipsHash() => r'7a8324f99494be3c7a0394fb97f55e5ce6369753';
 
 @ProviderFor(SelectedMembershipId)
 final selectedMembershipIdProvider = SelectedMembershipIdProvider._();

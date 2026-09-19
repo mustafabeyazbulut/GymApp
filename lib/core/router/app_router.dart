@@ -6,6 +6,7 @@ import '../../features/auth/presentation/providers/auth_state_provider.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/class_scheduling/presentation/screens/create_class_session_screen.dart';
 import '../../features/classes/presentation/screens/classes_screen.dart';
 import '../../features/tenant_onboarding/presentation/screens/add_staff_member_screen.dart';
 import '../../features/tenant_onboarding/presentation/screens/branch_management_screen.dart';
@@ -97,6 +98,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/trainer/schedule',
         builder: (context, state) => const TrainerScheduleScreen(),
+      ),
+      GoRoute(
+        path: '/staff/classes/create',
+        builder: (context, state) => const CreateClassSessionScreen(),
       ),
       GoRoute(
         path: '/confirm-invitation',

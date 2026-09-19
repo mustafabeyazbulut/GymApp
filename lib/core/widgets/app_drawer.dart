@@ -334,6 +334,12 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       label: l10n.drawerPackageManagement,
                       onTap: () => closeThenPush('/staff/packages'),
                     ),
+                  if (currentUser?.staffAssignment != null)
+                    _DrawerItem(
+                      icon: Icons.event_available_outlined,
+                      label: l10n.drawerCreateClassSession,
+                      onTap: () => closeThenPush('/staff/classes/create'),
+                    ),
                   if (currentUser?.isTrainer ?? false)
                     _DrawerItem(
                       icon: Icons.event_note_outlined,

@@ -18,6 +18,7 @@ Future<List<MembershipSummary>> memberships(Ref ref) async {
             id: assignment.id,
             companyName: assignment.companyName ?? '',
             packageName: assignment.packageName ?? '',
+            category: assignment.category,
             status: membershipStatusFromApi(assignment.status),
             startDate: assignment.startDate,
             endDate: assignment.endDate,

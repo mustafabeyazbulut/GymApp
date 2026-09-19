@@ -12,6 +12,9 @@ import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/domain/auth_exceptions.dart';
 import '../../../auth/presentation/providers/current_user_provider.dart';
+import '../../../class_scheduling/domain/class_enrollment.dart';
+import '../../../class_scheduling/domain/class_session.dart';
+import '../../../class_scheduling/presentation/providers/class_scheduling_providers.dart';
 import '../../../membership/domain/membership_summary.dart';
 import '../../../membership/presentation/widgets/membership_switcher.dart';
 import '../../domain/reservation.dart';
@@ -20,6 +23,7 @@ import '../providers/class_providers.dart';
 import '../widgets/new_reservation_sheet.dart';
 
 final _dateTimeFormat = DateFormat('dd.MM.yyyy HH:mm');
+final _dateFormat = DateFormat('dd.MM.yyyy');
 
 class ClassesScreen extends ConsumerWidget {
   const ClassesScreen({super.key});
@@ -149,6 +153,12 @@ class ClassesScreen extends ConsumerWidget {
                 );
               },
             ),
+            const SizedBox(height: AppSpacing.xl),
+            const Divider(color: AppColors.border, height: 1),
+            const SizedBox(height: AppSpacing.lg),
+            Text(l10n.groupClassSectionTitle, style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: AppSpacing.md),
+            _GroupClassSchedule(memberships: memberships, l10n: l10n),
           ],
         );
       },
@@ -202,6 +212,205 @@ class _ReservationCard extends StatelessWidget {
             if (reservation.status == ReservationStatus.booked) ...[
               const SizedBox(height: AppSpacing.md),
               OutlinedButton(onPressed: onCancel, child: Text(l10n.classesCancelReservationButton)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Kapasiteli grup dersi haftalık programı - ayrı bir modül (ClassSession/
+// ClassEnrollment), yukarıdaki PT randevu (Reservation) akışından bağımsız.
+// Her ders için doluluk göstergesi ve Katıl/İptal Et butonu; uygun paketi
+// yoksa (kategori eşleşen aktif bir üyelik) buton devre dışı + sebep metni.
+class _GroupClassSchedule extends ConsumerWidget {
+  const _GroupClassSchedule({required this.memberships, required this.l10n});
+
+  final List<MembershipSummary> memberships;
+  final AppLocalizations l10n;
+
+  static MembershipSummary? _eligibleMembershipFor(
+      List<MembershipSummary> memberships, ClassSessionCategory category) {
+    final apiCategory = classSessionCategoryToApi(category);
+    for (final membership in memberships) {
+      if (membership.category != apiCategory) continue;
+      if (membership.status != MembershipStatus.active) continue;
+      if (membership.sessionCount != null) {
+        if ((membership.remainingSessions ?? 0) > 0) return membership;
+      } else if (membership.endDate == null || membership.endDate!.isAfter(DateTime.now())) {
+        return membership;
+      }
+    }
+    return null;
+  }
+
+  Future<void> _enroll(BuildContext context, WidgetRef ref, ClassSession session, int packageAssignmentId) async {
+    try {
+      await ref
+          .read(weeklyClassSessionsProvider.notifier)
+          .enroll(classSessionId: session.id, packageAssignmentId: packageAssignmentId);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.groupClassEnrolledMessage)));
+    } on ApiException catch (exception) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
+    }
+  }
+
+  Future<void> _cancelEnrollment(BuildContext context, WidgetRef ref, int classEnrollmentId) async {
+    try {
+      await ref.read(myClassEnrollmentsProvider.notifier).cancel(classEnrollmentId);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.groupClassCancelledMessage)));
+    } on ApiException catch (exception) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sessionsAsync = ref.watch(weeklyClassSessionsProvider);
+    final enrollmentsAsync = ref.watch(myClassEnrollmentsProvider);
+
+    return sessionsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      error: (error, stackTrace) => Text(
+        error is ApiException ? error.localizedMessage(context) : l10n.commonError,
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      data: (sessions) {
+        if (sessions.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+              child: Text(l10n.groupClassEmptyMessage, style: Theme.of(context).textTheme.bodyMedium),
+            ),
+          );
+        }
+
+        final enrollments = enrollmentsAsync.asData?.value ?? const <MyClassEnrollment>[];
+        final reservedBySessionId = {
+          for (final enrollment in enrollments)
+            if (enrollment.status == ClassEnrollmentStatus.reserved) enrollment.classSessionId: enrollment,
+        };
+
+        final sorted = [...sessions]
+          ..sort((a, b) {
+            final byDate = a.date.compareTo(b.date);
+            return byDate != 0 ? byDate : a.startTime.compareTo(b.startTime);
+          });
+
+        return Column(
+          children: [
+            for (final session in sorted)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                child: _ClassSessionCard(
+                  session: session,
+                  l10n: l10n,
+                  existingEnrollment: reservedBySessionId[session.id],
+                  eligibleMembership: _eligibleMembershipFor(memberships, session.category),
+                  onEnroll: (membershipId) => _enroll(context, ref, session, membershipId),
+                  onCancel: (enrollmentId) => _cancelEnrollment(context, ref, enrollmentId),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ClassSessionCard extends StatelessWidget {
+  const _ClassSessionCard({
+    required this.session,
+    required this.l10n,
+    required this.existingEnrollment,
+    required this.eligibleMembership,
+    required this.onEnroll,
+    required this.onCancel,
+  });
+
+  final ClassSession session;
+  final AppLocalizations l10n;
+  final MyClassEnrollment? existingEnrollment;
+  final MembershipSummary? eligibleMembership;
+  final ValueChanged<int> onEnroll;
+  final ValueChanged<int> onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final categoryLabel = session.category == ClassSessionCategory.groupClass
+        ? l10n.classSessionCategoryGroupClass
+        : l10n.classSessionCategoryMartialArts;
+    final isEnrolled = existingEnrollment != null;
+    final isFull = session.isFull;
+
+    String? disabledReason;
+    if (!isEnrolled) {
+      if (isFull) {
+        disabledReason = l10n.groupClassFullMessage;
+      } else if (eligibleMembership == null) {
+        disabledReason = l10n.groupClassNotEligibleMessage;
+      }
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(session.name, style: textTheme.titleMedium),
+                      Text(
+                        '${_dateFormat.format(session.date)}  ${session.startTimeLabel}-${session.endTimeLabel}',
+                        style: textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+                StatusPill(
+                  text: l10n.groupClassOccupancyLabel(session.enrolledCount, session.capacity),
+                  isPositive: !isFull,
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(categoryLabel, style: textTheme.bodySmall?.copyWith(color: AppColors.onBackgroundMuted)),
+            const SizedBox(height: AppSpacing.md),
+            if (isEnrolled)
+              OutlinedButton(
+                onPressed: () => onCancel(existingEnrollment!.id),
+                child: Text(l10n.groupClassCancelButton),
+              )
+            else ...[
+              ElevatedButton(
+                onPressed: disabledReason == null ? () => onEnroll(eligibleMembership!.id) : null,
+                child: Text(l10n.groupClassEnrollButton),
+              ),
+              if (disabledReason != null) ...[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  disabledReason,
+                  style: textTheme.labelSmall?.copyWith(color: AppColors.onBackgroundFaint),
+                ),
+              ],
             ],
           ],
         ),
