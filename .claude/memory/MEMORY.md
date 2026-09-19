@@ -12,3 +12,4 @@
 - [Design quality bar](feedback-design-quality-bar.md) — every screen, even POC ones, must match the reference mockup's polish, not a rough placeholder.
 - [Visual language](feedback-visual-language.md) — standing, locked-in visual system (flat bg, thin-line fields, functional-only green, fixed logo position) for EVERY screen, not just Auth.
 - [Implementer must not update memory](feedback-implementer-must-not-update-memory.md) — only the coordinator writes the shared status memory, only after independent review passes, never the implementer subagent itself.
+- [Faz 1 gece boyu tamamlanma durumu](project-phase1-overnight-completion-status.md) — 2026-09-19 gece oturumunda kapatılan tüm gerçek boşlukların (paket yönetimi, şube/personel yönetimi, davet onayı, gerçek bildirimler, dil desteği, dondurma sınırı) özeti. Faz 1 durumu için önce bunu oku.
