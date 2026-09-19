@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/network/secure_token_store.dart';
+import 'current_user_provider.dart';
 
 part 'auth_state_provider.g.dart';
 
@@ -21,10 +22,20 @@ class AuthState extends _$AuthState {
     return accessToken != null && refreshToken != null;
   }
 
-  void logIn() => state = const AsyncData(true);
+  void logIn() {
+    state = const AsyncData(true);
+    // Aynı oturumda farklı bir hesapla art arda giriş yapıldığında (ör.
+    // SuperAdmin'den çıkıp GymAdmin'e girmek) currentUserProvider bu geçiş
+    // sırasında genellikle en az bir izleyicisini hep koruyor, bu yüzden
+    // autoDispose kendiliğinden temizlemiyor - önceki kullanıcının önbelleğe
+    // alınmış MeResult'ı (adı, rolleri, SuperAdmin-özel menüler dahil) yeni
+    // giriş yapan kullanıcıya gösterilmeye devam ediyordu.
+    ref.invalidate(currentUserProvider);
+  }
 
   Future<void> logOut() async {
     await ref.read(tokenStoreProvider).clear();
     state = const AsyncData(false);
+    ref.invalidate(currentUserProvider);
   }
 }

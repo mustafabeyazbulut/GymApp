@@ -2,10 +2,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_app/core/network/token_store.dart';
 import 'package:gym_app/core/network/secure_token_store.dart';
+import 'package:gym_app/features/auth/data/real_auth_repository.dart';
+import 'package:gym_app/features/auth/domain/auth_repository.dart';
+import 'package:gym_app/features/auth/domain/me_result.dart';
 import 'package:gym_app/features/auth/presentation/providers/auth_state_provider.dart';
+import 'package:gym_app/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockTokenStore extends Mock implements TokenStore {}
+
+class _MockAuthRepository extends Mock implements AuthRepository {}
+
+MeResult _fakeUser(String fullName) => MeResult(
+      id: 1,
+      fullName: fullName,
+      phone: '+905551112233',
+      email: null,
+      preferredLanguage: 'tr',
+      isAccountFrozen: false,
+      assignments: const [],
+      packageAssignments: const [],
+    );
 
 void main() {
   late _MockTokenStore tokenStore;
@@ -64,5 +81,38 @@ void main() {
 
     verify(() => tokenStore.clear()).called(1);
     expect(container.read(authStateProvider).value, isFalse);
+  });
+
+  test('logIn() invalidates currentUserProvider - önceki kullanıcının önbelleğe alınmış '
+      'kimliği yeni girişten sonra artık gösterilmiyor', () async {
+    when(() => tokenStore.readAccessToken()).thenAnswer((_) async => null);
+    when(() => tokenStore.readRefreshToken()).thenAnswer((_) async => null);
+    final repository = _MockAuthRepository();
+    var callCount = 0;
+    when(() => repository.getMe()).thenAnswer((_) async {
+      callCount++;
+      return _fakeUser(callCount == 1 ? 'GymApp SuperAdmin' : 'Test GymAdmin');
+    });
+    final container2 = ProviderContainer(overrides: [
+      tokenStoreProvider.overrideWithValue(tokenStore),
+      authRepositoryProvider.overrideWithValue(repository),
+    ]);
+    addTearDown(container2.dispose);
+    final keepAlive = container2.listen(currentUserProvider, (_, _) {});
+
+    final first = await container2.read(currentUserProvider.future);
+    expect(first.fullName, 'GymApp SuperAdmin');
+
+    // Kritik bug buradaydı: farklı bir hesapla (SuperAdmin -> GymAdmin) art
+    // arda giriş yapıldığında logIn() currentUserProvider'ı hiç
+    // invalidate etmiyordu, bu yüzden bu ikinci okuma HİÇBİR ZAMAN
+    // getMe()'yi tekrar çağırmıyor, hâlâ önbelleğe alınmış ilk kullanıcıyı
+    // döndürüyordu.
+    container2.read(authStateProvider.notifier).logIn();
+    final second = await container2.read(currentUserProvider.future);
+
+    expect(callCount, 2);
+    expect(second.fullName, 'Test GymAdmin');
+    keepAlive.close();
   });
 }

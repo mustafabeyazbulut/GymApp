@@ -30,21 +30,24 @@ class ApiException implements Exception {
   /// serialize eder; bu, doğrudan GymAppApi backend kaynağından doğrulanmış
   /// bilinen bir asimetridir.
   factory ApiException.fromDioException(DioException exception) {
-    final data = exception.response?.data;
-
-    if (data is Map) {
-      final rawErrors = data['Errors'];
-      final errors = rawErrors is List
-          ? rawErrors.map((e) => e.toString()).toList()
-          : <String>[];
-
-      return ApiException(
-        statusCode: exception.response?.statusCode ?? 0,
-        errors: errors,
-      );
+    final response = exception.response;
+    if (response == null) {
+      // Sunucudan hiç yanıt gelmedi - gerçek bir bağlantı/timeout hatası.
+      return const ApiException(statusCode: 0, errors: []);
     }
 
-    return const ApiException(statusCode: 0, errors: []);
+    // Bir yanıt VAR ama gövdesi JSON olmayabilir/boş olabilir (ör.
+    // [Authorize(Policy=...)] politikasının ürettiği, hiç gövdesi olmayan
+    // düz bir 403) - bu durumda bile GERÇEK durum kodunu koru. Önceden bu
+    // dal `statusCode: 0` (bağlantı hatası) döndürüyordu, bu da ör. yetkisiz
+    // bir kullanıcının SuperAdmin'e özel bir ekrana girmeye çalışmasını
+    // "bağlantı kurulamadı" gibi tamamen yanlış bir mesajla gösteriyordu.
+    final data = response.data;
+    final errors = data is Map && data['Errors'] is List
+        ? (data['Errors'] as List).map((e) => e.toString()).toList()
+        : <String>[];
+
+    return ApiException(statusCode: response.statusCode ?? 0, errors: errors);
   }
 
   @override
