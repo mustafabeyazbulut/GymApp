@@ -35,6 +35,15 @@ abstract interface class PackageRepository {
   // sadece burada, personel tarafında var.
   Future<void> cancelPackageAssignment(int packageAssignmentId);
 
+  // Üye kendi paketini MembershipRepository üzerinden dondurup açabiliyor
+  // (bkz. o dosyanın kendi yorumu) - bunlar AYNI backend uç noktalarının
+  // (POST /api/package-assignments/{id}/freeze|unfreeze) personel
+  // tarafındaki karşılığı: bir üye telefonla arayıp "seyahatteyim,
+  // üyeliğimi dondurun" dediğinde ama uygulamayı kullanmıyor/bilmiyorsa,
+  // personelin bunu onun adına yapabilmesi için.
+  Future<void> freezePackageAssignment(int packageAssignmentId);
+  Future<void> unfreezePackageAssignment(int packageAssignmentId);
+
   // Rezervasyonsuz/yürüyerek gelen (walk-in) check-in - ön masa personeli
   // için, TrainerScheduleScreen'in rezervasyon bazlı check-in'inden farklı
   // (orada Trainer da yapabiliyor, burada sadece personel).

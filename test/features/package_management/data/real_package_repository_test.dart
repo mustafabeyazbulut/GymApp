@@ -113,6 +113,26 @@ void main() {
     expect(assignments.single.isFullyPaid, isFalse);
   });
 
+  test('getPackageAssignments parses maxFreezeDays/totalFrozenDays and computes remainingFreezeDays', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      return ResponseBody.fromString(
+        '[{"id":1,"packageId":5,"packageName":"Aylık Üyelik","price":1000,"memberUserId":7,'
+        '"memberFullName":"Ayşe Yılmaz","memberPhone":"+905551112233","companyId":3,"branchId":10,'
+        '"startDate":"2026-01-01T00:00:00Z","endDate":null,"remainingSessions":null,"status":"Active",'
+        '"totalPaid":0,"remainingBalance":1000,"maxFreezeDays":30,"totalFrozenDays":10}]',
+        200,
+        headers: {'content-type': ['application/json']},
+      );
+    });
+    final repository = RealPackageRepository(dio);
+
+    final assignments = await repository.getPackageAssignments();
+
+    expect(assignments.single.maxFreezeDays, 30);
+    expect(assignments.single.remainingFreezeDays, 20);
+  });
+
   test('cancelPackageAssignment posts to /api/package-assignments/{id}/cancel', () async {
     final dio = Dio(BaseOptions(baseUrl: 'https://test'));
     dio.httpClientAdapter = _FakeAdapter((options) {
@@ -122,6 +142,28 @@ void main() {
     final repository = RealPackageRepository(dio);
 
     await repository.cancelPackageAssignment(1);
+  });
+
+  test('freezePackageAssignment posts to /api/package-assignments/{id}/freeze', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/package-assignments/1/freeze');
+      return ResponseBody.fromString('', 204);
+    });
+    final repository = RealPackageRepository(dio);
+
+    await repository.freezePackageAssignment(1);
+  });
+
+  test('unfreezePackageAssignment posts to /api/package-assignments/{id}/unfreeze', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      expect(options.path, '/api/package-assignments/1/unfreeze');
+      return ResponseBody.fromString('', 204);
+    });
+    final repository = RealPackageRepository(dio);
+
+    await repository.unfreezePackageAssignment(1);
   });
 
   test('recordGeneralCheckIn posts to /api/package-assignments/{id}/check-in', () async {

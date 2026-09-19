@@ -15,6 +15,8 @@ class PackageAssignmentSummary {
     required this.status,
     required this.totalPaid,
     required this.remainingBalance,
+    required this.maxFreezeDays,
+    required this.totalFrozenDays,
   });
 
   factory PackageAssignmentSummary.fromJson(Map<String, dynamic> json) => PackageAssignmentSummary(
@@ -33,6 +35,8 @@ class PackageAssignmentSummary {
         status: json['status'] as String,
         totalPaid: (json['totalPaid'] as num).toDouble(),
         remainingBalance: (json['remainingBalance'] as num).toDouble(),
+        maxFreezeDays: json['maxFreezeDays'] as int?,
+        totalFrozenDays: json['totalFrozenDays'] as int? ?? 0,
       );
 
   final int id;
@@ -51,6 +55,12 @@ class PackageAssignmentSummary {
   final String status;
   final double totalPaid;
   final double remainingBalance;
+  // null = dondurma süresi sınırsız.
+  final int? maxFreezeDays;
+  final int totalFrozenDays;
 
   bool get isFullyPaid => remainingBalance <= 0;
+
+  // null = sınırsız. Sınır varsa kalan dondurma hakkını (gün) döner.
+  int? get remainingFreezeDays => maxFreezeDays == null ? null : (maxFreezeDays! - totalFrozenDays).clamp(0, maxFreezeDays!);
 }

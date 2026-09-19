@@ -102,6 +102,24 @@ class RealPackageRepository implements PackageRepository {
   }
 
   @override
+  Future<void> freezePackageAssignment(int packageAssignmentId) async {
+    try {
+      await _dio.post<void>('/api/package-assignments/$packageAssignmentId/freeze');
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
+  Future<void> unfreezePackageAssignment(int packageAssignmentId) async {
+    try {
+      await _dio.post<void>('/api/package-assignments/$packageAssignmentId/unfreeze');
+    } on DioException catch (exception) {
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
   Future<void> recordGeneralCheckIn(int packageAssignmentId) async {
     try {
       await _dio.post<void>('/api/package-assignments/$packageAssignmentId/check-in');

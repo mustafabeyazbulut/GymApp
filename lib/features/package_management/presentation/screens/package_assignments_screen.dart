@@ -177,10 +177,53 @@ class _AssignmentTile extends ConsumerWidget {
     }
   }
 
+  // Üye kendi paketini Üyelik ekranından zaten dondurup açabiliyor - bu,
+  // telefonla arayıp "üyeliğimi dondurun" diyen ama uygulamayı kullanmayan/
+  // bilmeyen bir üye için personelin AYNI işlemi onun adına yapabilmesi.
+  Future<void> _toggleFreeze(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final isFrozen = assignment.status == 'Frozen';
+
+    if (!isFrozen) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(l10n.membershipFreezeConfirmTitle),
+          content: Text(l10n.membershipFreezeConfirmBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(l10n.accountDeletionCancelButton),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(l10n.membershipFreezeConfirmButton),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return;
+    }
+
+    try {
+      final actions = ref.read(packageActionsProvider.notifier);
+      if (isFrozen) {
+        await actions.unfreezePackageAssignment(assignment.id);
+      } else {
+        await actions.freezePackageAssignment(assignment.id);
+      }
+    } on ApiException catch (exception) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final isActive = assignment.status == 'Active';
+    final isFrozen = assignment.status == 'Frozen';
     final isCancelled = assignment.status == 'Cancelled';
     final statusText = switch (assignment.status) {
       'Active' => l10n.membershipActiveStatus,
@@ -236,15 +279,32 @@ class _AssignmentTile extends ConsumerWidget {
                 ),
             ],
           ),
-          if (isActive) ...[
+          if (assignment.maxFreezeDays != null) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              l10n.membershipFreezeAllowanceLabel(assignment.remainingFreezeDays ?? 0, assignment.maxFreezeDays!),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundMuted),
+            ),
+          ],
+          if (!isCancelled) ...[
             const SizedBox(height: AppSpacing.sm),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: OutlinedButton.icon(
-                onPressed: () => _checkIn(context, ref),
-                icon: const Icon(Icons.qr_code_scanner_outlined, size: 18),
-                label: Text(l10n.packageAssignmentsCheckInButton),
-              ),
+            Wrap(
+              spacing: AppSpacing.sm,
+              children: [
+                if (isActive)
+                  OutlinedButton.icon(
+                    onPressed: () => _checkIn(context, ref),
+                    icon: const Icon(Icons.qr_code_scanner_outlined, size: 18),
+                    label: Text(l10n.packageAssignmentsCheckInButton),
+                  ),
+                OutlinedButton.icon(
+                  onPressed: (isActive && assignment.remainingFreezeDays == 0)
+                      ? null
+                      : () => _toggleFreeze(context, ref),
+                  icon: Icon(isFrozen ? Icons.play_circle_outline : Icons.pause_circle_outline, size: 18),
+                  label: Text(isFrozen ? l10n.membershipUnfreezeButton : l10n.membershipFreezeButton),
+                ),
+              ],
             ),
           ],
           const SizedBox(height: AppSpacing.md),

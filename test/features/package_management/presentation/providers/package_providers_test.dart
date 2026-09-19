@@ -43,6 +43,8 @@ void main() {
     status: 'Active',
     totalPaid: 400,
     remainingBalance: 600,
+    maxFreezeDays: null,
+    totalFrozenDays: 0,
   );
 
   setUp(() {
@@ -140,6 +142,32 @@ void main() {
     await container.read(packageAssignmentsProvider(memberPhone: null).future);
 
     verify(() => repository.cancelPackageAssignment(1)).called(1);
+    verify(() => repository.getPackageAssignments(memberPhone: null)).called(2);
+  });
+
+  test('PackageActions.freezePackageAssignment calls the repository then invalidates packageAssignmentsProvider',
+      () async {
+    when(() => repository.getPackageAssignments(memberPhone: null)).thenAnswer((_) async => [assignment]);
+    when(() => repository.freezePackageAssignment(1)).thenAnswer((_) async {});
+
+    await container.read(packageAssignmentsProvider(memberPhone: null).future);
+    await container.read(packageActionsProvider.notifier).freezePackageAssignment(1);
+    await container.read(packageAssignmentsProvider(memberPhone: null).future);
+
+    verify(() => repository.freezePackageAssignment(1)).called(1);
+    verify(() => repository.getPackageAssignments(memberPhone: null)).called(2);
+  });
+
+  test('PackageActions.unfreezePackageAssignment calls the repository then invalidates packageAssignmentsProvider',
+      () async {
+    when(() => repository.getPackageAssignments(memberPhone: null)).thenAnswer((_) async => [assignment]);
+    when(() => repository.unfreezePackageAssignment(1)).thenAnswer((_) async {});
+
+    await container.read(packageAssignmentsProvider(memberPhone: null).future);
+    await container.read(packageActionsProvider.notifier).unfreezePackageAssignment(1);
+    await container.read(packageAssignmentsProvider(memberPhone: null).future);
+
+    verify(() => repository.unfreezePackageAssignment(1)).called(1);
     verify(() => repository.getPackageAssignments(memberPhone: null)).called(2);
   });
 

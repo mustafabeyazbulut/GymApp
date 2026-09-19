@@ -59,6 +59,16 @@ class PackageActions extends _$PackageActions {
     ref.invalidate(packageAssignmentsProvider);
   }
 
+  Future<void> freezePackageAssignment(int packageAssignmentId) async {
+    await ref.read(packageRepositoryProvider).freezePackageAssignment(packageAssignmentId);
+    ref.invalidate(packageAssignmentsProvider);
+  }
+
+  Future<void> unfreezePackageAssignment(int packageAssignmentId) async {
+    await ref.read(packageRepositoryProvider).unfreezePackageAssignment(packageAssignmentId);
+    ref.invalidate(packageAssignmentsProvider);
+  }
+
   Future<void> recordGeneralCheckIn(int packageAssignmentId) async {
     await ref.read(packageRepositoryProvider).recordGeneralCheckIn(packageAssignmentId);
     ref.invalidate(packageAssignmentsProvider);
