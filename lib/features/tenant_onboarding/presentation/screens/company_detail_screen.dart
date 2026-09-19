@@ -210,6 +210,19 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
             memberCount: company.memberCount,
           ),
           const SizedBox(height: AppSpacing.xl),
+          Text(l10n.companyDetailGymAdminsTitle, style: Theme.of(context).textTheme.labelSmall),
+          const SizedBox(height: AppSpacing.sm),
+          if (company.gymAdmins.isEmpty)
+            Text(
+              l10n.companyDetailNoGymAdminLabel,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundFaint),
+            )
+          else
+            for (final admin in company.gymAdmins) ...[
+              _GymAdminTile(admin: admin),
+              const SizedBox(height: AppSpacing.sm),
+            ],
+          const SizedBox(height: AppSpacing.xl),
           Text(l10n.companyDetailBranchesTitle, style: Theme.of(context).textTheme.labelSmall),
           const SizedBox(height: AppSpacing.sm),
           for (final branch in company.branches) ...[
@@ -290,6 +303,43 @@ class _BranchTile extends StatelessWidget {
           StatusPill(
             text: branch.isActive ? l10n.companyManagementActiveBadge : l10n.companyManagementInactiveBadge,
             isPositive: branch.isActive,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GymAdminTile extends StatelessWidget {
+  const _GymAdminTile({required this.admin});
+
+  final CompanyGymAdmin admin;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      ),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Row(
+        children: [
+          const Icon(Icons.admin_panel_settings_outlined, color: AppColors.onBackgroundMuted),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(admin.fullName, style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  admin.phone,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundMuted),
+                ),
+              ],
+            ),
           ),
         ],
       ),

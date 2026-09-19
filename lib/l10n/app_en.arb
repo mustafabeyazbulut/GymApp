@@ -65,6 +65,8 @@
   "companyDetailBranchesTitle": "Branches",
   "companyDetailBranchManagerLabel": "Branch manager: {name}",
   "companyDetailBranchNoManagerLabel": "No branch manager assigned",
+  "companyDetailGymAdminsTitle": "Company Admins",
+  "companyDetailNoGymAdminLabel": "No company admin yet",
   "companyDetailInviteGymAdminTitle": "Invite GymAdmin",
   "companyDetailInviteGymAdminHint": "This number must already belong to a registered user - they are invited as a second GymAdmin (e.g. a business partner) for this company.",
   "companyDetailInviteGymAdminPhoneLabel": "Phone",

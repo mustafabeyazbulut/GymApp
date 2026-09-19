@@ -8,7 +8,6 @@ import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../data/real_tenant_repository.dart';
 import '../../domain/company_summary.dart';
-import '../widgets/company_stats_row.dart';
 
 /// Super Admin'in şirket yönetimi için giriş noktası - her şirketi
 /// (ad, şube sayısı, aktif/pasif) listeler, birini açıp adını değiştirmesine
@@ -177,12 +176,10 @@ class _CompanyTile extends StatelessWidget {
                   children: [
                     Text(company.name, style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: AppSpacing.xs),
-                    CompanyStatsRow(
-                      branchCount: company.branchCount,
-                      gymAdminCount: company.gymAdminCount,
-                      branchManagerCount: company.branchManagerCount,
-                      trainerCount: company.trainerCount,
-                      memberCount: company.memberCount,
+                    Text(
+                      '${l10n.companyManagementBranchCount(company.branchCount)} • '
+                      '${l10n.companyManagementGymAdminCount(company.gymAdminCount)}',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundMuted),
                     ),
                   ],
                 ),
