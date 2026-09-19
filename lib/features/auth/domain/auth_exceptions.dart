@@ -10,6 +10,15 @@ class InvalidCredentialsException extends AuthException {
   const InvalidCredentialsException();
 }
 
+// /api/auth/login DIŞINDA bir uç noktadan gelen bir 401 - kullanıcı burada
+// bir şifre GİRMEDİ, bu yüzden InvalidCredentialsException'ın "yanlış şifre"
+// metni yanıltıcı olurdu. Bu durum, refresh token akışının da başarısız
+// olduğu (bkz. dio_client.dart'ın onError'ı) yani oturumun gerçekten geçersiz
+// olduğu anlamına gelir.
+class SessionExpiredException extends AuthException {
+  const SessionExpiredException();
+}
+
 class NetworkAuthException extends AuthException {
   const NetworkAuthException();
 }
@@ -41,6 +50,7 @@ extension AuthExceptionLocalization on AuthException {
     final l10n = AppLocalizations.of(context)!;
     return switch (this) {
       InvalidCredentialsException() => l10n.authInvalidCredentials,
+      SessionExpiredException() => l10n.authSessionExpired,
       NetworkAuthException() => l10n.commonConnectionError,
       RateLimitedAuthException() => l10n.authTooManyAttempts,
       ConflictAuthException(serverMessage: final m) => m ?? l10n.commonError,

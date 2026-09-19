@@ -8,6 +8,7 @@
   "commonConnectionError": "Could not connect. Please try again.",
   "authInvalidCredentials": "Incorrect phone/email or password.",
   "authTooManyAttempts": "Too many attempts. Please try again in a few minutes.",
+  "authSessionExpired": "Your session has expired. Please log in again.",
   "commonLogOut": "Log Out",
   "drawerOpenMenuTooltip": "Open menu",
   "createCompanyTitle": "Add New Company",

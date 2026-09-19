@@ -248,6 +248,21 @@ void main() {
     expect(result.assignments.single.companyName, isNull);
   });
 
+  test('getMe on 401 throws SessionExpiredException, not InvalidCredentialsException', () async {
+    // Kullanıcı burada bir şifre girmiyor - bu, /api/auth/me'ye giden bir
+    // access token'ın artık geçersiz olduğu anlamına gelir (ör. refresh de
+    // başarısız olduysa), "yanlış şifre" değil.
+    adapter.onGet('/api/auth/me', (server) => server.reply(401, {
+          'Status': 401,
+          'Errors': ['Unauthorized'],
+        }));
+
+    await expectLater(
+      () => repository.getMe(),
+      throwsA(isA<SessionExpiredException>()),
+    );
+  });
+
   test('login on 429 throws RateLimitedAuthException', () async {
     adapter.onPost('/api/auth/login', (server) => server.reply(429, ''), data: Matchers.any);
 

@@ -16,6 +16,8 @@
   "@authInvalidCredentials": {},
   "authTooManyAttempts": "Çok fazla deneme yaptınız. Lütfen birkaç dakika sonra tekrar deneyin.",
   "@authTooManyAttempts": {},
+  "authSessionExpired": "Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.",
+  "@authSessionExpired": {},
   "commonLogOut": "Çıkış Yap",
   "@commonLogOut": {},
   "drawerOpenMenuTooltip": "Menüyü aç",

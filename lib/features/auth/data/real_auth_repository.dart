@@ -170,7 +170,16 @@ class RealAuthRepository implements AuthRepository {
       if (otpVerifiedCalls.contains(call)) {
         return GenericAuthException(message);
       }
-      return const InvalidCredentialsException();
+      // /api/auth/login'in KENDİSİNDEN gelen bir 401 gerçekten "yanlış şifre"
+      // demektir. Başka HERHANGİ bir uç noktadan gelen bir 401 buraya ancak
+      // dio_client.dart'ın refresh-and-retry akışı da başarısız olduysa
+      // ulaşır - yani kullanıcı hiçbir şifre girmedi, oturumu gerçekten
+      // geçersiz. Bu iki durumu aynı "yanlış şifre" metniyle göstermek
+      // kafa karıştırıcı ve yanlıştı.
+      if (exception.requestOptions.path == '/api/auth/login') {
+        return const InvalidCredentialsException();
+      }
+      return const SessionExpiredException();
     }
     if (statusCode == 409) {
       return ConflictAuthException(message);
