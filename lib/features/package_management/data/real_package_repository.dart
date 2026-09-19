@@ -36,6 +36,7 @@ class RealPackageRepository implements PackageRepository {
     int? durationDays,
     int? sessionCount,
     required double price,
+    int? maxFreezeDays,
   }) async {
     try {
       await _dio.post<void>('/api/packages', data: {
@@ -47,6 +48,7 @@ class RealPackageRepository implements PackageRepository {
         'durationDays': durationDays,
         'sessionCount': sessionCount,
         'price': price,
+        'maxFreezeDays': maxFreezeDays,
       });
     } on DioException catch (exception) {
       throw ApiException.fromDioException(exception);

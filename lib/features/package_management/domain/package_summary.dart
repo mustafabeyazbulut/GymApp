@@ -10,6 +10,7 @@ class PackageSummary {
     required this.sessionCount,
     required this.price,
     required this.isActive,
+    required this.maxFreezeDays,
   });
 
   factory PackageSummary.fromJson(Map<String, dynamic> json) => PackageSummary(
@@ -23,6 +24,7 @@ class PackageSummary {
         sessionCount: json['sessionCount'] as int?,
         price: (json['price'] as num).toDouble(),
         isActive: json['isActive'] as bool,
+        maxFreezeDays: json['maxFreezeDays'] as int?,
       );
 
   final int id;
@@ -36,6 +38,8 @@ class PackageSummary {
   final int? sessionCount;
   final double price;
   final bool isActive;
+  // null = dondurma süresi sınırsız.
+  final int? maxFreezeDays;
 
   bool get isDuration => type == 'Duration';
 }

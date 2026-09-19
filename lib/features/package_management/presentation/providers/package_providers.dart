@@ -29,6 +29,7 @@ class PackageActions extends _$PackageActions {
     int? durationDays,
     int? sessionCount,
     required double price,
+    int? maxFreezeDays,
   }) async {
     await ref.read(packageRepositoryProvider).createPackage(
           companyId: companyId,
@@ -39,6 +40,7 @@ class PackageActions extends _$PackageActions {
           durationDays: durationDays,
           sessionCount: sessionCount,
           price: price,
+          maxFreezeDays: maxFreezeDays,
         );
     ref.invalidate(packagesProvider);
   }

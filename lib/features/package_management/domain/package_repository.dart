@@ -16,6 +16,10 @@ abstract interface class PackageRepository {
     int? durationDays,
     int? sessionCount,
     required double price,
+    // null = dondurma süresi sınırsız - üye bu paketi toplamda bu kadar
+    // günden fazla dondurup açamaz (bkz. GymAppApi'nin
+    // FreezePackageAssignmentCommandHandler'ı).
+    int? maxFreezeDays,
   });
 
   Future<void> setPackageActive({required int packageId, required bool isActive});

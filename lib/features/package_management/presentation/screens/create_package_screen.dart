@@ -24,6 +24,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   final _durationDaysController = TextEditingController();
   final _sessionCountController = TextEditingController();
   final _priceController = TextEditingController();
+  final _maxFreezeDaysController = TextEditingController();
   String _type = 'Duration';
   // null = tüm şirket genelinde geçerli - sadece bir GymAdmin bunu seçebilir
   // (bkz. AddStaffMemberScreen'in aynı sabit-şube/seçilebilir-şube ayrımı).
@@ -52,6 +53,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     _durationDaysController.dispose();
     _sessionCountController.dispose();
     _priceController.dispose();
+    _maxFreezeDaysController.dispose();
     super.dispose();
   }
 
@@ -95,6 +97,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
             durationDays: _type == 'Duration' ? int.tryParse(_durationDaysController.text.trim()) : null,
             sessionCount: _type == 'SessionBased' ? int.tryParse(_sessionCountController.text.trim()) : null,
             price: double.parse(_priceController.text.trim().replaceAll(',', '.')),
+            maxFreezeDays: int.tryParse(_maxFreezeDaysController.text.trim()),
           );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.createPackageSuccessMessage)));
@@ -172,6 +175,20 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                   validator: (value) {
                     final parsed = value == null ? null : double.tryParse(value.trim().replaceAll(',', '.'));
                     return (parsed == null || parsed < 0) ? l10n.commonFieldRequired : null;
+                  },
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                TextFormField(
+                  controller: _maxFreezeDaysController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: l10n.createPackageMaxFreezeDaysLabel,
+                    hintText: l10n.createPackageMaxFreezeDaysHint,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) return null;
+                    final parsed = int.tryParse(value.trim());
+                    return (parsed == null || parsed <= 0) ? l10n.commonFieldRequired : null;
                   },
                 ),
                 const SizedBox(height: AppSpacing.lg),

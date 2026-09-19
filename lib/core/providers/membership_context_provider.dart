@@ -24,6 +24,8 @@ Future<List<MembershipSummary>> memberships(Ref ref) async {
             price: assignment.price,
             sessionCount: assignment.sessionCount,
             remainingSessions: assignment.remainingSessions,
+            maxFreezeDays: assignment.maxFreezeDays,
+            remainingFreezeDays: assignment.remainingFreezeDays,
           ))
       .toList();
 }

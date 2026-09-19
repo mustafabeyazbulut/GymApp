@@ -24,6 +24,7 @@ void main() {
     sessionCount: null,
     price: 1000,
     isActive: true,
+    maxFreezeDays: null,
   );
 
   final assignment = PackageAssignmentSummary(

@@ -1,6 +1,9 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../locale/app_locale_provider.dart';
 import '../providers/active_staff_company_provider.dart';
 import 'api_config.dart';
 import 'token_store.dart';
@@ -112,6 +115,16 @@ Dio dio(Ref ref) {
         if (companyId != null) {
           options.headers[activeCompanyHeaderName] = companyId.toString();
         }
+        // Backend'in kendi mesajlarını (hata/uyarı metinleri) hangi dilde
+        // döneceğine bu header karar veriyor (bkz. GymAppApi
+        // Program.cs'teki UseRequestLocalization) - "backend mobildeki
+        // seçili dil paketiyle çalışacak" talimatının karşılığı. Uygulama
+        // henüz açıkça bir dil seçmemişse (appLocaleProvider == null,
+        // "cihazın sistem locale'ini takip et" durumu) cihazın gerçek
+        // locale'ine bakılıyor - AppLocalizations.supportedLocales'in
+        // (en, tr) kendi varsayılan çözümlemesiyle aynı mantık.
+        final locale = ref.read(appLocaleProvider) ?? PlatformDispatcher.instance.locale;
+        options.headers['Accept-Language'] = locale.languageCode == 'tr' ? 'tr' : 'en';
         handler.next(options);
       },
     ),

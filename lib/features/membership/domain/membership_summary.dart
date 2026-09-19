@@ -21,6 +21,8 @@ class MembershipSummary {
     required this.price,
     required this.sessionCount,
     required this.remainingSessions,
+    required this.maxFreezeDays,
+    required this.remainingFreezeDays,
   });
 
   // PackageAssignment'ın kendi id'si - freeze/unfreeze/cancel personel
@@ -35,4 +37,7 @@ class MembershipSummary {
   final double price;
   final int? sessionCount;
   final int? remainingSessions;
+  // null = dondurma süresi sınırsız.
+  final int? maxFreezeDays;
+  final int? remainingFreezeDays;
 }

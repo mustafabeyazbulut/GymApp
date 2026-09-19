@@ -30,6 +30,14 @@ class MembershipScreen extends ConsumerStatefulWidget {
 class _MembershipScreenState extends ConsumerState<MembershipScreen> {
   bool _isTogglingFreeze = false;
 
+  // Zaten dondurulmuşsa açmak her zaman serbest - sadece YENİ bir dondurma
+  // için dondurma hakkının tükenip tükenmediğine bakılır (backend zaten
+  // aynı kontrolü yapıyor, bkz. FreezePackageAssignmentCommandHandler; bu
+  // sadece kullanıcıya daha önceden, düğmeyi devre dışı bırakarak
+  // gösteriyor).
+  bool _canFreeze(MembershipSummary summary) =>
+      summary.status == MembershipStatus.frozen || summary.remainingFreezeDays == null || summary.remainingFreezeDays! > 0;
+
   Future<void> _toggleFreeze(MembershipSummary summary) async {
     final l10n = AppLocalizations.of(context)!;
     final isFrozen = summary.status == MembershipStatus.frozen;
@@ -129,7 +137,7 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
             _MembershipCard(summary: selected, l10n: l10n),
             const SizedBox(height: AppSpacing.md),
             OutlinedButton(
-              onPressed: _isTogglingFreeze ? null : () => _toggleFreeze(selected),
+              onPressed: _isTogglingFreeze || !_canFreeze(selected) ? null : () => _toggleFreeze(selected),
               child: _isTogglingFreeze
                   ? const SizedBox(
                       width: 18,
@@ -208,6 +216,13 @@ class _MembershipCard extends StatelessWidget {
               Text(
                 l10n.membershipSessionsRemainingLabel(summary.remainingSessions ?? 0, summary.sessionCount!),
                 style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+            if (summary.maxFreezeDays != null) ...[
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                l10n.membershipFreezeAllowanceLabel(summary.remainingFreezeDays ?? 0, summary.maxFreezeDays!),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundMuted),
               ),
             ],
             const SizedBox(height: AppSpacing.md),

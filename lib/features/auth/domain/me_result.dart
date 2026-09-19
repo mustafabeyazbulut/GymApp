@@ -34,6 +34,8 @@ class MePackageAssignment {
     required this.endDate,
     required this.sessionCount,
     required this.remainingSessions,
+    required this.maxFreezeDays,
+    required this.totalFrozenDays,
   });
 
   factory MePackageAssignment.fromJson(Map<String, dynamic> json) => MePackageAssignment(
@@ -49,6 +51,8 @@ class MePackageAssignment {
         endDate: json['endDate'] == null ? null : DateTime.parse(json['endDate'] as String),
         sessionCount: json['sessionCount'] as int?,
         remainingSessions: json['remainingSessions'] as int?,
+        maxFreezeDays: json['maxFreezeDays'] as int?,
+        totalFrozenDays: json['totalFrozenDays'] as int? ?? 0,
       );
 
   final int id;
@@ -65,8 +69,17 @@ class MePackageAssignment {
   final DateTime? endDate;
   final int? sessionCount;
   final int? remainingSessions;
+  // null = dondurma süresi sınırsız - üye kendi paketini dondururken ne
+  // kadar hakkı kaldığını görebilsin diye (bkz. GymAppApi'nin
+  // Package.MaxFreezeDays'i).
+  final int? maxFreezeDays;
+  final int totalFrozenDays;
 
   bool get isFrozen => status == 'Frozen';
+
+  // null = sınırsız. Sınır varsa, bugüne kadar kullanılanı düşerek kalan
+  // dondurma hakkını (gün) döner.
+  int? get remainingFreezeDays => maxFreezeDays == null ? null : (maxFreezeDays! - totalFrozenDays).clamp(0, maxFreezeDays!);
 }
 
 class MeResult {

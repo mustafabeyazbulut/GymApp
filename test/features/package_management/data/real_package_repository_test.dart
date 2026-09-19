@@ -51,6 +51,7 @@ void main() {
         'durationDays': 30,
         'sessionCount': null,
         'price': 1000.0,
+        'maxFreezeDays': null,
       });
       return ResponseBody.fromString('{}', 201, headers: {'content-type': ['application/json']});
     });

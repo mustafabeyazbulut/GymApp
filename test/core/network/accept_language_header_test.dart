@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui' show Locale;
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,8 +8,11 @@ import 'package:gym_app/core/locale/app_locale_provider.dart';
 import 'package:gym_app/core/network/dio_client.dart';
 import 'package:gym_app/core/network/fake_token_store.dart';
 import 'package:gym_app/core/network/secure_token_store.dart';
-import 'package:gym_app/core/providers/active_staff_company_provider.dart';
 
+// Backend'in "mobildeki seçili dil paketiyle çalışacak" olması, mobilin
+// kendi seçili dilini HER istekte göndermesine bağlı - bu, o sözleşmenin
+// mobil tarafındaki tek karşılığı (bkz. GymAppApi'nin
+// Program.cs'teki UseRequestLocalization'ı).
 void main() {
   late ProviderContainer container;
 
@@ -17,40 +21,30 @@ void main() {
       tokenStoreProvider.overrideWithValue(FakeTokenStore()),
     ]);
     addTearDown(container.dispose);
-    // dioProvider, activeStaffCompanyIdProvider VE appLocaleProvider
-    // autoDispose'dur - bir dinleyici olmadan, container.read döndükten
-    // hemen sonra elden çıkarılırlar (senkron kapsamın sonunda).
-    // dioProvider için bu, interceptor'ın kendi ref.read'inin sonraki
-    // asenkron dio.get() çağrısı sırasında zaten dispose edilmiş bir
-    // Ref'e çarpmasına yol açar. Diğer ikisi için ise select(...)/
-    // setLocale(...) çağrısının hemen ardından state'in sessizce
-    // sıfırlanmasına yol açar (gerçek uygulamada drawer/appLocaleProvider'ın
-    // kendi ref.watch'ı onları zaten canlı tutuyor). Testin süresi boyunca
-    // üçünü de canlı tutmak için sahte dinleyiciler ekle.
     container.listen(dioProvider, (_, _) {});
-    container.listen(activeStaffCompanyIdProvider, (_, _) {});
     container.listen(appLocaleProvider, (_, _) {});
   });
 
-  test('does not attach X-Active-Company-Id when none is selected', () async {
+  test('sends Accept-Language: tr when the app locale is explicitly Turkish', () async {
+    container.read(appLocaleProvider.notifier).setLocale(const Locale('tr'));
     final dio = container.read(dioProvider);
     RequestOptions? captured;
     dio.httpClientAdapter = _CapturingAdapter((options) => captured = options);
 
     await dio.get('/api/ping');
 
-    expect(captured!.headers.containsKey(activeCompanyHeaderName), isFalse);
+    expect(captured!.headers['Accept-Language'], 'tr');
   });
 
-  test('attaches the currently selected company id to every request', () async {
-    container.read(activeStaffCompanyIdProvider.notifier).select(7);
+  test('sends Accept-Language: en when the app locale is explicitly English', () async {
+    container.read(appLocaleProvider.notifier).setLocale(const Locale('en'));
     final dio = container.read(dioProvider);
     RequestOptions? captured;
     dio.httpClientAdapter = _CapturingAdapter((options) => captured = options);
 
     await dio.get('/api/ping');
 
-    expect(captured!.headers[activeCompanyHeaderName], '7');
+    expect(captured!.headers['Accept-Language'], 'en');
   });
 
   test('reads the selection fresh on each request, not just at Dio creation', () async {
@@ -58,12 +52,13 @@ void main() {
     RequestOptions? captured;
     dio.httpClientAdapter = _CapturingAdapter((options) => captured = options);
 
+    container.read(appLocaleProvider.notifier).setLocale(const Locale('tr'));
     await dio.get('/api/ping');
-    expect(captured!.headers.containsKey(activeCompanyHeaderName), isFalse);
+    expect(captured!.headers['Accept-Language'], 'tr');
 
-    container.read(activeStaffCompanyIdProvider.notifier).select(3);
+    container.read(appLocaleProvider.notifier).setLocale(const Locale('en'));
     await dio.get('/api/ping');
-    expect(captured!.headers[activeCompanyHeaderName], '3');
+    expect(captured!.headers['Accept-Language'], 'en');
   });
 }
 

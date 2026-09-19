@@ -338,6 +338,10 @@
   "@membershipSessionsRemainingLabel": {
     "placeholders": { "remaining": { "type": "int" }, "total": { "type": "int" } }
   },
+  "membershipFreezeAllowanceLabel": "Dondurma hakkı: {remaining}/{total} gün",
+  "@membershipFreezeAllowanceLabel": {
+    "placeholders": { "remaining": { "type": "int" }, "total": { "type": "int" } }
+  },
   "membershipNoPaymentsMessage": "Henüz ödeme kaydı yok.",
   "@membershipNoPaymentsMessage": {},
   "membershipStaffContactNote": "Üyeliğinizi kalıcı olarak iptal etmek veya yenilemek için gym yönetimiyle iletişime geçin.",
@@ -430,6 +434,10 @@
   "@createPackageSessionCountLabel": {},
   "createPackagePriceLabel": "Fiyat (₺)",
   "@createPackagePriceLabel": {},
+  "createPackageMaxFreezeDaysLabel": "Maksimum Dondurma Süresi (gün, opsiyonel)",
+  "@createPackageMaxFreezeDaysLabel": {},
+  "createPackageMaxFreezeDaysHint": "Boş bırakılırsa dondurma süresi sınırsız olur.",
+  "@createPackageMaxFreezeDaysHint": {},
   "createPackageAllBranchesOption": "Tüm şubeler",
   "@createPackageAllBranchesOption": {},
   "createPackageSubmitButton": "Paketi Oluştur",
