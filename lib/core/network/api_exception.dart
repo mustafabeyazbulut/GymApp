@@ -1,4 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/widgets.dart' show BuildContext;
+
+import '../../l10n/generated/app_localizations.dart';
 
 class ApiException implements Exception {
   const ApiException({required this.statusCode, required this.errors});
@@ -6,9 +9,19 @@ class ApiException implements Exception {
   final int statusCode;
   final List<String> errors;
 
-  String get message => errors.isNotEmpty
-      ? errors.join('\n')
-      : 'Beklenmeyen bir hata oluştu.';
+  /// Sunucudan hiç yanıt gelmedi (bağlantı/timeout hatası) - bu durumda
+  /// errors her zaman boştur, çünkü sunucu hiç konuşmadı.
+  bool get isConnectionError => statusCode == 0;
+
+  /// Gösterilecek metni ÇAĞRILDIĞI ANDA (BuildContext olan yerde) çözer -
+  /// sunucudan gelen errors zaten backend'in kendi yerelleştirmesiyle doğru
+  /// dilde geliyor; sadece istemci tarafı fallback'ler (boş errors, bağlantı
+  /// hatası) burada AppLocalizations'a bakıyor.
+  String localizedMessage(BuildContext context) {
+    if (errors.isNotEmpty) return errors.join('\n');
+    final l10n = AppLocalizations.of(context)!;
+    return isConnectionError ? l10n.commonConnectionError : l10n.commonError;
+  }
 
   /// `ExceptionMiddleware`'in yanıt şeklini okur; bu şekil, API'nin geri
   /// kalanının camelCase başarı yanıtlarının aksine bilinçli olarak
@@ -27,16 +40,11 @@ class ApiException implements Exception {
 
       return ApiException(
         statusCode: exception.response?.statusCode ?? 0,
-        errors: errors.isNotEmpty
-            ? errors
-            : ['Beklenmeyen bir hata oluştu.'],
+        errors: errors,
       );
     }
 
-    return const ApiException(
-      statusCode: 0,
-      errors: ['Bağlantı hatası, lütfen tekrar deneyin.'],
-    );
+    return const ApiException(statusCode: 0, errors: []);
   }
 
   @override

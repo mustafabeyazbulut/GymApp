@@ -85,7 +85,7 @@ class _PackageAssignmentsScreenState extends ConsumerState<PackageAssignmentsScr
                 child: assignmentsAsync.when(
                   loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
                   error: (error, stackTrace) => _ErrorRetry(
-                    message: error is ApiException ? error.message : l10n.commonError,
+                    message: error is ApiException ? error.localizedMessage(context) : l10n.commonError,
                     onRetry: () => ref.invalidate(packageAssignmentsProvider),
                   ),
                   data: (assignments) {
@@ -161,7 +161,7 @@ class _AssignmentTile extends ConsumerWidget {
       await ref.read(packageActionsProvider.notifier).cancelPackageAssignment(assignment.id);
     } on ApiException catch (exception) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     }
   }
 
@@ -173,7 +173,7 @@ class _AssignmentTile extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.packageAssignmentsCheckInSuccessMessage)));
     } on ApiException catch (exception) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     }
   }
 
@@ -215,7 +215,7 @@ class _AssignmentTile extends ConsumerWidget {
       }
     } on ApiException catch (exception) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     }
   }
 

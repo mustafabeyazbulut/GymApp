@@ -34,7 +34,7 @@ class ClassesScreen extends ConsumerWidget {
       );
     } on ApiException catch (exception) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     }
   }
 
@@ -53,7 +53,7 @@ class ClassesScreen extends ConsumerWidget {
     if (currentUserAsync.hasError) {
       final error = currentUserAsync.error;
       return _ErrorRetry(
-        message: error is AuthException ? error.message : l10n.commonError,
+        message: error is AuthException ? error.localizedMessage(context) : l10n.commonError,
         onRetry: () => ref.invalidate(currentUserProvider),
       );
     }
@@ -65,7 +65,7 @@ class ClassesScreen extends ConsumerWidget {
     return membershipsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
       error: (error, stackTrace) => _ErrorRetry(
-        message: error is ApiException ? error.message : l10n.commonError,
+        message: error is ApiException ? error.localizedMessage(context) : l10n.commonError,
         onRetry: () => ref.invalidate(membershipsProvider),
       ),
       data: (memberships) {
@@ -108,7 +108,7 @@ class ClassesScreen extends ConsumerWidget {
             reservationsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
               error: (error, stackTrace) => Text(
-                error is ApiException ? error.message : l10n.commonError,
+                error is ApiException ? error.localizedMessage(context) : l10n.commonError,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),

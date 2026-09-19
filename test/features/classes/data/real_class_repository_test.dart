@@ -100,9 +100,9 @@ void main() {
         scheduledAt: DateTime.utc(2026, 1, 1, 10),
       ),
       throwsA(isA<ApiException>().having(
-        (e) => e.message,
-        'message',
-        'Bu antrenörün bu saatte zaten bir rezervasyonu var.',
+        (e) => e.errors,
+        'errors',
+        ['Bu antrenörün bu saatte zaten bir rezervasyonu var.'],
       )),
     );
   });

@@ -62,7 +62,7 @@ class _AddProgressNoteSheetState extends ConsumerState<_AddProgressNoteSheet> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.progressNoteSuccessMessage)));
     } on ApiException catch (exception) {
       if (!mounted) return;
-      setState(() => _errorText = exception.message);
+      setState(() => _errorText = exception.localizedMessage(context));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }

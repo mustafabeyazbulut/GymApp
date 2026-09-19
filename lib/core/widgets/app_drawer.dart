@@ -54,14 +54,20 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
 
     if (selected == null || !mounted) return;
 
+    // Uygulama dili tamamen istemci tarafı bir tercih - sunucuya
+    // senkronizasyon (backend mesajlarının da aynı dilde gelmesi için)
+    // başarısız olsa bile arayüz dili hemen değişmeli. Bu ikisini
+    // birbirine bağlamak (PATCH önce, setLocale sadece başarılıysa)
+    // bağlantı sorunu yaşayan bir kullanıcının hiçbir zaman arayüz dilini
+    // değiştirememesine yol açıyordu.
+    ref.read(appLocaleProvider.notifier).setLocale(Locale(selected));
+
     setState(() => _isChangingLanguage = true);
     try {
       await ref.read(authRepositoryProvider).updatePreferredLanguage(selected);
-      if (!mounted) return;
-      ref.read(appLocaleProvider.notifier).setLocale(Locale(selected));
     } on AuthException catch (exception) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     } finally {
       if (mounted) setState(() => _isChangingLanguage = false);
     }
@@ -140,7 +146,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
       await ref.read(authStateProvider.notifier).logOut();
     } on AuthException catch (exception) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     } finally {
       if (mounted) setState(() => _isFreezingAccount = false);
     }
@@ -191,7 +197,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
       await ref.read(authStateProvider.notifier).logOut();
     } on AuthException catch (exception) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     } finally {
       if (mounted) setState(() => _isDeletingAccount = false);
     }

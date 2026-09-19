@@ -84,7 +84,7 @@ class _RecordPaymentSheetState extends ConsumerState<_RecordPaymentSheet> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.recordPaymentSuccessMessage)));
     } on ApiException catch (exception) {
       if (!mounted) return;
-      setState(() => _errorText = exception.message);
+      setState(() => _errorText = exception.localizedMessage(context));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }

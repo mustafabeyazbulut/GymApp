@@ -41,7 +41,7 @@ class _StaffManagementScreenState extends ConsumerState<StaffManagementScreen> {
       setState(() => _staff = staff);
     } on ApiException catch (exception) {
       if (!mounted) return;
-      setState(() => _errorText = exception.message);
+      setState(() => _errorText = exception.localizedMessage(context));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -81,7 +81,7 @@ class _StaffManagementScreenState extends ConsumerState<StaffManagementScreen> {
       _load();
     } on ApiException catch (exception) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     }
   }
 

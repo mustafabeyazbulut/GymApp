@@ -41,9 +41,9 @@ void main() {
     await expectLater(
       () => repository.getPayments(20),
       throwsA(isA<ApiException>().having(
-        (e) => e.message,
-        'message',
-        'Bu paket atamasının ödemelerini görme yetkiniz yok.',
+        (e) => e.errors,
+        'errors',
+        ['Bu paket atamasının ödemelerini görme yetkiniz yok.'],
       )),
     );
   });

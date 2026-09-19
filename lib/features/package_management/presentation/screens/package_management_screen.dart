@@ -51,7 +51,7 @@ class PackageManagementScreen extends ConsumerWidget {
           child: packagesAsync.when(
             loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
             error: (error, stackTrace) => _ErrorRetry(
-              message: error is ApiException ? error.message : l10n.commonError,
+              message: error is ApiException ? error.localizedMessage(context) : l10n.commonError,
               onRetry: () => ref.invalidate(packagesProvider),
             ),
             data: (packages) {
@@ -112,7 +112,7 @@ class _PackageTileState extends ConsumerState<_PackageTile> {
           .setPackageActive(packageId: widget.package.id, isActive: value);
     } on ApiException catch (exception) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     } finally {
       if (mounted) setState(() => _isToggling = false);
     }

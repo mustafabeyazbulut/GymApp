@@ -38,7 +38,7 @@ class ProgressScreen extends ConsumerWidget {
     if (currentUserAsync.hasError) {
       final error = currentUserAsync.error;
       return _ErrorRetry(
-        message: error is AuthException ? error.message : l10n.commonError,
+        message: error is AuthException ? error.localizedMessage(context) : l10n.commonError,
         onRetry: () => ref.invalidate(currentUserProvider),
       );
     }
@@ -50,7 +50,7 @@ class ProgressScreen extends ConsumerWidget {
     return membershipsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
       error: (error, stackTrace) => _ErrorRetry(
-        message: error is ApiException ? error.message : l10n.commonError,
+        message: error is ApiException ? error.localizedMessage(context) : l10n.commonError,
         onRetry: () => ref.invalidate(membershipsProvider),
       ),
       data: (memberships) {
@@ -65,7 +65,7 @@ class ProgressScreen extends ConsumerWidget {
         return summaryAsync.when(
           loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
           error: (error, stackTrace) => _ErrorRetry(
-            message: error is ApiException ? error.message : l10n.commonError,
+            message: error is ApiException ? error.localizedMessage(context) : l10n.commonError,
             onRetry: () => ref.invalidate(progressSummaryProvider),
           ),
           data: (summary) => _ProgressContent(l10n: l10n, memberships: memberships, selectedId: selected.id, summary: summary),

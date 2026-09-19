@@ -8,6 +8,7 @@ import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../data/real_tenant_repository.dart';
 import '../../domain/company_summary.dart';
+import '../widgets/company_stats_row.dart';
 
 /// Super Admin'in şirket yönetimi için giriş noktası - her şirketi
 /// (ad, şube sayısı, aktif/pasif) listeler, birini açıp adını değiştirmesine
@@ -45,7 +46,7 @@ class _CompanyManagementScreenState extends ConsumerState<CompanyManagementScree
       setState(() => _companies = companies);
     } on ApiException catch (exception) {
       if (!mounted) return;
-      setState(() => _errorText = exception.message);
+      setState(() => _errorText = exception.localizedMessage(context));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -176,9 +177,12 @@ class _CompanyTile extends StatelessWidget {
                   children: [
                     Text(company.name, style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      l10n.companyManagementBranchCount(company.branchCount),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundMuted),
+                    CompanyStatsRow(
+                      branchCount: company.branchCount,
+                      gymAdminCount: company.gymAdminCount,
+                      branchManagerCount: company.branchManagerCount,
+                      trainerCount: company.trainerCount,
+                      memberCount: company.memberCount,
                     ),
                   ],
                 ),

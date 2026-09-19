@@ -35,7 +35,7 @@ void main() {
 
     await expectLater(
       () => repository.createCompany(companyName: 'x', gymAdminPhone: 'x'),
-      throwsA(isA<ApiException>().having((e) => e.message, 'message', 'Bu işlem için yetkiniz yok.')),
+      throwsA(isA<ApiException>().having((e) => e.errors, 'errors', ['Bu işlem için yetkiniz yok.'])),
     );
   });
 
@@ -86,7 +86,8 @@ void main() {
     dio.httpClientAdapter = _FakeAdapter((options) {
       expect(options.path, '/api/companies');
       return ResponseBody.fromString(
-        '[{"id":1,"name":"Test Gym","isActive":true,"branchCount":2}]',
+        '[{"id":1,"name":"Test Gym","isActive":true,"branchCount":2,'
+        '"gymAdminCount":1,"branchManagerCount":1,"trainerCount":2,"memberCount":10}]',
         200,
         headers: {'content-type': ['application/json']},
       );
@@ -98,6 +99,10 @@ void main() {
     expect(companies, hasLength(1));
     expect(companies.single.name, 'Test Gym');
     expect(companies.single.branchCount, 2);
+    expect(companies.single.gymAdminCount, 1);
+    expect(companies.single.branchManagerCount, 1);
+    expect(companies.single.trainerCount, 2);
+    expect(companies.single.memberCount, 10);
   });
 
   test('getCompanyDetail parses the company with its branches', () async {
@@ -105,7 +110,9 @@ void main() {
     dio.httpClientAdapter = _FakeAdapter((options) {
       expect(options.path, '/api/companies/1');
       return ResponseBody.fromString(
-        '{"id":1,"name":"Test Gym","isActive":true,"branches":[{"id":5,"name":"Merkez","address":"Adres","isActive":true}]}',
+        '{"id":1,"name":"Test Gym","isActive":true,'
+        '"branches":[{"id":5,"name":"Merkez","address":"Adres","isActive":true}],'
+        '"gymAdminCount":1,"branchManagerCount":1,"trainerCount":2,"memberCount":10}',
         200,
         headers: {'content-type': ['application/json']},
       );
@@ -117,6 +124,10 @@ void main() {
     expect(detail.name, 'Test Gym');
     expect(detail.branches, hasLength(1));
     expect(detail.branches.single.name, 'Merkez');
+    expect(detail.gymAdminCount, 1);
+    expect(detail.branchManagerCount, 1);
+    expect(detail.trainerCount, 2);
+    expect(detail.memberCount, 10);
   });
 
   test('updateCompanyName patches /api/companies/{id} with the new name', () async {

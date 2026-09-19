@@ -89,7 +89,7 @@ class _BranchFormSheetState extends ConsumerState<_BranchFormSheet> {
       ));
     } on ApiException catch (exception) {
       if (!mounted) return;
-      setState(() => _errorText = exception.message);
+      setState(() => _errorText = exception.localizedMessage(context));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }

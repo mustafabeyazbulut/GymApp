@@ -4,6 +4,10 @@ class CompanyListItem {
     required this.name,
     required this.isActive,
     required this.branchCount,
+    required this.gymAdminCount,
+    required this.branchManagerCount,
+    required this.trainerCount,
+    required this.memberCount,
   });
 
   factory CompanyListItem.fromJson(Map<String, dynamic> json) => CompanyListItem(
@@ -11,12 +15,20 @@ class CompanyListItem {
         name: json['name'] as String,
         isActive: json['isActive'] as bool,
         branchCount: json['branchCount'] as int,
+        gymAdminCount: json['gymAdminCount'] as int,
+        branchManagerCount: json['branchManagerCount'] as int,
+        trainerCount: json['trainerCount'] as int,
+        memberCount: json['memberCount'] as int,
       );
 
   final int id;
   final String name;
   final bool isActive;
   final int branchCount;
+  final int gymAdminCount;
+  final int branchManagerCount;
+  final int trainerCount;
+  final int memberCount;
 }
 
 class CompanyBranchSummary {
@@ -46,6 +58,10 @@ class CompanyDetail {
     required this.name,
     required this.isActive,
     required this.branches,
+    required this.gymAdminCount,
+    required this.branchManagerCount,
+    required this.trainerCount,
+    required this.memberCount,
   });
 
   factory CompanyDetail.fromJson(Map<String, dynamic> json) => CompanyDetail(
@@ -55,10 +71,18 @@ class CompanyDetail {
         branches: (json['branches'] as List)
             .map((e) => CompanyBranchSummary.fromJson(e as Map<String, dynamic>))
             .toList(),
+        gymAdminCount: json['gymAdminCount'] as int,
+        branchManagerCount: json['branchManagerCount'] as int,
+        trainerCount: json['trainerCount'] as int,
+        memberCount: json['memberCount'] as int,
       );
 
   final int id;
   final String name;
   final bool isActive;
   final List<CompanyBranchSummary> branches;
+  final int gymAdminCount;
+  final int branchManagerCount;
+  final int trainerCount;
+  final int memberCount;
 }

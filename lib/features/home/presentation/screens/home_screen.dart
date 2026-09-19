@@ -32,7 +32,7 @@ class HomeScreen extends ConsumerWidget {
       body: currentUserAsync.when(
         loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (error, stackTrace) => _ErrorRetry(
-          message: error is AuthException ? error.message : l10n.commonError,
+          message: error is AuthException ? error.localizedMessage(context) : l10n.commonError,
           onRetry: () => ref.invalidate(currentUserProvider),
         ),
         data: (currentUser) {
@@ -43,7 +43,7 @@ class HomeScreen extends ConsumerWidget {
           return membershipsAsync.when(
             loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
             error: (error, stackTrace) => _ErrorRetry(
-              message: error is ApiException ? error.message : l10n.commonError,
+              message: error is ApiException ? error.localizedMessage(context) : l10n.commonError,
               onRetry: () => ref.invalidate(membershipsProvider),
             ),
             data: (memberships) {
@@ -57,7 +57,7 @@ class HomeScreen extends ConsumerWidget {
               return summaryAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
                 error: (error, stackTrace) => _ErrorRetry(
-                  message: error is ApiException ? error.message : l10n.commonError,
+                  message: error is ApiException ? error.localizedMessage(context) : l10n.commonError,
                   onRetry: () => ref.invalidate(homeSummaryProvider),
                 ),
                 data: (summary) => _HomeContent(

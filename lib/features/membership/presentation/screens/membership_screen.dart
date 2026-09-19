@@ -75,7 +75,7 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
       }
     } on ApiException catch (exception) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     } finally {
       if (mounted) setState(() => _isTogglingFreeze = false);
     }
@@ -99,7 +99,7 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
     if (currentUserAsync.hasError) {
       final error = currentUserAsync.error;
       return _ErrorRetry(
-        message: error is AuthException ? error.message : l10n.commonError,
+        message: error is AuthException ? error.localizedMessage(context) : l10n.commonError,
         onRetry: () => ref.invalidate(currentUserProvider),
       );
     }
@@ -111,7 +111,7 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
     return membershipsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
       error: (error, stackTrace) => _ErrorRetry(
-        message: error is ApiException ? error.message : l10n.commonError,
+        message: error is ApiException ? error.localizedMessage(context) : l10n.commonError,
         onRetry: () => ref.invalidate(membershipsProvider),
       ),
       data: (memberships) {
@@ -269,7 +269,7 @@ class _PaymentHistoryCard extends ConsumerWidget {
                 child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
               ),
               error: (error, stackTrace) => Text(
-                error is ApiException ? error.message : l10n.commonError,
+                error is ApiException ? error.localizedMessage(context) : l10n.commonError,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               data: (payments) {

@@ -46,7 +46,7 @@ class _BranchManagementScreenState extends ConsumerState<BranchManagementScreen>
       setState(() => _branches = branches);
     } on ApiException catch (exception) {
       if (!mounted) return;
-      setState(() => _errorText = exception.message);
+      setState(() => _errorText = exception.localizedMessage(context));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -92,7 +92,7 @@ class _BranchManagementScreenState extends ConsumerState<BranchManagementScreen>
       _load();
     } on ApiException catch (exception) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     }
   }
 

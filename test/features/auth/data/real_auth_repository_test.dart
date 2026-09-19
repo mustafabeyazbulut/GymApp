@@ -94,8 +94,8 @@ void main() {
     await expectLater(
       () => repository.requestRegistrationOtp(phone: '+905551112233'),
       throwsA(isA<ConflictAuthException>().having(
-        (e) => e.message,
-        'message',
+        (e) => e.serverMessage,
+        'serverMessage',
         'Bu telefon numarasıyla zaten bir hesap var.',
       )),
     );
@@ -150,8 +150,8 @@ void main() {
         password: 'Sifre123!',
       ),
       throwsA(isA<GenericAuthException>().having(
-        (e) => e.message,
-        'message',
+        (e) => e.serverMessage,
+        'serverMessage',
         'Telefon kodu hatalı, süresi dolmuş veya çok fazla deneme yapıldı.',
       )),
     );
@@ -289,8 +289,8 @@ void main() {
     await expectLater(
       () => repository.deleteAccount(code: '000000'),
       throwsA(isA<GenericAuthException>().having(
-        (e) => e.message,
-        'message',
+        (e) => e.serverMessage,
+        'serverMessage',
         'Telefon kodu hatalı, süresi dolmuş veya çok fazla deneme yapıldı.',
       )),
     );
@@ -335,8 +335,8 @@ void main() {
     await expectLater(
       () => repository.freezeAccount(code: '000000'),
       throwsA(isA<GenericAuthException>().having(
-        (e) => e.message,
-        'message',
+        (e) => e.serverMessage,
+        'serverMessage',
         'Telefon kodu hatalı, süresi dolmuş veya çok fazla deneme yapıldı.',
       )),
     );

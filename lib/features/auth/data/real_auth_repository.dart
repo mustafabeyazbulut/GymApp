@@ -143,10 +143,15 @@ class RealAuthRepository implements AuthRepository {
       return const RateLimitedAuthException();
     }
 
+    // Sunucu bir Errors gövdesi döndürmediyse mesaj null kalır - burada sabit
+    // bir dil ile doldurmak, AppLocalizations'ı bypass eden tam olarak
+    // yasaklanan örüntü olurdu. Null, GenericAuthException/ConflictAuthException
+    // üzerinden localizedMessage(context)'e taşınır ve orada l10n.commonError'a
+    // düşülür.
     final data = exception.response?.data;
     final message = data is Map && data['Errors'] is List && (data['Errors'] as List).isNotEmpty
         ? (data['Errors'] as List).first.toString()
-        : 'Beklenmeyen bir hata oluştu.';
+        : null;
 
     if (statusCode == 401) {
       // Bu (method, path) çağrılarının 401'i "yanlış şifre" değil "yanlış OTP kodu"

@@ -47,7 +47,7 @@ class _AssignPackageScreenState extends ConsumerState<AssignPackageScreen> {
       Navigator.of(context).pop();
     } on ApiException catch (exception) {
       if (!mounted) return;
-      setState(() => _errorText = exception.message);
+      setState(() => _errorText = exception.localizedMessage(context));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -71,7 +71,7 @@ class _AssignPackageScreenState extends ConsumerState<AssignPackageScreen> {
                 packagesAsync.when(
                   loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
                   error: (error, stackTrace) => Text(
-                    error is ApiException ? error.message : l10n.commonError,
+                    error is ApiException ? error.localizedMessage(context) : l10n.commonError,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   data: (packages) {

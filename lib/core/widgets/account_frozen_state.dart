@@ -48,7 +48,7 @@ class _AccountFrozenStateState extends ConsumerState<AccountFrozenState> {
       ref.invalidate(currentUserProvider);
     } on AuthException catch (exception) {
       if (!mounted) return;
-      setState(() => _errorText = exception.message);
+      setState(() => _errorText = exception.localizedMessage(context));
     } finally {
       if (mounted) setState(() => _isReactivating = false);
     }

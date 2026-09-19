@@ -25,7 +25,7 @@ void main() {
       expect(result.errors, ['Company 999 bulunamadı.']);
     });
 
-    test('falls back to a generic connection message when there is no response body', () {
+    test('marks a connection error (no response body) with empty errors, resolved via AppLocalizations at display time', () {
       final requestOptions = RequestOptions(path: '/api/branches');
       final dioException = DioException(
         requestOptions: requestOptions,
@@ -35,7 +35,8 @@ void main() {
       final result = ApiException.fromDioException(dioException);
 
       expect(result.statusCode, 0);
-      expect(result.errors, isNotEmpty);
+      expect(result.errors, isEmpty);
+      expect(result.isConnectionError, isTrue);
     });
   });
 }

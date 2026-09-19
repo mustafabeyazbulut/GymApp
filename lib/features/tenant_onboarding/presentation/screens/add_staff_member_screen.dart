@@ -58,7 +58,7 @@ class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
       });
     } on ApiException catch (exception) {
       if (!mounted) return;
-      setState(() => _errorText = exception.message);
+      setState(() => _errorText = exception.localizedMessage(context));
     } finally {
       if (mounted) setState(() => _isLoadingBranches = false);
     }
@@ -88,7 +88,7 @@ class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
       Navigator.of(context).pop();
     } on ApiException catch (exception) {
       if (!mounted) return;
-      setState(() => _errorText = exception.message);
+      setState(() => _errorText = exception.localizedMessage(context));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }

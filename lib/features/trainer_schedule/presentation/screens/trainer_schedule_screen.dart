@@ -71,7 +71,7 @@ class TrainerScheduleScreen extends ConsumerWidget {
       }
     } on ApiException catch (exception) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     }
   }
 
@@ -91,7 +91,7 @@ class TrainerScheduleScreen extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  error is ApiException ? error.message : l10n.commonError,
+                  error is ApiException ? error.localizedMessage(context) : l10n.commonError,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.lg),

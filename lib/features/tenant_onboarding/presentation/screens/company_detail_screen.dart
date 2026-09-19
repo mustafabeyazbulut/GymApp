@@ -9,6 +9,7 @@ import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../data/real_tenant_repository.dart';
 import '../../domain/company_summary.dart';
+import '../widgets/company_stats_row.dart';
 
 class CompanyDetailScreen extends ConsumerStatefulWidget {
   const CompanyDetailScreen({required this.companyId, super.key});
@@ -56,7 +57,7 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
       });
     } on ApiException catch (exception) {
       if (!mounted) return;
-      setState(() => _errorText = exception.message);
+      setState(() => _errorText = exception.localizedMessage(context));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -75,7 +76,7 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
       await _load();
     } on ApiException catch (exception) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     } finally {
       if (mounted) setState(() => _isSavingName = false);
     }
@@ -89,7 +90,7 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
       await _load();
     } on ApiException catch (exception) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     } finally {
       if (mounted) setState(() => _isTogglingActive = false);
     }
@@ -107,7 +108,7 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.companyDetailInviteGymAdminSuccessMessage)));
     } on ApiException catch (exception) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     } finally {
       if (mounted) setState(() => _isInvitingGymAdmin = false);
     }
@@ -199,6 +200,14 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
                   ),
               ],
             ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          CompanyStatsRow(
+            branchCount: company.branches.length,
+            gymAdminCount: company.gymAdminCount,
+            branchManagerCount: company.branchManagerCount,
+            trainerCount: company.trainerCount,
+            memberCount: company.memberCount,
           ),
           const SizedBox(height: AppSpacing.xl),
           Text(l10n.companyDetailBranchesTitle, style: Theme.of(context).textTheme.labelSmall),

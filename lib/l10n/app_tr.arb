@@ -10,6 +10,12 @@
   "@commonRetry": {},
   "commonNetworkError": "Bağlantı kurulamadı",
   "@commonNetworkError": {},
+  "commonConnectionError": "Bağlantı kurulamadı. Lütfen tekrar deneyin.",
+  "@commonConnectionError": {},
+  "authInvalidCredentials": "Telefon numarası/e-posta veya şifre hatalı.",
+  "@authInvalidCredentials": {},
+  "authTooManyAttempts": "Çok fazla deneme yaptınız. Lütfen birkaç dakika sonra tekrar deneyin.",
+  "@authTooManyAttempts": {},
   "commonLogOut": "Çıkış Yap",
   "@commonLogOut": {},
   "drawerOpenMenuTooltip": "Menüyü aç",
@@ -96,6 +102,22 @@
   "@companyManagementAddButton": {},
   "companyManagementBranchCount": "{count} şube",
   "@companyManagementBranchCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "companyManagementGymAdminCount": "{count} yönetici",
+  "@companyManagementGymAdminCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "companyManagementBranchManagerCount": "{count} şube yöneticisi",
+  "@companyManagementBranchManagerCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "companyManagementTrainerCount": "{count} antrenör",
+  "@companyManagementTrainerCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "companyManagementMemberCount": "{count} üye",
+  "@companyManagementMemberCount": {
     "placeholders": { "count": { "type": "int" } }
   },
   "companyManagementActiveBadge": "Aktif",
