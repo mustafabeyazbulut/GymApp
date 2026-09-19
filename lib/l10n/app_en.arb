@@ -204,6 +204,7 @@
   "packageTypeSessionBased": "Session-Based",
   "packageDurationSubtitle": "Duration · {days} days",
   "packageSessionSubtitle": "Session-Based · {count} sessions",
+  "packageMaxFreezeDaysSubtitle": "Max freeze: {days} days",
 
   "createPackageTitle": "New Package",
   "createPackageNameLabel": "Package Name",

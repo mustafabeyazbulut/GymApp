@@ -156,6 +156,13 @@ class _PackageTileState extends ConsumerState<_PackageTile> {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(_priceFormat.format(package.price), style: Theme.of(context).textTheme.titleSmall),
+                if (package.maxFreezeDays != null) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    l10n.packageMaxFreezeDaysSubtitle(package.maxFreezeDays!),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.onBackgroundFaint),
+                  ),
+                ],
               ],
             ),
           ),

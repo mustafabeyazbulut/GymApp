@@ -419,6 +419,10 @@
   "@packageSessionSubtitle": {
     "placeholders": { "count": { "type": "int" } }
   },
+  "packageMaxFreezeDaysSubtitle": "Maks. dondurma: {days} gün",
+  "@packageMaxFreezeDaysSubtitle": {
+    "placeholders": { "days": { "type": "int" } }
+  },
 
   "createPackageTitle": "Yeni Paket",
   "@createPackageTitle": {},
