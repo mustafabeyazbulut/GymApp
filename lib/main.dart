@@ -5,6 +5,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'core/locale/app_locale_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/domain/auth_exceptions.dart';
+import 'features/auth/presentation/providers/auth_state_provider.dart';
 import 'features/auth/presentation/providers/current_user_provider.dart';
 import 'l10n/generated/app_localizations.dart';
 
@@ -33,6 +35,18 @@ class GymApp extends ConsumerWidget {
       final language = next.value?.preferredLanguage;
       if (language != null) {
         ref.read(appLocaleProvider.notifier).seedFromAccount(language);
+      }
+      // Oturum gerçekten geçersizse (ör. dio_client.dart'ın refresh-and-retry
+      // akışı da başarısız oldu) currentUserProvider bir SessionExpiredException
+      // ile hata durumuna düşer, ama tokenStore.clear() sadece interceptor
+      // içinde çağrılır - authStateProvider'ın kendi (kimlik durumunu ve
+      // router'ın /login yönlendirmesini süren) state'i bundan HABERSİZ
+      // kalır. Bu yüzden kullanıcı, kimliği boş/"?" görünen, hiçbir menü
+      // öğesi çalışmayan yarı-oturum-açık bir Home ekranında sıkışıp
+      // kalıyordu - logOut() burada çağrılıp router'ın gerçekten /login'e
+      // yönlendirmesi sağlanıyor.
+      if (next.hasError && next.error is SessionExpiredException) {
+        ref.read(authStateProvider.notifier).logOut();
       }
     });
 
