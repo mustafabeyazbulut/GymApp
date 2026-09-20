@@ -64,6 +64,8 @@
   "@drawerCreateClassSession": {},
   "drawerAnalytics": "Analiz",
   "@drawerAnalytics": {},
+  "drawerReports": "Raporlar",
+  "@drawerReports": {},
   "drawerContentLibrary": "İçerik Kütüphanesi",
   "@drawerContentLibrary": {},
   "drawerDoorAccess": "Kapı/Bölge Yönetimi",
@@ -769,5 +771,59 @@
   "analyticsTrainerStudentsLabel": "Antrenör Başına Aktif Öğrenci",
   "@analyticsTrainerStudentsLabel": {},
   "analyticsTrainerStudentsEmptyMessage": "Henüz bir antrenöre bağlı öğrenci yok.",
-  "@analyticsTrainerStudentsEmptyMessage": {}
+  "@analyticsTrainerStudentsEmptyMessage": {},
+
+  "reportsHubTitle": "Raporlar",
+  "@reportsHubTitle": {},
+  "reportsHubRevenueLabel": "Gelir Raporu",
+  "@reportsHubRevenueLabel": {},
+  "reportsHubRevenueDescription": "Seçilen tarih aralığındaki tahsilatlar",
+  "@reportsHubRevenueDescription": {},
+  "reportsHubOutstandingBalancesLabel": "Bekleyen Bakiyeler",
+  "@reportsHubOutstandingBalancesLabel": {},
+  "reportsHubOutstandingBalancesDescription": "Ödemesi tamamlanmamış üyelikler",
+  "@reportsHubOutstandingBalancesDescription": {},
+  "reportsHubExpiringMembershipsLabel": "Süresi Yaklaşan Üyelikler",
+  "@reportsHubExpiringMembershipsLabel": {},
+  "reportsHubExpiringMembershipsDescription": "Yakında sona erecek veya dolmuş üyelikler",
+  "@reportsHubExpiringMembershipsDescription": {},
+
+  "reportsRevenueTitle": "Gelir Raporu",
+  "@reportsRevenueTitle": {},
+  "reportsRevenueTotalLabel": "Toplam Tahsilat",
+  "@reportsRevenueTotalLabel": {},
+  "reportsRevenueRangeLabel": "{from} – {to}",
+  "@reportsRevenueRangeLabel": {
+    "placeholders": { "from": { "type": "String" }, "to": { "type": "String" } }
+  },
+  "reportsRevenuePickRangeButton": "Tarih Aralığı Seç",
+  "@reportsRevenuePickRangeButton": {},
+  "reportsRevenueMethodBreakdownLabel": "Ödeme Yöntemine Göre",
+  "@reportsRevenueMethodBreakdownLabel": {},
+  "reportsRevenueDailyBreakdownLabel": "Günlük Dağılım",
+  "@reportsRevenueDailyBreakdownLabel": {},
+  "reportsRevenueEmptyMessage": "Bu tarih aralığında tahsilat yok.",
+  "@reportsRevenueEmptyMessage": {},
+
+  "reportsOutstandingBalancesTitle": "Bekleyen Bakiyeler",
+  "@reportsOutstandingBalancesTitle": {},
+  "reportsOutstandingBalancesEmptyMessage": "Bekleyen bakiye yok.",
+  "@reportsOutstandingBalancesEmptyMessage": {},
+
+  "reportsExpiringMembershipsTitle": "Süresi Yaklaşan Üyelikler",
+  "@reportsExpiringMembershipsTitle": {},
+  "reportsExpiringMembershipsEmptyMessage": "Bu aralıkta süresi yaklaşan/dolmuş üyelik yok.",
+  "@reportsExpiringMembershipsEmptyMessage": {},
+  "reportsExpiringMembershipsFilterDays": "{days} gün",
+  "@reportsExpiringMembershipsFilterDays": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "reportsExpiringMembershipsDaysRemainingLabel": "{count} gün kaldı",
+  "@reportsExpiringMembershipsDaysRemainingLabel": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "reportsExpiringMembershipsAlreadyExpiredLabel": "{count} gün önce doldu",
+  "@reportsExpiringMembershipsAlreadyExpiredLabel": {
+    "placeholders": { "count": { "type": "int" } }
+  }
 }

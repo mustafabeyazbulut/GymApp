@@ -358,6 +358,12 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       label: l10n.drawerAnalytics,
                       onTap: () => closeThenPush('/staff/analytics'),
                     ),
+                  if ((currentUser?.isSuperAdmin ?? false) || currentUser?.staffAssignment != null)
+                    _DrawerItem(
+                      icon: Icons.summarize_outlined,
+                      label: l10n.drawerReports,
+                      onTap: () => closeThenPush('/staff/reports'),
+                    ),
                   if (currentUser?.isTrainer ?? false)
                     _DrawerItem(
                       icon: Icons.event_note_outlined,

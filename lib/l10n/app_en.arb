@@ -32,6 +32,7 @@
   "drawerTrainerSchedule": "My Trainer Schedule",
   "drawerCreateClassSession": "Create Class Schedule",
   "drawerAnalytics": "Analytics",
+  "drawerReports": "Reports",
   "drawerContentLibrary": "Content Library",
   "drawerDoorAccess": "Door/Zone Management",
   "doorAccessTitle": "Door/Zone Management",
@@ -364,5 +365,30 @@
   "analyticsPackageSalesEmptyMessage": "No packages sold in the last 30 days.",
   "analyticsPackageCategoryOther": "Other (Uncategorized)",
   "analyticsTrainerStudentsLabel": "Active Students per Trainer",
-  "analyticsTrainerStudentsEmptyMessage": "No students linked to a trainer yet."
+  "analyticsTrainerStudentsEmptyMessage": "No students linked to a trainer yet.",
+
+  "reportsHubTitle": "Reports",
+  "reportsHubRevenueLabel": "Revenue Report",
+  "reportsHubRevenueDescription": "Collections in the selected date range",
+  "reportsHubOutstandingBalancesLabel": "Outstanding Balances",
+  "reportsHubOutstandingBalancesDescription": "Memberships with unpaid balances",
+  "reportsHubExpiringMembershipsLabel": "Expiring Memberships",
+  "reportsHubExpiringMembershipsDescription": "Memberships expiring soon or already expired",
+
+  "reportsRevenueTitle": "Revenue Report",
+  "reportsRevenueTotalLabel": "Total Collected",
+  "reportsRevenueRangeLabel": "{from} – {to}",
+  "reportsRevenuePickRangeButton": "Pick Date Range",
+  "reportsRevenueMethodBreakdownLabel": "By Payment Method",
+  "reportsRevenueDailyBreakdownLabel": "Daily Breakdown",
+  "reportsRevenueEmptyMessage": "No collections in this date range.",
+
+  "reportsOutstandingBalancesTitle": "Outstanding Balances",
+  "reportsOutstandingBalancesEmptyMessage": "No outstanding balances.",
+
+  "reportsExpiringMembershipsTitle": "Expiring Memberships",
+  "reportsExpiringMembershipsEmptyMessage": "No memberships expiring or expired in this range.",
+  "reportsExpiringMembershipsFilterDays": "{days} days",
+  "reportsExpiringMembershipsDaysRemainingLabel": "{count} days left",
+  "reportsExpiringMembershipsAlreadyExpiredLabel": "Expired {count} days ago"
 }

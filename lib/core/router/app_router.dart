@@ -27,6 +27,10 @@ import '../../features/package_management/presentation/screens/create_package_sc
 import '../../features/package_management/presentation/screens/package_assignments_screen.dart';
 import '../../features/package_management/presentation/screens/package_management_screen.dart';
 import '../../features/progress/presentation/screens/progress_screen.dart';
+import '../../features/reports/presentation/screens/expiring_memberships_screen.dart';
+import '../../features/reports/presentation/screens/outstanding_balances_screen.dart';
+import '../../features/reports/presentation/screens/reports_hub_screen.dart';
+import '../../features/reports/presentation/screens/revenue_report_screen.dart';
 import '../../features/trainer_schedule/presentation/screens/trainer_schedule_screen.dart';
 
 part 'app_router.g.dart';
@@ -130,6 +134,22 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/staff/analytics',
         builder: (context, state) => const AnalyticsScreen(),
+      ),
+      GoRoute(
+        path: '/staff/reports',
+        builder: (context, state) => const ReportsHubScreen(),
+      ),
+      GoRoute(
+        path: '/staff/reports/revenue',
+        builder: (context, state) => const RevenueReportScreen(),
+      ),
+      GoRoute(
+        path: '/staff/reports/outstanding-balances',
+        builder: (context, state) => const OutstandingBalancesScreen(),
+      ),
+      GoRoute(
+        path: '/staff/reports/expiring-memberships',
+        builder: (context, state) => const ExpiringMembershipsScreen(),
       ),
       GoRoute(
         path: '/content-library',
