@@ -375,6 +375,13 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                     label: l10n.drawerConfirmInvitation,
                     onTap: () => closeThenPush('/confirm-invitation'),
                   ),
+                  // Herkese açık - liste, staff/Member görünürlüğünü kendi
+                  // tarafında filtreliyor (bkz. GetContentItemsQueryHandler).
+                  _DrawerItem(
+                    icon: Icons.video_library_outlined,
+                    label: l10n.drawerContentLibrary,
+                    onTap: () => closeThenPush('/content-library'),
+                  ),
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
                     child: Divider(color: AppColors.border, height: 1),

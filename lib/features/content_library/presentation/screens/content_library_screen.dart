@@ -1,0 +1,146 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/network/api_exception.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../l10n/generated/app_localizations.dart';
+import '../../../auth/presentation/providers/current_user_provider.dart';
+import '../../domain/content_item.dart';
+import '../providers/content_library_providers.dart';
+import 'content_item_player_screen.dart';
+
+/// Herkes görebilir - liste, erişemediği Premium içeriği de (upsell için)
+/// kilitli olarak gösterir; gerçek erişim kontrolü oynatma sırasında
+/// backend'de (GET /api/media/{id}) yeniden yapılır (bkz.
+/// docs/superpowers/specs/2026-09-20-content-library-design.md).
+class ContentLibraryScreen extends ConsumerWidget {
+  const ContentLibraryScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final currentUser = ref.watch(currentUserProvider).asData?.value;
+    final canUpload = currentUser?.isSuperAdmin == true || currentUser?.staffAssignment != null;
+    final itemsAsync = ref.watch(contentItemsProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.contentLibraryTitle),
+        actions: [
+          if (canUpload)
+            IconButton(
+              icon: const Icon(Icons.upload_outlined),
+              tooltip: l10n.contentLibraryUploadButton,
+              onPressed: () => context.push('/content-library/upload'),
+            ),
+        ],
+      ),
+      body: SafeArea(
+        child: itemsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          error: (error, stackTrace) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    error is ApiException ? error.localizedMessage(context) : l10n.commonError,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  OutlinedButton(
+                    onPressed: () => ref.read(contentItemsProvider.notifier).refresh(),
+                    child: Text(l10n.commonRetry),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          data: (items) {
+            if (items.isEmpty) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.xl),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.video_library_outlined, size: 40, color: AppColors.onBackgroundFaint),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(l10n.contentLibraryEmptyMessage, style: Theme.of(context).textTheme.bodyMedium),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            return RefreshIndicator(
+              onRefresh: () => ref.read(contentItemsProvider.notifier).refresh(),
+              child: ListView.separated(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                itemCount: items.length,
+                separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+                itemBuilder: (context, index) => _ContentItemTile(
+                  item: items[index],
+                  canManage: canUpload,
+                  l10n: l10n,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _ContentItemTile extends ConsumerWidget {
+  const _ContentItemTile({required this.item, required this.canManage, required this.l10n});
+
+  final ContentItem item;
+  final bool canManage;
+  final AppLocalizations l10n;
+
+  Future<void> _toggleActive(WidgetRef ref) =>
+      ref.read(contentItemsProvider.notifier).setActive(id: item.id, isActive: !item.isActive);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final textTheme = Theme.of(context).textTheme;
+    final isLocked = !item.hasAccess;
+
+    return Opacity(
+      opacity: isLocked || !item.isActive ? 0.55 : 1,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        ),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+          leading: Icon(
+            item.isVideo ? Icons.play_circle_outline : Icons.image_outlined,
+            color: AppColors.primary,
+          ),
+          title: Text(item.title, style: textTheme.titleMedium),
+          subtitle: item.description == null
+              ? (item.isPremium ? Text(l10n.contentLibraryPremiumLabel) : null)
+              : Text(item.description!, maxLines: 2, overflow: TextOverflow.ellipsis),
+          trailing: isLocked
+              ? const Icon(Icons.lock_outline, color: AppColors.onBackgroundFaint)
+              : canManage
+                  ? Switch(value: item.isActive, onChanged: (_) => _toggleActive(ref))
+                  : null,
+          onTap: isLocked
+              ? () => ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text(l10n.contentLibraryLockedMessage)))
+              : () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => ContentItemPlayerScreen(item: item)),
+                  ),
+        ),
+      ),
+    );
+  }
+}
