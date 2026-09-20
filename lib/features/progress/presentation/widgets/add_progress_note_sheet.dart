@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -35,8 +36,27 @@ class _AddProgressNoteSheetState extends ConsumerState<_AddProgressNoteSheet> {
   double _technique = 50;
   double _condition = 50;
   final _noteController = TextEditingController();
+  XFile? _pickedFile;
   bool _isSubmitting = false;
   String? _errorText;
+
+  Future<void> _pickImage() async {
+    final file = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (file != null) setState(() => _pickedFile = file);
+  }
+
+  Future<void> _pickVideo() async {
+    final file = await ImagePicker().pickVideo(source: ImageSource.gallery);
+    if (file != null) setState(() => _pickedFile = file);
+  }
+
+  String _mimeTypeFor(String path) {
+    final lower = path.toLowerCase();
+    if (lower.endsWith('.mp4')) return 'video/mp4';
+    if (lower.endsWith('.mov')) return 'video/quicktime';
+    if (lower.endsWith('.png')) return 'image/png';
+    return 'image/jpeg';
+  }
 
   @override
   void dispose() {
@@ -51,11 +71,15 @@ class _AddProgressNoteSheetState extends ConsumerState<_AddProgressNoteSheet> {
       _errorText = null;
     });
     try {
+      final pickedFile = _pickedFile;
       await ref.read(progressRepositoryProvider).recordProgressNote(
             packageAssignmentId: widget.packageAssignmentId,
             techniqueScore: _technique.round(),
             conditionScore: _condition.round(),
             noteText: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+            mediaFilePath: pickedFile?.path,
+            mediaFileName: pickedFile?.name,
+            mediaMimeType: pickedFile == null ? null : _mimeTypeFor(pickedFile.path),
           );
       if (!mounted) return;
       Navigator.of(context).pop();
@@ -115,6 +139,33 @@ class _AddProgressNoteSheetState extends ConsumerState<_AddProgressNoteSheet> {
               maxLength: 1000,
               decoration: InputDecoration(labelText: l10n.progressNoteTextLabel),
             ),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _pickImage,
+                    icon: const Icon(Icons.image_outlined),
+                    label: Text(l10n.contentLibraryPickImageButton),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _pickVideo,
+                    icon: const Icon(Icons.videocam_outlined),
+                    label: Text(l10n.contentLibraryPickVideoButton),
+                  ),
+                ),
+              ],
+            ),
+            if (_pickedFile != null) ...[
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                _pickedFile!.name,
+                style: Theme.of(context).textTheme.bodySmall,
+                textAlign: TextAlign.center,
+              ),
+            ],
             if (_errorText != null) ...[
               const SizedBox(height: AppSpacing.sm),
               Text(_errorText!, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.error)),

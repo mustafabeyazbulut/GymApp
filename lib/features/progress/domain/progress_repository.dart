@@ -8,5 +8,8 @@ abstract interface class ProgressRepository {
     required int techniqueScore,
     required int conditionScore,
     String? noteText,
+    String? mediaFilePath,
+    String? mediaFileName,
+    String? mediaMimeType,
   });
 }

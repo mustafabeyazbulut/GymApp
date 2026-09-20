@@ -2,19 +2,27 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
-import '../../../../core/network/api_exception.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../l10n/generated/app_localizations.dart';
-import '../../data/real_content_library_repository.dart';
-import '../../domain/content_item.dart';
+import '../../features/content_library/data/real_content_library_repository.dart';
+import '../network/api_exception.dart';
+import '../theme/app_colors.dart';
+import '../../l10n/generated/app_localizations.dart';
 
-/// Tam ekran oynatıcı - video için video_player (kimlik doğrulamalı URL +
+/// Paylaşımlı tam ekran medya oynatıcı - hem içerik kütüphanesi hem
+/// gelişim takibi medyası (bkz.
+/// docs/superpowers/specs/2026-09-20-progress-media-design.md'nin "content-
+/// library'nin oynatıcı bileşeni yeniden kullanılır" notu) tarafından
+/// kullanılır. Video için video_player (kimlik doğrulamalı URL +
 /// Authorization header), görsel için dio ile indirilen byte'lar üzerinden
-/// Image.memory (bkz. docs/superpowers/specs/2026-09-20-content-library-design.md).
-class ContentItemPlayerScreen extends ConsumerWidget {
-  const ContentItemPlayerScreen({required this.item, super.key});
+/// Image.memory kullanılır - GET /api/media/{id} her iki durumda da aynı,
+/// kimlik doğrulamalı endpoint.
+class MediaPlayerScreen extends ConsumerWidget {
+  const MediaPlayerScreen({required this.mediaFileId, required this.mediaContentType, required this.title, super.key});
 
-  final ContentItem item;
+  final int mediaFileId;
+  final String mediaContentType;
+  final String title;
+
+  bool get _isVideo => mediaContentType.startsWith('video/');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,11 +32,13 @@ class ContentItemPlayerScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
-        title: Text(item.title, style: const TextStyle(color: Colors.white)),
+        title: Text(title, style: const TextStyle(color: Colors.white)),
       ),
       body: SafeArea(
         child: Center(
-          child: item.isVideo ? _VideoPlayerView(item: item, l10n: l10n) : _ImageView(item: item, l10n: l10n),
+          child: _isVideo
+              ? _VideoPlayerView(mediaFileId: mediaFileId, l10n: l10n)
+              : _ImageView(mediaFileId: mediaFileId, l10n: l10n),
         ),
       ),
     );
@@ -36,9 +46,9 @@ class ContentItemPlayerScreen extends ConsumerWidget {
 }
 
 class _VideoPlayerView extends ConsumerStatefulWidget {
-  const _VideoPlayerView({required this.item, required this.l10n});
+  const _VideoPlayerView({required this.mediaFileId, required this.l10n});
 
-  final ContentItem item;
+  final int mediaFileId;
   final AppLocalizations l10n;
 
   @override
@@ -60,7 +70,7 @@ class _VideoPlayerViewState extends ConsumerState<_VideoPlayerView> {
       final repository = ref.read(contentLibraryRepositoryProvider);
       final headers = await repository.mediaAuthHeaders();
       final controller = VideoPlayerController.networkUrl(
-        Uri.parse(repository.mediaUrl(widget.item.mediaFileId)),
+        Uri.parse(repository.mediaUrl(widget.mediaFileId)),
         httpHeaders: headers,
       );
       await controller.initialize();
@@ -145,15 +155,15 @@ class _PlayPauseOverlayState extends State<_PlayPauseOverlay> {
 }
 
 class _ImageView extends ConsumerWidget {
-  const _ImageView({required this.item, required this.l10n});
+  const _ImageView({required this.mediaFileId, required this.l10n});
 
-  final ContentItem item;
+  final int mediaFileId;
   final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return FutureBuilder<List<int>>(
-      future: ref.read(contentLibraryRepositoryProvider).downloadMediaBytes(item.mediaFileId),
+      future: ref.read(contentLibraryRepositoryProvider).downloadMediaBytes(mediaFileId),
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return const CircularProgressIndicator(color: AppColors.primary);

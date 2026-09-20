@@ -4,11 +4,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/media_player_screen.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/presentation/providers/current_user_provider.dart';
 import '../../domain/content_item.dart';
 import '../providers/content_library_providers.dart';
-import 'content_item_player_screen.dart';
 
 /// Herkes görebilir - liste, erişemediği Premium içeriği de (upsell için)
 /// kilitli olarak gösterir; gerçek erişim kontrolü oynatma sırasında
@@ -118,27 +118,42 @@ class _ContentItemTile extends ConsumerWidget {
           border: Border.all(color: AppColors.border),
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
-          leading: Icon(
-            item.isVideo ? Icons.play_circle_outline : Icons.image_outlined,
-            color: AppColors.primary,
+        // Material(transparency): ListTile arka planını/ink splash'ını en
+        // yakın Material ata üzerine boyuyor - onu doğrudan renkli bir
+        // Container'a sarmak Flutter'ın kendi uyarısına (ListTile background
+        // color or ink splashes may be invisible) yol açıyordu.
+        child: Material(
+          type: MaterialType.transparency,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          clipBehavior: Clip.antiAlias,
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+            leading: Icon(
+              item.isVideo ? Icons.play_circle_outline : Icons.image_outlined,
+              color: AppColors.primary,
+            ),
+            title: Text(item.title, style: textTheme.titleMedium),
+            subtitle: item.description == null
+                ? (item.isPremium ? Text(l10n.contentLibraryPremiumLabel) : null)
+                : Text(item.description!, maxLines: 2, overflow: TextOverflow.ellipsis),
+            trailing: isLocked
+                ? const Icon(Icons.lock_outline, color: AppColors.onBackgroundFaint)
+                : canManage
+                    ? Switch(value: item.isActive, onChanged: (_) => _toggleActive(ref))
+                    : null,
+            onTap: isLocked
+                ? () => ScaffoldMessenger.of(context)
+                    .showSnackBar(SnackBar(content: Text(l10n.contentLibraryLockedMessage)))
+                : () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => MediaPlayerScreen(
+                          mediaFileId: item.mediaFileId,
+                          mediaContentType: item.mediaContentType,
+                          title: item.title,
+                        ),
+                      ),
+                    ),
           ),
-          title: Text(item.title, style: textTheme.titleMedium),
-          subtitle: item.description == null
-              ? (item.isPremium ? Text(l10n.contentLibraryPremiumLabel) : null)
-              : Text(item.description!, maxLines: 2, overflow: TextOverflow.ellipsis),
-          trailing: isLocked
-              ? const Icon(Icons.lock_outline, color: AppColors.onBackgroundFaint)
-              : canManage
-                  ? Switch(value: item.isActive, onChanged: (_) => _toggleActive(ref))
-                  : null,
-          onTap: isLocked
-              ? () => ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text(l10n.contentLibraryLockedMessage)))
-              : () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => ContentItemPlayerScreen(item: item)),
-                  ),
         ),
       ),
     );

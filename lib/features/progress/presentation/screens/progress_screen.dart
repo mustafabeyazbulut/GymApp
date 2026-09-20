@@ -10,6 +10,7 @@ import '../../../../core/widgets/account_frozen_state.dart';
 import '../../../../core/widgets/app_header_bar.dart';
 import '../../../../core/widgets/circular_stat_gauge.dart';
 import '../../../../core/widgets/empty_membership_state.dart';
+import '../../../../core/widgets/media_player_screen.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/domain/auth_exceptions.dart';
 import '../../../auth/presentation/providers/current_user_provider.dart';
@@ -88,6 +89,18 @@ class _ProgressContent extends ConsumerWidget {
   final int selectedId;
   final ProgressSummary summary;
 
+  void _openMedia(BuildContext context, ProgressNote note) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MediaPlayerScreen(
+          mediaFileId: note.mediaFileId!,
+          mediaContentType: note.mediaContentType!,
+          title: l10n.progressTrainerNoteLabel,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
@@ -146,7 +159,20 @@ class _ProgressContent extends ConsumerWidget {
                 else ...[
                   Text(summary.latestNote!.noteText ?? '', style: textTheme.bodyLarge),
                   const SizedBox(height: AppSpacing.xs),
-                  Text(_dateFormat.format(summary.latestNote!.createdAt), style: textTheme.bodyMedium),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(_dateFormat.format(summary.latestNote!.createdAt), style: textTheme.bodyMedium),
+                      if (summary.latestNote!.hasMedia)
+                        IconButton(
+                          icon: Icon(
+                            summary.latestNote!.isVideoMedia ? Icons.play_circle_outline : Icons.image_outlined,
+                            color: AppColors.primary,
+                          ),
+                          onPressed: () => _openMedia(context, summary.latestNote!),
+                        ),
+                    ],
+                  ),
                 ],
               ],
             ),
@@ -182,6 +208,17 @@ class _ProgressContent extends ConsumerWidget {
                               style: textTheme.bodyMedium,
                             ),
                           ),
+                          if (note.hasMedia)
+                            IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              icon: Icon(
+                                note.isVideoMedia ? Icons.play_circle_outline : Icons.image_outlined,
+                                color: AppColors.primary,
+                                size: 20,
+                              ),
+                              onPressed: () => _openMedia(context, note),
+                            ),
                         ],
                       ),
                     ),

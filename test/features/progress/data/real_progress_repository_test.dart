@@ -23,15 +23,37 @@ void main() {
 
     expect(notes, hasLength(1));
     expect(notes.single.techniqueScore, 70);
+    expect(notes.single.hasMedia, isFalse);
   });
 
-  test('recordProgressNote posts to /api/package-assignments/{id}/progress-notes with the given fields', () async {
+  test('getProgressNotes parses a note with media', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) {
+      return ResponseBody.fromString(
+        '[{"id":1,"techniqueScore":70,"conditionScore":60,"noteText":null,'
+        '"createdAt":"2026-01-01T10:00:00Z","mediaFileId":9,"mediaContentType":"image/jpeg"}]',
+        200,
+        headers: {'content-type': ['application/json']},
+      );
+    });
+    final repository = RealProgressRepository(dio);
+
+    final notes = await repository.getProgressNotes(20);
+
+    expect(notes.single.hasMedia, isTrue);
+    expect(notes.single.isVideoMedia, isFalse);
+  });
+
+  test('recordProgressNote posts multipart/form-data with the given fields', () async {
     final dio = Dio(BaseOptions(baseUrl: 'https://test'));
     dio.httpClientAdapter = _FakeAdapter((options) {
       expect(options.path, '/api/package-assignments/20/progress-notes');
-      expect(options.data['techniqueScore'], 70);
-      expect(options.data['conditionScore'], 60);
-      expect(options.data['noteText'], 'İyi ilerleme.');
+      final formData = options.data as FormData;
+      final fields = {for (final entry in formData.fields) entry.key: entry.value};
+      expect(fields['techniqueScore'], '70');
+      expect(fields['conditionScore'], '60');
+      expect(fields['noteText'], 'İyi ilerleme.');
+      expect(formData.files, isEmpty);
       return ResponseBody.fromString(
         '{"id":1,"techniqueScore":70,"conditionScore":60,"noteText":"İyi ilerleme.","createdAt":"2026-01-01T10:00:00Z"}',
         201,

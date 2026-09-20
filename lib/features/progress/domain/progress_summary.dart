@@ -5,6 +5,8 @@ class ProgressNote {
     required this.conditionScore,
     required this.noteText,
     required this.createdAt,
+    this.mediaFileId,
+    this.mediaContentType,
   });
 
   factory ProgressNote.fromJson(Map<String, dynamic> json) => ProgressNote(
@@ -13,6 +15,8 @@ class ProgressNote {
         conditionScore: json['conditionScore'] as int,
         noteText: json['noteText'] as String?,
         createdAt: DateTime.parse(json['createdAt'] as String).toLocal(),
+        mediaFileId: json['mediaFileId'] as int?,
+        mediaContentType: json['mediaContentType'] as String?,
       );
 
   final int id;
@@ -21,6 +25,15 @@ class ProgressNote {
   final int conditionScore;
   final String? noteText;
   final DateTime createdAt;
+
+  // İkisi de null = medyasız not (mevcut davranış). Opsiyonel "önce/sonra"
+  // fotoğraf/video eki - content-library'nin aynı GET /api/media/{id}
+  // endpoint'ini paylaşır (bkz. docs/superpowers/specs/2026-09-20-progress-media-design.md).
+  final int? mediaFileId;
+  final String? mediaContentType;
+
+  bool get hasMedia => mediaFileId != null;
+  bool get isVideoMedia => mediaContentType?.startsWith('video/') ?? false;
 }
 
 class ProgressSummary {
