@@ -390,5 +390,19 @@
   "reportsExpiringMembershipsEmptyMessage": "No memberships expiring or expired in this range.",
   "reportsExpiringMembershipsFilterDays": "{days} days",
   "reportsExpiringMembershipsDaysRemainingLabel": "{count} days left",
-  "reportsExpiringMembershipsAlreadyExpiredLabel": "Expired {count} days ago"
+  "reportsExpiringMembershipsAlreadyExpiredLabel": "Expired {count} days ago",
+
+  "profileAccountInfoLabel": "Account Info",
+  "profileFullNameLabel": "Full Name",
+  "profileEmailLabel": "Email",
+  "profileEditButton": "Edit",
+  "profileEditTitle": "Edit Profile",
+  "profileEditSaveButton": "Save",
+  "profileEditSuccessMessage": "Your profile has been updated.",
+  "profileChangePasswordButton": "Change Password",
+  "profileChangePasswordTitle": "Change Password",
+  "profileCurrentPasswordLabel": "Current Password",
+  "profileNewPasswordLabel": "New Password",
+  "profileChangePasswordSubmitButton": "Change Password",
+  "profileChangePasswordSuccessMessage": "Your password has been changed. Please log in again with your new password."
 }

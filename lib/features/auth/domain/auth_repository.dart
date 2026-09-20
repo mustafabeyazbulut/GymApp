@@ -40,6 +40,16 @@ abstract interface class AuthRepository {
 
   Future<void> updatePreferredLanguage(String language);
 
+  // Phone kasıtlı olarak düzenlenemez - login kimliği ve OTP ile doğrulanmış;
+  // değiştirilmesi ayrı bir "yeni numarayı doğrula" akışı gerektirir.
+  Future<void> updateProfile({required String fullName, String? email});
+
+  // Sunucu, başarılı bir şifre değişikliğinde bu hesabın diğer tüm
+  // oturumlarındaki refresh token'ları iptal ediyor - çağıran taraf bu
+  // çağrıdan sonra kullanıcıyı yeniden giriş yapmaya yönlendirmeli (bkz.
+  // ChangePasswordCommandHandler'ın backend'deki notu).
+  Future<void> changePassword({required String currentPassword, required String newPassword});
+
   // Herhangi bir üyelik/paket dondurmasından farklıdır - bu, hesabın kendi
   // giriş erişimini geçici olarak devre dışı bırakır (Instagram tarzı
   // "geçici olarak devre dışı bırak"). Login işlemi yine de başarılı olur;

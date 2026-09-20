@@ -104,6 +104,22 @@ class RealAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> updateProfile({required String fullName, String? email}) async {
+    await _guard(() => _dio.patch<void>('/api/auth/me/profile', data: {
+          'fullName': fullName,
+          'email': email,
+        }));
+  }
+
+  @override
+  Future<void> changePassword({required String currentPassword, required String newPassword}) async {
+    await _guard(() => _dio.post<void>('/api/auth/me/change-password', data: {
+          'currentPassword': currentPassword,
+          'newPassword': newPassword,
+        }));
+  }
+
+  @override
   Future<void> requestFreezeOtp() async {
     await _guard(() => _dio.post<void>('/api/auth/me/freeze/request-otp'));
   }
@@ -172,14 +188,19 @@ class RealAuthRepository implements AuthRepository {
       // InvalidCredentialsException yerine bunu olduğu gibi göster. DELETE
       // /api/auth/me dahildir ama GET /api/auth/me (süresi dolmuş bir access
       // token) dahil değildir - aynı path, farklı method, farklı anlam.
-      const otpVerifiedCalls = {
+      // change-password bu kümede değil çünkü bir OTP doğrulamıyor, ama
+      // aynı sonuç istenir: sunucunun kendi mesajını göster ("mevcut şifre
+      // yanlış"), her diğer uç noktanın 401'i için kullanılan sabit
+      // "oturum süresi doldu" metnini DEĞİL.
+      const serverMessageOn401Calls = {
         'POST /api/auth/register/complete',
         'POST /api/auth/me/freeze',
         'POST /api/auth/me/unfreeze',
         'DELETE /api/auth/me',
+        'POST /api/auth/me/change-password',
       };
       final call = '${exception.requestOptions.method} ${exception.requestOptions.path}';
-      if (otpVerifiedCalls.contains(call)) {
+      if (serverMessageOn401Calls.contains(call)) {
         return GenericAuthException(message);
       }
       // /api/auth/login'in KENDİSİNDEN gelen bir 401 gerçekten "yanlış şifre"

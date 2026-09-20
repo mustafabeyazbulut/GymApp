@@ -15,6 +15,7 @@ import '../../../auth/domain/auth_exceptions.dart';
 import '../../../auth/presentation/providers/current_user_provider.dart';
 import '../../domain/membership_summary.dart';
 import '../providers/membership_provider.dart';
+import '../widgets/account_info_card.dart';
 import '../widgets/membership_switcher.dart';
 
 final _dateFormat = DateFormat('dd.MM.yyyy');
@@ -91,72 +92,86 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
     );
   }
 
-  // Hesap ayarları (dil, dondurma, silme) ve Çıkış Yap, AppDrawer'a
-  // taşındı — artık bu ekranın loading/error/empty-membership durumundan
-  // bağımsız olarak her ekranın header menü butonundan erişilebilir.
+  // Hesap bilgisi (ad/telefon/e-posta, düzenle, şifre değiştir) hiçbir
+  // üyeliğe bağlı değil - bu yüzden aşağıda ayrı bir async zincir olarak
+  // ele alınıyor ve üyelik olsun ya da olmasın HER ZAMAN gösteriliyor (bkz.
+  // AccountInfoCard). Dil/dondurma/silme/çıkış ise AppDrawer'da kalmaya
+  // devam ediyor - bunlar zaten her ekranın header menü butonundan erişilebilir.
   Widget _buildBody(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     final currentUserAsync = ref.watch(currentUserProvider);
-    if (currentUserAsync.hasError) {
-      final error = currentUserAsync.error;
-      return _ErrorRetry(
-        message: error is AuthException ? error.localizedMessage(context) : l10n.commonError,
-        onRetry: () => ref.invalidate(currentUserProvider),
-      );
-    }
-    if (currentUserAsync.value?.isAccountFrozen ?? false) {
-      return const AccountFrozenState();
-    }
-
-    final membershipsAsync = ref.watch(membershipsProvider);
-    return membershipsAsync.when(
+    return currentUserAsync.when(
       loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
       error: (error, stackTrace) => _ErrorRetry(
-        message: error is ApiException ? error.localizedMessage(context) : l10n.commonError,
-        onRetry: () => ref.invalidate(membershipsProvider),
+        message: error is AuthException ? error.localizedMessage(context) : l10n.commonError,
+        onRetry: () => ref.invalidate(currentUserProvider),
       ),
-      data: (memberships) {
-        if (memberships.isEmpty) {
-          return const EmptyMembershipState();
+      data: (currentUser) {
+        if (currentUser.isAccountFrozen) {
+          return const AccountFrozenState();
         }
 
-        final selectedId = ref.watch(selectedMembershipIdProvider) ?? memberships.first.id;
-        final selected = memberships.firstWhere(
-          (m) => m.id == selectedId,
-          orElse: () => memberships.first,
-        );
-
+        final membershipsAsync = ref.watch(membershipsProvider);
         return ListView(
           padding: const EdgeInsets.all(AppSpacing.lg),
           children: [
-            MembershipSwitcher(
-              label: l10n.membershipSwitcherLabel,
-              memberships: memberships,
-              selectedId: selected.id,
-              onSelect: (id) => ref.read(selectedMembershipIdProvider.notifier).select(id),
-            ),
-            _MembershipCard(summary: selected, l10n: l10n),
+            AccountInfoCard(user: currentUser),
             const SizedBox(height: AppSpacing.md),
-            OutlinedButton(
-              onPressed: _isTogglingFreeze || !_canFreeze(selected) ? null : () => _toggleFreeze(selected),
-              child: _isTogglingFreeze
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBackground),
-                    )
-                  : Text(
-                      selected.status == MembershipStatus.frozen
-                          ? l10n.membershipUnfreezeButton
-                          : l10n.membershipFreezeButton,
+            membershipsAsync.when(
+              loading: () => const Padding(
+                padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
+                child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+              ),
+              error: (error, stackTrace) => _ErrorRetry(
+                message: error is ApiException ? error.localizedMessage(context) : l10n.commonError,
+                onRetry: () => ref.invalidate(membershipsProvider),
+              ),
+              data: (memberships) {
+                if (memberships.isEmpty) {
+                  return const EmptyMembershipState();
+                }
+
+                final selectedId = ref.watch(selectedMembershipIdProvider) ?? memberships.first.id;
+                final selected = memberships.firstWhere(
+                  (m) => m.id == selectedId,
+                  orElse: () => memberships.first,
+                );
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    MembershipSwitcher(
+                      label: l10n.membershipSwitcherLabel,
+                      memberships: memberships,
+                      selectedId: selected.id,
+                      onSelect: (id) => ref.read(selectedMembershipIdProvider.notifier).select(id),
                     ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _PaymentHistoryCard(packageAssignmentId: selected.id, l10n: l10n),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              l10n.membershipStaffContactNote,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundFaint),
+                    _MembershipCard(summary: selected, l10n: l10n),
+                    const SizedBox(height: AppSpacing.md),
+                    OutlinedButton(
+                      onPressed: _isTogglingFreeze || !_canFreeze(selected) ? null : () => _toggleFreeze(selected),
+                      child: _isTogglingFreeze
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBackground),
+                            )
+                          : Text(
+                              selected.status == MembershipStatus.frozen
+                                  ? l10n.membershipUnfreezeButton
+                                  : l10n.membershipFreezeButton,
+                            ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    _PaymentHistoryCard(packageAssignmentId: selected.id, l10n: l10n),
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      l10n.membershipStaffContactNote,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundFaint),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         );

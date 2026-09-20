@@ -825,5 +825,32 @@
   "reportsExpiringMembershipsAlreadyExpiredLabel": "{count} gün önce doldu",
   "@reportsExpiringMembershipsAlreadyExpiredLabel": {
     "placeholders": { "count": { "type": "int" } }
-  }
+  },
+
+  "profileAccountInfoLabel": "Hesap Bilgileri",
+  "@profileAccountInfoLabel": {},
+  "profileFullNameLabel": "Ad Soyad",
+  "@profileFullNameLabel": {},
+  "profileEmailLabel": "E-posta",
+  "@profileEmailLabel": {},
+  "profileEditButton": "Düzenle",
+  "@profileEditButton": {},
+  "profileEditTitle": "Profili Düzenle",
+  "@profileEditTitle": {},
+  "profileEditSaveButton": "Kaydet",
+  "@profileEditSaveButton": {},
+  "profileEditSuccessMessage": "Profiliniz güncellendi.",
+  "@profileEditSuccessMessage": {},
+  "profileChangePasswordButton": "Şifre Değiştir",
+  "@profileChangePasswordButton": {},
+  "profileChangePasswordTitle": "Şifre Değiştir",
+  "@profileChangePasswordTitle": {},
+  "profileCurrentPasswordLabel": "Mevcut Şifre",
+  "@profileCurrentPasswordLabel": {},
+  "profileNewPasswordLabel": "Yeni Şifre",
+  "@profileNewPasswordLabel": {},
+  "profileChangePasswordSubmitButton": "Şifreyi Değiştir",
+  "@profileChangePasswordSubmitButton": {},
+  "profileChangePasswordSuccessMessage": "Şifreniz değiştirildi. Yeni şifrenizle tekrar giriş yapmanız gerekiyor.",
+  "@profileChangePasswordSuccessMessage": {}
 }
