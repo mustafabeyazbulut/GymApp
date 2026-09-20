@@ -340,6 +340,12 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       label: l10n.drawerCreateClassSession,
                       onTap: () => closeThenPush('/staff/classes/create'),
                     ),
+                  if (currentUser?.staffAssignment != null)
+                    _DrawerItem(
+                      icon: Icons.sensor_door_outlined,
+                      label: l10n.drawerDoorAccess,
+                      onTap: () => closeThenPush('/staff/door-access'),
+                    ),
                   // Analiz ekranı SuperAdmin'i de kapsıyor (backend'in
                   // StaffManagement policy'si zaten BranchManager/GymAdmin/
                   // SuperAdmin'i kapsıyor) - sadece `staffAssignment != null`

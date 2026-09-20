@@ -11,6 +11,7 @@ import '../../features/class_scheduling/presentation/screens/create_class_sessio
 import '../../features/classes/presentation/screens/classes_screen.dart';
 import '../../features/content_library/presentation/screens/content_library_screen.dart';
 import '../../features/content_library/presentation/screens/upload_content_item_screen.dart';
+import '../../features/door_access/presentation/screens/door_access_screen.dart';
 import '../../features/tenant_onboarding/presentation/screens/add_staff_member_screen.dart';
 import '../../features/tenant_onboarding/presentation/screens/branch_management_screen.dart';
 import '../../features/tenant_onboarding/presentation/screens/company_detail_screen.dart';
@@ -137,6 +138,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/content-library/upload',
         builder: (context, state) => const UploadContentItemScreen(),
+      ),
+      GoRoute(
+        path: '/staff/door-access',
+        builder: (context, state) => const DoorAccessScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
