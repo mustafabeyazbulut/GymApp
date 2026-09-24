@@ -117,7 +117,14 @@ void addAuthInterceptor(Dio dio, TokenStore tokenStore) {
   );
 }
 
-@riverpod
+// keepAlive: interceptor'lar her istekte bu provider'ın kendi `ref`'ini
+// kullanıyor (ref.read(activeStaffCompanyIdProvider) vb.). autoDispose iken,
+// o an provider'ı dinleyen kimse yoksa (ör. /login ekranı) bir istek
+// sürerken provider dispose ediliyor ve ref.read "dispose edilmiş Ref"
+// hatası fırlatıyordu - Dio bunu yanıtsız bir DioException'a çevirdiği için
+// login ekranında sunucuya hiç gitmeyen bir "bağlantı kurulamadı" hatası
+// olarak görünüyordu. Dio zaten uygulama genelinde tek bir örnek olmalı.
+@Riverpod(keepAlive: true)
 Dio dio(Ref ref) {
   final dio = Dio(
     BaseOptions(

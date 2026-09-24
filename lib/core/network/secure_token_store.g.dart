@@ -21,7 +21,7 @@ final class TokenStoreProvider
         argument: null,
         retry: null,
         name: r'tokenStoreProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -48,4 +48,4 @@ final class TokenStoreProvider
   }
 }
 
-String _$tokenStoreHash() => r'35a487df7559c5ed3a4ed3f57589e0596ca05a2e';
+String _$tokenStoreHash() => r'0ae5e139c47c73ad76f2c49c8bf5b83f8136e7fe';

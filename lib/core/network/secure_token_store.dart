@@ -40,5 +40,6 @@ class SecureTokenStore implements TokenStore {
   }
 }
 
-@riverpod
+// keepAlive: keepAlive olan dioProvider bunu watch ediyor.
+@Riverpod(keepAlive: true)
 TokenStore tokenStore(Ref ref) => SecureTokenStore(const FlutterSecureStorage());
