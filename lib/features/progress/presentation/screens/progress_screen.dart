@@ -9,13 +9,13 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/account_frozen_state.dart';
 import '../../../../core/widgets/app_header_bar.dart';
 import '../../../../core/widgets/circular_stat_gauge.dart';
-import '../../../../core/widgets/empty_membership_state.dart';
 import '../../../../core/widgets/media_player_screen.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/domain/auth_exceptions.dart';
 import '../../../auth/presentation/providers/current_user_provider.dart';
 import '../../../membership/domain/membership_summary.dart';
 import '../../../membership/presentation/widgets/membership_switcher.dart';
+import '../../../personal_tracking/presentation/widgets/personal_tracking_section.dart';
 import '../../domain/progress_summary.dart';
 import '../providers/progress_summary_provider.dart';
 
@@ -55,23 +55,63 @@ class ProgressScreen extends ConsumerWidget {
         onRetry: () => ref.invalidate(membershipsProvider),
       ),
       data: (memberships) {
-        if (memberships.isEmpty) {
-          return const EmptyMembershipState();
+        // Kişisel Takibim herkese açık (ana senaryo §5.1); antrenör gelişim
+        // notları sadece geçerli paketi olan üyede anlamlı. Paketsiz ya da
+        // paketi geçersiz üye boş durum yerine doğrudan kendi takibini görür.
+        if (membershipAvailability(memberships).state != MembershipAvailabilityState.valid) {
+          return const PersonalTrackingSection();
         }
 
-        final selectedId = ref.watch(selectedMembershipIdProvider) ?? memberships.first.id;
-        final selected = memberships.firstWhere((m) => m.id == selectedId, orElse: () => memberships.first);
-
-        final summaryAsync = ref.watch(progressSummaryProvider);
-        return summaryAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-          error: (error, stackTrace) => _ErrorRetry(
-            message: error is ApiException ? error.localizedMessage(context) : l10n.commonError,
-            onRetry: () => ref.invalidate(progressSummaryProvider),
+        return DefaultTabController(
+          length: 2,
+          child: Column(
+            children: [
+              TabBar(
+                labelColor: AppColors.onBackground,
+                unselectedLabelColor: AppColors.onBackgroundMuted,
+                indicatorColor: AppColors.primary,
+                dividerColor: AppColors.border,
+                tabs: [
+                  Tab(text: l10n.progressTrainerSectionTitle),
+                  Tab(text: l10n.personalTrackingTitle),
+                ],
+              ),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    _TrainerSection(memberships: memberships, l10n: l10n),
+                    const PersonalTrackingSection(),
+                  ],
+                ),
+              ),
+            ],
           ),
-          data: (summary) => _ProgressContent(l10n: l10n, memberships: memberships, selectedId: selected.id, summary: summary),
         );
       },
+    );
+  }
+}
+
+/// "Antrenörümden": antrenörün girdiği gelişim notları ve devam özeti.
+class _TrainerSection extends ConsumerWidget {
+  const _TrainerSection({required this.memberships, required this.l10n});
+
+  final List<MembershipSummary> memberships;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedId = ref.watch(selectedMembershipIdProvider) ?? memberships.first.id;
+    final selected = memberships.firstWhere((m) => m.id == selectedId, orElse: () => memberships.first);
+
+    final summaryAsync = ref.watch(progressSummaryProvider);
+    return summaryAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      error: (error, stackTrace) => _ErrorRetry(
+        message: error is ApiException ? error.localizedMessage(context) : l10n.commonError,
+        onRetry: () => ref.invalidate(progressSummaryProvider),
+      ),
+      data: (summary) => _ProgressContent(l10n: l10n, memberships: memberships, selectedId: selected.id, summary: summary),
     );
   }
 }
