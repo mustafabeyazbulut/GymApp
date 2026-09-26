@@ -176,7 +176,7 @@ void main() {
         'preferredLanguage': 'tr',
         'isAccountFrozen': false,
         'assignments': [
-          {'companyId': 3, 'companyName': 'MAT & MOVE Kadıköy', 'branchId': null, 'role': 'Member'},
+          {'companyId': 3, 'companyName': 'MAT & MOVE Kadıköy', 'branchId': 7, 'role': 'Trainer'},
         ],
         'packageAssignments': [],
       }),
@@ -184,8 +184,9 @@ void main() {
 
     final result = await repository.getMe();
 
-    expect(result.hasActiveMembership, isTrue);
     expect(result.assignments.single.companyName, 'MAT & MOVE Kadıköy');
+    expect(result.assignments.single.branchId, 7);
+    expect(result.assignments.single.role, 'Trainer');
   });
 
   test('getMe parses the packageAssignments list', () async {

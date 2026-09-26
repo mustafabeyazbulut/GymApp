@@ -20,10 +20,8 @@ void main() {
     expect(me.isSuperAdmin, isTrue);
   });
 
-  test('isSuperAdmin is false for a plain Member', () {
-    final me = _withAssignments([
-      const MeAssignment(companyId: 1, companyName: 'Co', branchId: 2, role: 'Member'),
-    ]);
+  test('isSuperAdmin is false for a user without any assignment', () {
+    final me = _withAssignments(const []);
     expect(me.isSuperAdmin, isFalse);
   });
 
@@ -34,10 +32,8 @@ void main() {
     expect(me.isTrainer, isTrue);
   });
 
-  test('isTrainer is false for a plain Member', () {
-    final me = _withAssignments([
-      const MeAssignment(companyId: 1, companyName: 'Co', branchId: 2, role: 'Member'),
-    ]);
+  test('isTrainer is false for a user without any assignment', () {
+    final me = _withAssignments(const []);
     expect(me.isTrainer, isFalse);
   });
 
@@ -53,9 +49,8 @@ void main() {
     expect(me.staffAssignment, same(branchManager));
   });
 
-  test('staffAssignment is null for a plain Member or Trainer', () {
+  test('staffAssignment is null for a Trainer-only user', () {
     final me = _withAssignments([
-      const MeAssignment(companyId: 1, companyName: 'Co', branchId: 2, role: 'Member'),
       const MeAssignment(companyId: 1, companyName: 'Co', branchId: 2, role: 'Trainer'),
     ]);
     expect(me.staffAssignment, isNull);
@@ -66,7 +61,7 @@ void main() {
     final branchManagerB = const MeAssignment(companyId: 2, companyName: 'B', branchId: 9, role: 'BranchManager');
     final me = _withAssignments([
       gymAdminA,
-      const MeAssignment(companyId: 1, companyName: 'A', branchId: null, role: 'Member'),
+      const MeAssignment(companyId: 1, companyName: 'A', branchId: 3, role: 'Trainer'),
       branchManagerB,
     ]);
     expect(me.staffAssignments, [gymAdminA, branchManagerB]);
@@ -88,17 +83,17 @@ void main() {
     expect(me.staffAssignmentFor(null), same(companyA));
   });
 
-  test('staffAssignmentFor falls back to the first staff assignment when companyId matches none', () {
+  // Eşleşmeyen bir aktif firma, ilk atamaya DÜŞMEMELİ - aksi halde kullanıcı
+  // farkında olmadan yanlış gym bağlamında işlem yapabilir.
+  test('staffAssignmentFor returns null when companyId matches none', () {
     final companyA = const MeAssignment(companyId: 1, companyName: 'A', branchId: null, role: 'GymAdmin');
     final me = _withAssignments([companyA]);
 
-    expect(me.staffAssignmentFor(999), same(companyA));
+    expect(me.staffAssignmentFor(999), isNull);
   });
 
-  test('staffAssignments is empty for a plain Member', () {
-    final me = _withAssignments([
-      const MeAssignment(companyId: 1, companyName: 'Co', branchId: 2, role: 'Member'),
-    ]);
+  test('staffAssignments is empty for a user without any assignment', () {
+    final me = _withAssignments(const []);
     expect(me.staffAssignments, isEmpty);
   });
 

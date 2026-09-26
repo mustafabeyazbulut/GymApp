@@ -124,13 +124,8 @@ class MeResult {
   final List<MeAssignment> assignments;
   final List<MePackageAssignment> packageAssignments;
 
-  // Sadece bir 'Member' ataması gerçek bir üyelik/paket anlamına gelir - bir
-  // SuperAdmin/GymAdmin/BranchManager/Trainer ataması bunu ifade etmez, bu yüzden
-  // bu roller sadece assignments.isNotEmpty diye üye tarafına özel Home/Classes/
-  // Progress/Membership mock içeriğine düşmemelidir (bu düzeltilen bir hataydı:
-  // gerçek bir üyeliği olmayan saf bir SuperAdmin dahil her giriş yapan kullanıcı
-  // aynı sahte "Merhaba, Elnara" Home ekranına iniyordu).
-  bool get hasActiveMembership => assignments.any((a) => a.role == 'Member');
+  // Gym üyeliği Assignment ile değil, sadece [packageAssignments] ile ifade
+  // edilir (ana senaryo §3.2) - Assignment yalnızca personel yetkileri içindir.
 
   bool get isSuperAdmin => assignments.any((a) => a.role == 'SuperAdmin');
 
@@ -164,14 +159,15 @@ class MeResult {
   // core/providers/active_staff_company_provider.dart) çağıranın gerçekten
   // sahip olduğu bir şirketle eşleştiği sürece onurlandırıyor, bu yüzden bir
   // ekranın hangi şirket için işlem yaptığını göstermesi de aynı seçimi
-  // yansıtmalı. companyId null'sa veya eşleşme bulunamazsa [staffAssignment]
-  // (ilk eşleşme) davranışına geri döner - backend'in kendi fallback'iyle
-  // aynı.
+  // yansıtmalı. companyId null'sa (henüz seçim yapılmadı) [staffAssignment]
+  // (ilk eşleşme) döner. Eşleşme bulunamazsa ise null döner - ilk atamaya
+  // düşmek, kullanıcının farkında olmadan yanlış gym bağlamında işlem
+  // yapmasına yol açabilir.
   MeAssignment? staffAssignmentFor(int? companyId) {
     if (companyId == null) return staffAssignment;
     for (final assignment in staffAssignments) {
       if (assignment.companyId == companyId) return assignment;
     }
-    return staffAssignment;
+    return null;
   }
 }

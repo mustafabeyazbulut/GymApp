@@ -3,9 +3,10 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../../l10n/generated/app_localizations.dart';
 
-/// Giriş yapmış kullanıcının aktif Assignment'ı yoksa 4 içerik ekranının
-/// her birinde normal (mock) içerik yerine gösterilir — bir hata değil,
-/// bilgilendirici bir durumdur.
+/// Giriş yapmış kullanıcının hiçbir gym'de geçerli paketi (PackageAssignment)
+/// yoksa Home/Classes/Progress/Membership ekranlarında paket içeriği yerine
+/// gösterilir — gym üyeliği sadece paketle oluşur (ana senaryo §3.2) ve hiçbir
+/// gym'e bağlı olmamak bir hata değil, bilgilendirici bir durumdur.
 class EmptyMembershipState extends StatelessWidget {
   const EmptyMembershipState({super.key});
 
