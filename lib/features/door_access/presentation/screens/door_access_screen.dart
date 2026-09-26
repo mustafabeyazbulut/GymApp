@@ -180,6 +180,7 @@ class _ZonesList extends ConsumerWidget {
               type: MaterialType.transparency,
               child: Container(
                 decoration: BoxDecoration(
+                  color: AppColors.surface,
                   border: Border.all(color: AppColors.border),
                   borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                 ),

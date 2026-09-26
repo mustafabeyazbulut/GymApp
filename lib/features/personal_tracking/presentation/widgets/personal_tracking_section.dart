@@ -244,8 +244,9 @@ class _Card extends StatelessWidget {
 
   final Widget child;
 
+  // Ink: kayıt kartı InkWell içinde - dolgulu kartta dokunma efekti görünsün.
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => Ink(
         decoration: BoxDecoration(
           color: AppColors.surface,
           border: Border.all(color: AppColors.border),

@@ -84,8 +84,10 @@ class _NotificationCard extends ConsumerWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         onTap: item.isRead ? null : () => ref.read(notificationActionsProvider.notifier).markRead(item.id),
-        child: Container(
+        // Ink: dolgulu kartta InkWell dokunma efekti görünür kalsın.
+        child: Ink(
           decoration: BoxDecoration(
+            color: AppColors.surface,
             border: Border.all(color: AppColors.border),
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           ),

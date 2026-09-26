@@ -159,7 +159,8 @@ class _CompanyTile extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         onTap: onTap,
-        child: Container(
+        // Ink: dolgulu kartta InkWell dokunma efekti görünür kalsın.
+        child: Ink(
           decoration: BoxDecoration(
             color: AppColors.surface,
             border: Border.all(color: AppColors.border),

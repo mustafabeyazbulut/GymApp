@@ -156,6 +156,7 @@ class _ProgressContent extends ConsumerWidget {
         ),
         Container(
           decoration: BoxDecoration(
+            color: AppColors.surface,
             border: Border.all(color: AppColors.border),
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           ),
@@ -184,6 +185,7 @@ class _ProgressContent extends ConsumerWidget {
         const SizedBox(height: AppSpacing.md),
         Container(
           decoration: BoxDecoration(
+            color: AppColors.surface,
             border: Border.all(color: AppColors.border),
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           ),
