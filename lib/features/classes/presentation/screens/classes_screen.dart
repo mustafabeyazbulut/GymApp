@@ -7,7 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/account_frozen_state.dart';
 import '../../../../core/widgets/app_header_bar.dart';
-import '../../../../core/widgets/empty_membership_state.dart';
+import '../../../../core/widgets/package_status_empty_state.dart';
 import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/domain/auth_exceptions.dart';
@@ -73,14 +73,17 @@ class ClassesScreen extends ConsumerWidget {
         onRetry: () => ref.invalidate(membershipsProvider),
       ),
       data: (memberships) {
-        if (memberships.isEmpty) {
-          return const EmptyMembershipState();
+        final selectedId = ref.watch(selectedMembershipIdProvider) ?? memberships.firstOrNull?.id;
+        // Backend geçerli paketi olmayan üyeye ders listesini boş döndüğü için
+        // "ders yok" yerine asıl neden gösterilir (paketi yok / geçersiz).
+        final availability = membershipAvailability(memberships, selectedId: selectedId);
+        if (availability.state != MembershipAvailabilityState.valid) {
+          return PackageStatusEmptyState(availability: availability);
         }
 
-        final selectedId = ref.watch(selectedMembershipIdProvider) ?? memberships.first.id;
         final selected = memberships.firstWhere((m) => m.id == selectedId, orElse: () => memberships.first);
-        final isEligibleForBooking =
-            selected.status == MembershipStatus.active && (selected.remainingSessions ?? 0) > 0;
+        // PT randevusu seans hakkı gerektirir (süre bazlı pakette randevu yok).
+        final isEligibleForBooking = selected.isValid && (selected.remainingSessions ?? 0) > 0;
 
         final trainersAsync = ref.watch(classTrainersProvider(selected.id));
         final reservationsAsync = ref.watch(classReservationsProvider);
@@ -234,13 +237,7 @@ class _GroupClassSchedule extends ConsumerWidget {
       List<MembershipSummary> memberships, ClassSessionCategory category) {
     final apiCategory = classSessionCategoryToApi(category);
     for (final membership in memberships) {
-      if (membership.category != apiCategory) continue;
-      if (membership.status != MembershipStatus.active) continue;
-      if (membership.sessionCount != null) {
-        if ((membership.remainingSessions ?? 0) > 0) return membership;
-      } else if (membership.endDate == null || membership.endDate!.isAfter(DateTime.now())) {
-        return membership;
-      }
+      if (membership.category == apiCategory && membership.isValid) return membership;
     }
     return null;
   }
