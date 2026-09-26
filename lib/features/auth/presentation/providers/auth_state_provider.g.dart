@@ -44,7 +44,7 @@ final class AuthStateProvider extends $AsyncNotifierProvider<AuthState, bool> {
   AuthState create() => AuthState();
 }
 
-String _$authStateHash() => r'34801fd0079fe4e195b4e7f436eefe6b2561ba8e';
+String _$authStateHash() => r'a8431acd998878e4e248b1f9f3ca19a3af9c86f7';
 
 /// Uygulamanın tab shell'i mi (true) yoksa `/login`'i mi (false) göstereceği.
 /// Başlangıçta bu, her zaman false'a sıfırlamak yerine saklanmış bir access
