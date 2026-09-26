@@ -334,6 +334,12 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       label: l10n.drawerCompanyManagement,
                       onTap: () => closeThenPush('/admin/companies'),
                     ),
+                  if (permissions.canManageCompanies)
+                    _DrawerItem(
+                      icon: Icons.insights_outlined,
+                      label: l10n.drawerPlatformReports,
+                      onTap: () => closeThenPush('/admin/platform-reports'),
+                    ),
                   // Sistem Sahibi görevinde yüklenen içerik platformun genel
                   // içeriği olur (gym personeli kendi içeriğini İçerik
                   // Kütüphanesi'nden yükler).

@@ -24,6 +24,7 @@ import '../../features/tenant_onboarding/presentation/screens/staff_management_s
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/invitations/presentation/screens/confirm_invitation_screen.dart';
 import '../../features/invitations/presentation/screens/invitations_screen.dart';
+import '../../features/platform_reports/presentation/screens/platform_reports_screen.dart';
 import '../../features/membership/presentation/screens/membership_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/package_management/presentation/screens/assign_package_screen.dart';
@@ -99,6 +100,10 @@ GoRouter appRouter(Ref ref) {
           (p) => p.canManageCompanies,
           CompanyDetailScreen(companyId: int.parse(state.pathParameters['id']!)),
         ),
+      ),
+      GoRoute(
+        path: '/admin/platform-reports',
+        builder: (context, state) => _guard((p) => p.canManageCompanies, const PlatformReportsScreen()),
       ),
       GoRoute(
         path: '/admin/create-company',

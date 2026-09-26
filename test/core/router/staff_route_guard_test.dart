@@ -13,6 +13,7 @@ import 'package:gym_app/features/door_access/presentation/screens/door_access_sc
 import 'package:gym_app/features/invitations/data/real_invitation_repository.dart';
 import 'package:gym_app/features/invitations/domain/invitation_repository.dart';
 import 'package:gym_app/features/notifications/presentation/providers/notifications_provider.dart';
+import 'package:gym_app/features/platform_reports/presentation/screens/platform_reports_screen.dart';
 import 'package:gym_app/features/trainer_schedule/presentation/screens/trainer_schedule_screen.dart';
 import 'package:gym_app/l10n/generated/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
@@ -89,6 +90,18 @@ void main() {
     );
 
     expect(find.byType(DoorAccessScreen), findsNothing);
+    expect(find.text(_l10n.staffAccessDeniedTitle), findsOneWidget);
+  });
+
+  testWidgets('Sistem Sahibi olmayan kullanıcı /admin/platform-reports rotasında yetkisiz durumu görür',
+      (tester) async {
+    await _pumpAppAndPush(
+      tester,
+      const [MeAssignment(id: 1, companyId: 1, companyName: 'A', branchId: null, role: 'GymAdmin')],
+      '/admin/platform-reports',
+    );
+
+    expect(find.byType(PlatformReportsScreen), findsNothing);
     expect(find.text(_l10n.staffAccessDeniedTitle), findsOneWidget);
   });
 

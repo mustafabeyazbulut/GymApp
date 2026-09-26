@@ -179,10 +179,19 @@ void main() {
     _expectNoGymOperations();
   });
 
-  testWidgets('Genel İçerik Yükle sadece Sistem Sahibi görevinde görünür', (tester) async {
+  testWidgets('Genel İçerik Yükle ve Platform Raporları sadece Sistem Sahibi görevinde görünür', (tester) async {
     await _pumpOpenDrawer(tester, assignments: [_gymAdminA]);
 
     expect(find.text(_l10n.drawerUploadPlatformContent), findsNothing);
+    expect(find.text(_l10n.drawerPlatformReports), findsNothing);
+  });
+
+  testWidgets('Sistem Sahibi Platform Raporları\'nı Firma Yönetimi\'nin altında görür', (tester) async {
+    await _pumpOpenDrawer(tester, assignments: [_superAdmin]);
+
+    final companyY = tester.getTopLeft(find.text(_l10n.drawerCompanyManagement)).dy;
+    final reportsY = tester.getTopLeft(find.text(_l10n.drawerPlatformReports)).dy;
+    expect(reportsY, greaterThan(companyY));
   });
 
   testWidgets('rolsüz üye hiçbir personel menüsünü görmez ama herkese açık girişleri görür', (tester) async {

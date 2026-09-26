@@ -234,6 +234,41 @@
   "membershipPaymentHistoryLabel": "Payment History",
   "contentLibraryUploadPlatformInfo": "This will be published as general content and visible to all members.",
   "drawerUploadPlatformContent": "Upload General Content",
+  "platformReportsTitle": "Platform Reports",
+  "platformReportsPeriod7": "7 days",
+  "platformReportsPeriod30": "30 days",
+  "platformReportsPeriod90": "90 days",
+  "platformReportsPeriod365": "1 year",
+  "platformReportsTotalUsers": "Total users",
+  "platformReportsNewUsers": "+{count} new",
+  "@platformReportsNewUsers": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "platformReportsCompanies": "Companies",
+  "platformReportsActiveOfTotal": "active / total",
+  "platformReportsBranches": "Branches",
+  "platformReportsActiveMembers": "Active members",
+  "platformReportsTrainers": "Trainers",
+  "platformReportsStaff": "Staff",
+  "platformReportsPackageSales": "Package sales",
+  "platformReportsRevenue": "Revenue",
+  "platformReportsUserGrowth": "User growth",
+  "platformReportsUserGrowthEmpty": "No new users in this period.",
+  "platformReportsCompanyList": "Companies",
+  "platformReportsNoCompanies": "No companies yet.",
+  "platformReportsNoBranches": "This company has no branches.",
+  "platformReportsMetricsLine": "Active members {members} · Trainers {trainers} · Staff {staff} · Sales {sales}",
+  "@platformReportsMetricsLine": {
+    "placeholders": {
+      "members": {"type": "int"},
+      "trainers": {"type": "int"},
+      "staff": {"type": "int"},
+      "sales": {"type": "int"}
+    }
+  },
+  "drawerPlatformReports": "Platform Reports",
   "homeShortcutPersonalTrackingBody": "Log your own workouts and measurements.",
   "homeShortcutGeneralContentTitle": "General Content",
   "homeShortcutGeneralContentBody": "Workout videos and content open to everyone.",
