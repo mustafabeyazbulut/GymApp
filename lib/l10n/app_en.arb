@@ -232,6 +232,8 @@
   "membershipActiveStatus": "Active",
   "membershipFrozenStatus": "Frozen",
   "membershipPaymentHistoryLabel": "Payment History",
+  "contentLibraryUploadPlatformInfo": "This will be published as general content and visible to all members.",
+  "drawerUploadPlatformContent": "Upload General Content",
   "contentLibraryTabPlatform": "General",
   "contentLibraryTabGym": "My Gym",
   "contentLibraryPlatformEmptyMessage": "No general content yet.",

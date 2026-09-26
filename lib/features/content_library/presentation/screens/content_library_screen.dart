@@ -35,7 +35,7 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
     // Yükleme/yayından kaldırma aktif görevdeki personel rolüne bağlı - menüyle
     // aynı yetki matrisi (bkz. StaffPermissions).
     final permissions = ref.watch(staffPermissionsProvider);
-    final canUpload = permissions.canUploadContent;
+    final canUpload = permissions.canUploadContent || permissions.canUploadPlatformContent;
     final itemsAsync = ref.watch(contentItemsProvider);
 
     return Scaffold(
@@ -105,9 +105,11 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
                       separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
                       itemBuilder: (context, index) => _ContentItemTile(
                         item: items[index],
-                        // Gym içeriğini personel, platform içeriğini (bir
-                        // sonraki adımda) Sistem Sahibi yönetir.
-                        canManage: canUpload && !items[index].isPlatform,
+                        // Gym içeriğini personel, platform içeriğini Sistem
+                        // Sahibi yönetir.
+                        canManage: items[index].isPlatform
+                            ? permissions.canUploadPlatformContent
+                            : permissions.canUploadContent,
                         l10n: l10n,
                       ),
                     ),

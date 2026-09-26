@@ -152,7 +152,14 @@ class _UploadContentItemScreenState extends ConsumerState<UploadContentItemScree
                   onChanged: (value) => setState(() => _requiredAccessTier = value!),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                if (!isGymAdmin)
+                // Sistem Sahibi görevinde yüklenen içerik platformun genel
+                // içeriği olur - firma/şube seçimi yok.
+                if (permissions.canUploadPlatformContent)
+                  Text(
+                    l10n.contentLibraryUploadPlatformInfo,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundFaint),
+                  )
+                else if (!isGymAdmin)
                   TextFormField(
                     enabled: false,
                     initialValue: permissions.activeAssignment?.branchName ?? l10n.addStaffMemberBranchLabel,

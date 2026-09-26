@@ -152,6 +152,18 @@ void main() {
     expect(member.canSeeBranch(9), isFalse);
   });
 
+  // Platform (genel) içeriğini sadece Sistem Sahibi yükler; gym personeli
+  // kendi gym içeriğini yükler.
+  test('platform içeriği yükleme sadece Sistem Sahibi görevinde açık', () {
+    final me = _withAssignments([_superAdmin, _gymAdminA]);
+
+    expect(StaffPermissions.of(me, _superAdmin.id).canUploadPlatformContent, isTrue);
+    expect(StaffPermissions.of(me, _superAdmin.id).canUploadContent, isFalse);
+    expect(StaffPermissions.of(me, _gymAdminA.id).canUploadPlatformContent, isFalse);
+    expect(StaffPermissions.of(me, _gymAdminA.id).canUploadContent, isTrue);
+    expect(StaffPermissions.of(_withAssignments(const []), null).canUploadPlatformContent, isFalse);
+  });
+
   test('sabit şube: BranchManager kendi şubesi, GymAdmin için yok', () {
     expect(StaffPermissions.of(_withAssignments([_branchManagerB]), null).fixedBranchId, 9);
     expect(StaffPermissions.of(_withAssignments([_gymAdminA]), null).fixedBranchId, isNull);

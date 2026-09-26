@@ -331,6 +331,15 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       label: l10n.drawerCompanyManagement,
                       onTap: () => closeThenPush('/admin/companies'),
                     ),
+                  // Sistem Sahibi görevinde yüklenen içerik platformun genel
+                  // içeriği olur (gym personeli kendi içeriğini İçerik
+                  // Kütüphanesi'nden yükler).
+                  if (permissions.canUploadPlatformContent)
+                    _DrawerItem(
+                      icon: Icons.upload_outlined,
+                      label: l10n.drawerUploadPlatformContent,
+                      onTap: () => closeThenPush('/content-library/upload'),
+                    ),
                   if (hasMultipleTasks)
                     _DrawerItem(
                       icon: Icons.badge_outlined,

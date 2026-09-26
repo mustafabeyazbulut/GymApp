@@ -173,8 +173,15 @@ void main() {
     await _pumpOpenDrawer(tester, assignments: [_superAdmin]);
 
     expect(find.text(_l10n.drawerCompanyManagement), findsOneWidget);
+    expect(find.text(_l10n.drawerUploadPlatformContent), findsOneWidget);
     expect(find.text(_l10n.drawerActiveTaskLabel), findsNothing);
     _expectNoGymOperations();
+  });
+
+  testWidgets('Genel İçerik Yükle sadece Sistem Sahibi görevinde görünür', (tester) async {
+    await _pumpOpenDrawer(tester, assignments: [_gymAdminA]);
+
+    expect(find.text(_l10n.drawerUploadPlatformContent), findsNothing);
   });
 
   testWidgets('rolsüz üye hiçbir personel menüsünü görmez ama herkese açık girişleri görür', (tester) async {

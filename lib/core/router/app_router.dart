@@ -174,7 +174,7 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(
         path: '/content-library/upload',
-        builder: (context, state) => _guard((p) => p.canUploadContent, const UploadContentItemScreen()),
+        builder: (context, state) => _guard((p) => p.canUploadContent || p.canUploadPlatformContent, const UploadContentItemScreen()),
       ),
       GoRoute(
         path: '/staff/door-access',

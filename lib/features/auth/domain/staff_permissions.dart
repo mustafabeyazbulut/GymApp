@@ -51,6 +51,9 @@ class StaffPermissions {
   bool get canManageDoorAccess => isGymAdmin;
   bool get canViewGymReports => hasManagementRole;
   bool get canUploadContent => hasManagementRole;
+  // Platformun herkese açık genel içeriği (ana senaryo §5.1) - sadece
+  // Sistem Sahibi görevinde; bu görevde yüklenen içerik platform içeriği olur.
+  bool get canUploadPlatformContent => isSuperAdmin;
 
   bool get canViewTrainerSchedule => isTrainer;
 
