@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_app/core/providers/active_staff_assignment_provider.dart';
 import 'package:gym_app/core/widgets/app_drawer.dart';
 import 'package:gym_app/features/auth/data/real_auth_repository.dart';
+import 'package:gym_app/features/auth/domain/auth_exceptions.dart';
 import 'package:gym_app/features/auth/domain/auth_repository.dart';
 import 'package:gym_app/features/auth/domain/me_result.dart';
 import 'package:gym_app/features/invitations/data/real_invitation_repository.dart';
@@ -193,6 +194,23 @@ void main() {
     expect(find.text(_l10n.drawerInvitations), findsOneWidget);
     expect(find.text(_l10n.drawerConfirmInvitation), findsNothing);
     expect(find.text(_l10n.drawerContentLibrary), findsOneWidget);
+  });
+
+  // Backend aynı anda iki güncellemeyi 409 ConcurrentUpdate ile reddedebilir.
+  testWidgets('dil güncellemesi 409 alırsa kullanıcı yenilenir ve backend mesajı gösterilir', (tester) async {
+    final container = await _pumpOpenDrawer(tester, assignments: const []);
+    final repository = container.read(authRepositoryProvider) as _MockAuthRepository;
+    when(() => repository.updatePreferredLanguage(any()))
+        .thenThrow(const ConflictAuthException('Ayarların başka bir oturumda değişti.'));
+    clearInteractions(repository);
+
+    await tester.tap(find.text(_l10n.settingsLanguageLabel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('English'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ayarların başka bir oturumda değişti.'), findsOneWidget);
+    verify(() => repository.getMe()).called(1);
   });
 
   group('Davetlerim', () {

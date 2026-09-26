@@ -72,6 +72,9 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.profileEditSuccessMessage)));
     } on AuthException catch (exception) {
+      // 409 ConcurrentUpdate: profil başka bir oturumda değişti - güncel
+      // veriyi çek, backend'in mesajını göster.
+      if (exception is ConflictAuthException) ref.invalidate(currentUserProvider);
       if (!mounted) return;
       setState(() => _errorText = exception.localizedMessage(context));
     } finally {

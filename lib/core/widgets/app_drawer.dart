@@ -92,6 +92,9 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
       await ref.read(authRepositoryProvider).updatePreferredLanguage(selected);
     } on AuthException catch (exception) {
       if (!mounted) return;
+      // 409 ConcurrentUpdate: hesap başka bir oturumda değişti - güncel
+      // veriyi çek, backend'in mesajını göster.
+      if (exception is ConflictAuthException) ref.invalidate(currentUserProvider);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(exception.localizedMessage(context))));
     } finally {
       if (mounted) setState(() => _isChangingLanguage = false);
