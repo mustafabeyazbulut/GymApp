@@ -602,6 +602,8 @@
   "@createPackageMaxFreezeDaysHint": {},
   "createPackageAllBranchesOption": "Tüm şubeler",
   "@createPackageAllBranchesOption": {},
+  "createPackageBranchRequired": "Paketin ait olacağı şubeyi seçin.",
+  "@createPackageBranchRequired": {},
   "createPackageSubmitButton": "Paketi Oluştur",
   "@createPackageSubmitButton": {},
   "createPackageSuccessMessage": "Paket oluşturuldu.",

@@ -29,7 +29,7 @@ class RealPackageRepository implements PackageRepository {
   @override
   Future<void> createPackage({
     required int companyId,
-    int? branchId,
+    required int branchId,
     required String name,
     String? description,
     required String type,

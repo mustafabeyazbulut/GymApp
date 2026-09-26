@@ -1,7 +1,7 @@
 import 'package_assignment_summary.dart';
 import 'package_summary.dart';
 
-// Personelin (GymAdmin/BranchManager, bkz. MeResult.staffAssignment) paket
+// Personelin (aktif görevi GymAdmin/BranchManager, bkz. StaffPermissions) paket
 // şablonları tanımlaması, bir paketi bir üyeye atayıp (davet-onay akışına
 // girer, bkz. ConfirmInvitationScreen) ödeme kaydetmesi için.
 abstract interface class PackageRepository {
@@ -9,7 +9,8 @@ abstract interface class PackageRepository {
 
   Future<void> createPackage({
     required int companyId,
-    int? branchId,
+    // Her paket bir şubeye aittir; firma geneli paket yoktur (ana senaryo Karar 5).
+    required int branchId,
     required String name,
     String? description,
     required String type,

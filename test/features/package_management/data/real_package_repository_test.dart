@@ -44,7 +44,7 @@ void main() {
       expect(options.path, '/api/packages');
       expect(options.data, {
         'companyId': 3,
-        'branchId': null,
+        'branchId': 7,
         'name': 'Aylık Üyelik',
         'description': null,
         'type': 'Duration',
@@ -59,6 +59,7 @@ void main() {
 
     await repository.createPackage(
       companyId: 3,
+      branchId: 7,
       name: 'Aylık Üyelik',
       type: 'Duration',
       durationDays: 30,

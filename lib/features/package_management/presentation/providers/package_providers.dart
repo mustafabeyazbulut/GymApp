@@ -23,14 +23,19 @@ Future<List<PackageAssignmentSummary>> packageAssignments(Ref ref, {String? memb
 // Kendi state'i yok, sadece mutasyonları sunuyor - her biri başarı sonrası
 // ilgili liste provider'larını invalidate ederek ekranların taze veriyle
 // otomatik yenilenmesini sağlıyor.
-@riverpod
+//
+// keepAlive: ekranlar bunu sadece ref.read(...notifier) ile çağırıyor; kimse
+// dinlemediği için autoDispose iken istek sürerken dispose oluyor ve sonraki
+// ref.invalidate "dispose edilmiş Ref" hatası fırlatıyordu - paket kaydı
+// oluşsa da ekran kapanmıyor, başarı mesajı görünmüyordu.
+@Riverpod(keepAlive: true)
 class PackageActions extends _$PackageActions {
   @override
   void build() {}
 
   Future<void> createPackage({
     required int companyId,
-    int? branchId,
+    required int branchId,
     required String name,
     String? description,
     required String type,

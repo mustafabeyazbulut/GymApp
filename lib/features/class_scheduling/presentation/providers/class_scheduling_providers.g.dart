@@ -122,7 +122,7 @@ final class ClassSessionActionsProvider
         argument: null,
         retry: null,
         name: r'classSessionActionsProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -144,7 +144,7 @@ final class ClassSessionActionsProvider
 }
 
 String _$classSessionActionsHash() =>
-    r'6b1441de962968b4c654114e263c7c01bd9d365b';
+    r'9d27830843d7eb19e6a480a9ee35705b8cfa11fa';
 
 abstract class _$ClassSessionActions extends $Notifier<void> {
   void build();

@@ -288,6 +288,7 @@
   "createPackageMaxFreezeDaysLabel": "Maximum Freeze Duration (days, optional)",
   "createPackageMaxFreezeDaysHint": "Leave empty for unlimited freeze duration.",
   "createPackageAllBranchesOption": "All branches",
+  "createPackageBranchRequired": "Select the branch this package belongs to.",
   "createPackageSubmitButton": "Create Package",
   "createPackageSuccessMessage": "Package created.",
 

@@ -47,8 +47,8 @@ class MyClassEnrollments extends _$MyClassEnrollments {
 }
 
 // Kendi state'i yok, sadece staff'ın ders programı oluşturma mutasyonunu
-// sunuyor - PackageActions'ın aynı deseni.
-@riverpod
+// sunuyor - PackageActions'ın aynı deseni (keepAlive gerekçesi için oraya bakın).
+@Riverpod(keepAlive: true)
 class ClassSessionActions extends _$ClassSessionActions {
   @override
   void build() {}

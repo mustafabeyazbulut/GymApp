@@ -25,8 +25,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   final _priceController = TextEditingController();
   final _maxFreezeDaysController = TextEditingController();
   String _type = 'Duration';
-  // null = tüm şirket genelinde geçerli - sadece bir GymAdmin bunu seçebilir
-  // (bkz. AddStaffMemberScreen'in aynı sabit-şube/seçilebilir-şube ayrımı).
+  // Her paket bir şubeye aittir, firma geneli paket yoktur (ana senaryo
+  // Karar 5). BranchManager'da aktif görevin şubesine kilitli; GymAdmin
+  // şubelerinden birini seçmek zorunda.
   int? _selectedBranchId;
   bool _isSubmitting = false;
   bool _isLoadingBranches = false;
@@ -74,7 +75,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final companyId = ref.read(staffPermissionsProvider).activeAssignment?.companyId;
-    if (companyId == null) {
+    final branchId = _selectedBranchId;
+    if (companyId == null || branchId == null) {
       setState(() => _errorText = l10n.commonError);
       return;
     }
@@ -86,7 +88,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     try {
       await ref.read(packageActionsProvider.notifier).createPackage(
             companyId: companyId,
-            branchId: _selectedBranchId,
+            branchId: branchId,
             name: _nameController.text.trim(),
             description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
             type: _type,
@@ -196,14 +198,15 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                 else if (_isLoadingBranches)
                   const Center(child: CircularProgressIndicator(color: AppColors.primary))
                 else
-                  DropdownButtonFormField<int?>(
+                  // Varsayılan seçim yok: GymAdmin paketin hangi şubeye ait
+                  // olduğunu bilinçli olarak seçmeli.
+                  DropdownButtonFormField<int>(
                     initialValue: _selectedBranchId,
                     decoration: InputDecoration(labelText: l10n.addStaffMemberBranchLabel),
-                    items: [
-                      DropdownMenuItem(value: null, child: Text(l10n.createPackageAllBranchesOption)),
-                      ...(_branchOptions ?? const <BranchOption>[])
-                          .map((branch) => DropdownMenuItem(value: branch.id, child: Text(branch.name))),
-                    ],
+                    items: (_branchOptions ?? const <BranchOption>[])
+                        .map((branch) => DropdownMenuItem(value: branch.id, child: Text(branch.name)))
+                        .toList(),
+                    validator: (value) => value == null ? l10n.createPackageBranchRequired : null,
                     onChanged: (value) => setState(() => _selectedBranchId = value),
                   ),
                 if (_errorText != null) ...[

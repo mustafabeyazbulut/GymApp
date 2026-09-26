@@ -143,7 +143,7 @@ final class PackageActionsProvider
         argument: null,
         retry: null,
         name: r'packageActionsProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -164,7 +164,7 @@ final class PackageActionsProvider
   }
 }
 
-String _$packageActionsHash() => r'e290f245ec858a77205860340c13279a265ba077';
+String _$packageActionsHash() => r'03ac591c8408ffe3710064025c0568e55e4d22c3';
 
 abstract class _$PackageActions extends $Notifier<void> {
   void build();

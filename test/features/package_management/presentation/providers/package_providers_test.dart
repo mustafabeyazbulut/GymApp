@@ -16,7 +16,7 @@ void main() {
   final package = PackageSummary(
     id: 1,
     companyId: 3,
-    branchId: null,
+    branchId: 7,
     name: 'Aylık Üyelik',
     description: null,
     type: 'Duration',
@@ -89,6 +89,7 @@ void main() {
     await container.read(packagesProvider.future);
     await container.read(packageActionsProvider.notifier).createPackage(
           companyId: 3,
+          branchId: 7,
           name: 'Aylık Üyelik',
           type: 'Duration',
           durationDays: 30,
@@ -98,7 +99,7 @@ void main() {
 
     verify(() => repository.createPackage(
           companyId: 3,
-          branchId: null,
+          branchId: 7,
           name: 'Aylık Üyelik',
           description: null,
           type: 'Duration',
