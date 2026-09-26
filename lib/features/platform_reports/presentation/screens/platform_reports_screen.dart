@@ -212,7 +212,7 @@ class _UserGrowthChart extends StatelessWidget {
     final total = points.fold<int>(0, (sum, point) => sum + point.newUsers);
 
     return Semantics(
-      label: '${points.length} / $total',
+      label: AppLocalizations.of(context)!.platformReportsUserGrowthSemantics(total),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

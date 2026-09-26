@@ -100,6 +100,8 @@ void main() {
     expect(find.text('48'), findsOneWidget);
     expect(find.text('₺31.500,50'), findsOneWidget);
     expect(find.text(_l10n.platformReportsUserGrowth), findsOneWidget);
+    // Ekran okuyucu grafiği anlamlı, yerelleştirilmiş bir özetle okur (3 + 5).
+    expect(find.bySemanticsLabel(RegExp(RegExp.escape(_l10n.platformReportsUserGrowthSemantics(8)))), findsOneWidget);
   });
 
   testWidgets('İngilizcede gelir ₺31,500.50 biçiminde', (tester) async {

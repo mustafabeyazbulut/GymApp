@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import '../../../../core/format/money_format.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -10,7 +10,8 @@ import '../../../../l10n/generated/app_localizations.dart';
 import '../../domain/package_summary.dart';
 import '../providers/package_providers.dart';
 
-final _priceFormat = NumberFormat.currency(locale: 'tr_TR', symbol: '₺', decimalDigits: 0);
+// Tutarlar uygulamanın diline göre biçimlenir (tr: ₺1.234,50, en: ₺1,234.50).
+String _price(BuildContext context, num amount) => formatMoney(amount, 'TRY', Localizations.localeOf(context));
 
 /// GymAdmin/BranchManager'ın kendi şirketinin/şubesinin paket şablolarını
 /// (Süreli/Seans Bazlı, fiyat) tanımlayıp aktif/pasif yapabileceği ekran -
@@ -155,7 +156,7 @@ class _PackageTileState extends ConsumerState<_PackageTile> {
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundMuted),
                 ),
                 const SizedBox(height: AppSpacing.xs),
-                Text(_priceFormat.format(package.price), style: Theme.of(context).textTheme.titleSmall),
+                Text(_price(context, package.price), style: Theme.of(context).textTheme.titleSmall),
                 if (package.maxFreezeDays != null) ...[
                   const SizedBox(height: AppSpacing.xs),
                   Text(

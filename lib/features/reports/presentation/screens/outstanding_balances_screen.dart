@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import '../../../../core/format/money_format.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -8,7 +8,8 @@ import '../../../../l10n/generated/app_localizations.dart';
 import '../../domain/outstanding_balance.dart';
 import '../providers/reports_providers.dart';
 
-final _priceFormat = NumberFormat.currency(locale: 'tr_TR', symbol: '₺', decimalDigits: 0);
+// Tutarlar uygulamanın diline göre biçimlenir (tr: ₺1.234,50, en: ₺1,234.50).
+String _price(BuildContext context, num amount) => formatMoney(amount, 'TRY', Localizations.localeOf(context));
 
 class OutstandingBalancesScreen extends ConsumerWidget {
   const OutstandingBalancesScreen({super.key});
@@ -131,13 +132,13 @@ class _BalanceTile extends StatelessWidget {
               children: [
                 Text(
                   l10n.packageAssignmentsPaidOfPriceLabel(
-                    _priceFormat.format(balance.totalPaid),
-                    _priceFormat.format(balance.price),
+                    _price(context, balance.totalPaid),
+                    _price(context, balance.price),
                   ),
                   style: textTheme.bodyMedium,
                 ),
                 Text(
-                  l10n.packageAssignmentsRemainingBalanceLabel(_priceFormat.format(balance.remainingBalance)),
+                  l10n.packageAssignmentsRemainingBalanceLabel(_price(context, balance.remainingBalance)),
                   style: textTheme.bodyLarge?.copyWith(color: AppColors.primary),
                 ),
               ],

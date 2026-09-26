@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/format/money_format.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/providers/membership_context_provider.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -19,7 +20,8 @@ import '../widgets/account_info_card.dart';
 import '../widgets/membership_switcher.dart';
 
 final _dateFormat = DateFormat('dd.MM.yyyy');
-final _priceFormat = NumberFormat.currency(locale: 'tr_TR', symbol: '₺', decimalDigits: 0);
+// Tutarlar uygulamanın diline göre biçimlenir (tr: ₺1.234,50, en: ₺1,234.50).
+String _price(BuildContext context, num amount) => formatMoney(amount, 'TRY', Localizations.localeOf(context));
 
 class MembershipScreen extends ConsumerStatefulWidget {
   const MembershipScreen({super.key});
@@ -246,7 +248,7 @@ class _MembershipCard extends StatelessWidget {
               decoration: const BoxDecoration(
                 border: Border(top: BorderSide(color: AppColors.border)),
               ),
-              child: Text(_priceFormat.format(summary.price), style: Theme.of(context).textTheme.titleMedium),
+              child: Text(_price(context, summary.price), style: Theme.of(context).textTheme.titleMedium),
             ),
           ],
         ),
@@ -300,7 +302,7 @@ class _PaymentHistoryCard extends ConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(_dateFormat.format(entry.date), style: Theme.of(context).textTheme.bodyMedium),
-                            Text(_priceFormat.format(entry.amount), style: Theme.of(context).textTheme.bodyLarge),
+                            Text(_price(context, entry.amount), style: Theme.of(context).textTheme.bodyLarge),
                           ],
                         ),
                       ),

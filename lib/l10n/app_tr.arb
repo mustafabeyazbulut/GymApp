@@ -526,6 +526,12 @@
   "@platformReportsRevenue": {},
   "platformReportsUserGrowth": "Kullanıcı büyümesi",
   "@platformReportsUserGrowth": {},
+  "platformReportsUserGrowthSemantics": "Kullanıcı büyümesi grafiği: bu dönemde toplam {count} yeni kullanıcı",
+  "@platformReportsUserGrowthSemantics": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "platformReportsUserGrowthEmpty": "Bu dönemde yeni kullanıcı yok.",
   "@platformReportsUserGrowthEmpty": {},
   "platformReportsCompanyList": "Firmalar",

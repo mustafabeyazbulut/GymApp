@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/format/money_format.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -9,7 +10,8 @@ import '../../domain/revenue_report.dart';
 import '../providers/reports_providers.dart';
 
 final _dateFormat = DateFormat('dd.MM.yyyy');
-final _priceFormat = NumberFormat.currency(locale: 'tr_TR', symbol: '₺', decimalDigits: 0);
+// Tutarlar uygulamanın diline göre biçimlenir (tr: ₺1.234,50, en: ₺1,234.50).
+String _price(BuildContext context, num amount) => formatMoney(amount, 'TRY', Localizations.localeOf(context));
 
 class RevenueReportScreen extends ConsumerWidget {
   const RevenueReportScreen({super.key});
@@ -138,7 +140,7 @@ class _TotalCard extends StatelessWidget {
       icon: Icons.payments_outlined,
       label: l10n.reportsRevenueTotalLabel,
       children: [
-        Text(_priceFormat.format(report.totalAmount), style: Theme.of(context).textTheme.headlineMedium),
+        Text(_price(context, report.totalAmount), style: Theme.of(context).textTheme.headlineMedium),
       ],
     );
   }
@@ -168,7 +170,7 @@ class _MethodBreakdownCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(_methodLabel(l10n, entry.method), style: textTheme.bodyLarge),
-                Text(_priceFormat.format(entry.amount), style: textTheme.titleMedium),
+                Text(_price(context, entry.amount), style: textTheme.titleMedium),
               ],
             ),
             if (entry != report.methodBreakdown.last) const SizedBox(height: AppSpacing.sm),
@@ -202,7 +204,7 @@ class _DailyBreakdownCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(_dateFormat.format(entry.date), style: textTheme.bodyLarge),
-                Text(_priceFormat.format(entry.amount), style: textTheme.titleMedium),
+                Text(_price(context, entry.amount), style: textTheme.titleMedium),
               ],
             ),
             if (entry != report.dailyBreakdown.last) const SizedBox(height: AppSpacing.sm),

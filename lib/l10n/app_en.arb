@@ -255,6 +255,12 @@
   "platformReportsPackageSales": "Package sales",
   "platformReportsRevenue": "Revenue",
   "platformReportsUserGrowth": "User growth",
+  "platformReportsUserGrowthSemantics": "User growth chart: {count} new users in this period",
+  "@platformReportsUserGrowthSemantics": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "platformReportsUserGrowthEmpty": "No new users in this period.",
   "platformReportsCompanyList": "Companies",
   "platformReportsNoCompanies": "No companies yet.",

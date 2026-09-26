@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/format/money_format.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -13,7 +14,8 @@ import '../providers/package_providers.dart';
 import '../widgets/record_payment_sheet.dart';
 
 final _dateFormat = DateFormat('dd.MM.yyyy');
-final _priceFormat = NumberFormat.currency(locale: 'tr_TR', symbol: '₺', decimalDigits: 0);
+// Tutarlar uygulamanın diline göre biçimlenir (tr: ₺1.234,50, en: ₺1,234.50).
+String _price(BuildContext context, num amount) => formatMoney(amount, 'TRY', Localizations.localeOf(context));
 
 /// Personelin kendi şirketindeki paket atamalarını (isteğe bağlı üye
 /// telefonuna göre arayarak) görüp ödeme kaydedebileceği ekran - backend'in
@@ -313,14 +315,14 @@ class _AssignmentTile extends ConsumerWidget {
                     children: [
                       Text(
                         l10n.packageAssignmentsPaidOfPriceLabel(
-                          _priceFormat.format(assignment.totalPaid),
-                          _priceFormat.format(assignment.price),
+                          _price(context, assignment.totalPaid),
+                          _price(context, assignment.price),
                         ),
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       if (!assignment.isFullyPaid)
                         Text(
-                          l10n.packageAssignmentsRemainingBalanceLabel(_priceFormat.format(assignment.remainingBalance)),
+                          l10n.packageAssignmentsRemainingBalanceLabel(_price(context, assignment.remainingBalance)),
                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.primary),
                         ),
                     ],
