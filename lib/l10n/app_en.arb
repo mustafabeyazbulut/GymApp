@@ -232,6 +232,31 @@
   "membershipActiveStatus": "Active",
   "membershipFrozenStatus": "Frozen",
   "membershipPaymentHistoryLabel": "Payment History",
+  "invitationsTitle": "My Invitations",
+  "drawerInvitations": "My Invitations",
+  "invitationsEmptyMessage": "You have no pending invitations.",
+  "invitationsTypeGymAdmin": "Company admin invitation",
+  "invitationsTypeStaff": "Staff invitation",
+  "invitationsTypePackage": "Package invitation",
+  "invitationsInvitedBy": "Invited by: {name}",
+  "@invitationsInvitedBy": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "invitationsExpiresAt": "Valid until: {date}",
+  "@invitationsExpiresAt": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "invitationsAcceptButton": "Accept",
+  "invitationsRejectButton": "Reject",
+  "invitationsRejectConfirmTitle": "Reject invitation?",
+  "invitationsRejectConfirmBody": "A rejected invitation can't be undone. If you change your mind, you'll need to ask the gym to invite you again.",
+  "invitationsAcceptedMessage": "Invitation accepted.",
+  "invitationsRejectedMessage": "Invitation rejected.",
+  "invitationsConfirmWithCode": "Confirm with SMS code",
   "packageStatusNoPackageTitle": "You have no package",
   "packageStatusNoPackageBody": "A gym needs to assign you a package before you can see its classes and content.",
   "packageStatusInvalidTitle": "Your package isn't valid",

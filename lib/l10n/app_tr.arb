@@ -486,6 +486,44 @@
   "@membershipFrozenStatus": {},
   "membershipPaymentHistoryLabel": "Ödeme Geçmişi",
   "@membershipPaymentHistoryLabel": {},
+  "invitationsTitle": "Davetlerim",
+  "@invitationsTitle": {},
+  "drawerInvitations": "Davetlerim",
+  "@drawerInvitations": {},
+  "invitationsEmptyMessage": "Bekleyen davetin yok.",
+  "@invitationsEmptyMessage": {},
+  "invitationsTypeGymAdmin": "Firma yöneticisi daveti",
+  "@invitationsTypeGymAdmin": {},
+  "invitationsTypeStaff": "Personel daveti",
+  "@invitationsTypeStaff": {},
+  "invitationsTypePackage": "Paket daveti",
+  "@invitationsTypePackage": {},
+  "invitationsInvitedBy": "Davet eden: {name}",
+  "@invitationsInvitedBy": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "invitationsExpiresAt": "Son geçerlilik: {date}",
+  "@invitationsExpiresAt": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "invitationsAcceptButton": "Onayla",
+  "@invitationsAcceptButton": {},
+  "invitationsRejectButton": "Reddet",
+  "@invitationsRejectButton": {},
+  "invitationsRejectConfirmTitle": "Daveti reddet?",
+  "@invitationsRejectConfirmTitle": {},
+  "invitationsRejectConfirmBody": "Reddedilen davet geri alınamaz. Fikrin değişirse salondan yeniden davet istemen gerekir.",
+  "@invitationsRejectConfirmBody": {},
+  "invitationsAcceptedMessage": "Davet onaylandı.",
+  "@invitationsAcceptedMessage": {},
+  "invitationsRejectedMessage": "Davet reddedildi.",
+  "@invitationsRejectedMessage": {},
+  "invitationsConfirmWithCode": "SMS koduyla onayla",
+  "@invitationsConfirmWithCode": {},
   "packageStatusNoPackageTitle": "Paketin yok",
   "@packageStatusNoPackageTitle": {},
   "packageStatusNoPackageBody": "Dersleri ve salon içeriklerini görmek için bir salonun sana paket tanımlaması gerekiyor.",
