@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_app/core/network/token_store.dart';
 import 'package:gym_app/core/network/secure_token_store.dart';
+import 'package:gym_app/core/providers/active_staff_assignment_provider.dart';
 import 'package:gym_app/features/auth/data/real_auth_repository.dart';
 import 'package:gym_app/features/auth/domain/auth_repository.dart';
 import 'package:gym_app/features/auth/domain/me_result.dart';
@@ -12,6 +13,16 @@ import 'package:mocktail/mocktail.dart';
 class _MockTokenStore extends Mock implements TokenStore {}
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
+
+class _RecordingAssignmentStore implements ActiveAssignmentStore {
+  final writes = <int?>[];
+
+  @override
+  Future<int?> read() async => null;
+
+  @override
+  Future<void> write(int? assignmentId) async => writes.add(assignmentId);
+}
 
 MeResult _fakeUser(String fullName) => MeResult(
       id: 1,
@@ -81,6 +92,27 @@ void main() {
 
     verify(() => tokenStore.clear()).called(1);
     expect(container.read(authStateProvider).value, isFalse);
+  });
+
+  // Paylaşılan cihazda bir sonraki hesap, öncekinin aktif görev seçimiyle
+  // değil kendi varsayılanıyla başlamalı.
+  test('logOut() aktif görev seçimini sıfırlar ve saklanan değeri siler', () async {
+    when(() => tokenStore.readAccessToken()).thenAnswer((_) async => 'stored-token');
+    when(() => tokenStore.readRefreshToken()).thenAnswer((_) async => 'stored-refresh-token');
+    when(() => tokenStore.clear()).thenAnswer((_) async {});
+    final assignmentStore = _RecordingAssignmentStore();
+    final container2 = ProviderContainer(overrides: [
+      tokenStoreProvider.overrideWithValue(tokenStore),
+      activeAssignmentStoreProvider.overrideWithValue(assignmentStore),
+    ]);
+    addTearDown(container2.dispose);
+    await container2.read(authStateProvider.future);
+    container2.read(activeStaffAssignmentProvider.notifier).select(5);
+
+    await container2.read(authStateProvider.notifier).logOut();
+
+    expect(container2.read(activeStaffAssignmentProvider), isNull);
+    expect(assignmentStore.writes, [5, null]);
   });
 
   test('logIn() invalidates currentUserProvider - önceki kullanıcının önbelleğe alınmış '

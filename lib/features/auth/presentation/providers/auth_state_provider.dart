@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/network/secure_token_store.dart';
+import '../../../../core/providers/active_staff_assignment_provider.dart';
 import 'current_user_provider.dart';
 
 part 'auth_state_provider.g.dart';
@@ -35,6 +36,9 @@ class AuthState extends _$AuthState {
 
   Future<void> logOut() async {
     await ref.read(tokenStoreProvider).clear();
+    // Paylaşılan cihazda bir sonraki hesap, öncekinin aktif görev seçimiyle
+    // değil kendi varsayılan göreviyle başlasın.
+    ref.read(activeStaffAssignmentProvider.notifier).reset();
     state = const AsyncData(false);
     ref.invalidate(currentUserProvider);
   }
