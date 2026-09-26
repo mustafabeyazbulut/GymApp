@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/phone_number_field.dart';
 import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../domain/package_assignment_summary.dart';
@@ -26,13 +27,14 @@ class PackageAssignmentsScreen extends ConsumerStatefulWidget {
 }
 
 class _PackageAssignmentsScreenState extends ConsumerState<PackageAssignmentsScreen> {
-  final _searchController = TextEditingController();
+  final _searchFormKey = GlobalKey<FormState>();
+  // E.164 biçiminde (bkz. PhoneNumberField) - null ise tüm atamalar listelenir.
   String? _searchPhone;
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+  void _search(String? phone) {
+    // Geçersiz bir numarayla arama yapmak yerine alanın altında hatayı göster.
+    if (!_searchFormKey.currentState!.validate()) return;
+    setState(() => _searchPhone = phone);
   }
 
   @override
@@ -59,23 +61,15 @@ class _PackageAssignmentsScreenState extends ConsumerState<PackageAssignmentsScr
           children: [
             Padding(
               padding: const EdgeInsets.all(AppSpacing.lg),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
+              child: Form(
+                key: _searchFormKey,
+                child: PhoneNumberField(
                   labelText: l10n.packageAssignmentsSearchLabel,
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: _searchController.text.isEmpty
-                      ? null
-                      : IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _searchPhone = null);
-                          },
-                        ),
+                  isRequired: false,
+                  clearable: true,
+                  textInputAction: TextInputAction.search,
+                  onSubmitted: _search,
                 ),
-                onSubmitted: (value) =>
-                    setState(() => _searchPhone = value.trim().isEmpty ? null : value.trim()),
               ),
             ),
             Expanded(

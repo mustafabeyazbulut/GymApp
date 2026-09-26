@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/phone_number_field.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../providers/package_providers.dart';
 
@@ -89,12 +88,9 @@ class _AssignPackageScreenState extends ConsumerState<AssignPackageScreen> {
                   },
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                IntlPhoneField(
-                  initialCountryCode: 'TR',
-                  decoration: InputDecoration(labelText: l10n.assignPackageMemberPhoneLabel),
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  onChanged: (phone) => _phone = phone.completeNumber,
-                  validator: (phone) => (phone == null || phone.number.trim().isEmpty) ? l10n.commonFieldRequired : null,
+                PhoneNumberField(
+                  labelText: l10n.assignPackageMemberPhoneLabel,
+                  onChanged: (phone) => _phone = phone,
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: AppSpacing.xs),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/phone_number_field.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../data/real_auth_repository.dart';
 import '../../domain/auth_exceptions.dart';
@@ -18,7 +19,8 @@ enum _Step { requestCode, resetPassword }
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _identifierController = TextEditingController();
+  // Telefon (E.164) veya e-posta - bkz. PhoneNumberField.allowEmail.
+  String? _identifier;
   final _codeController = TextEditingController();
   final _newPasswordController = TextEditingController();
   _Step _step = _Step.requestCode;
@@ -27,7 +29,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   @override
   void dispose() {
-    _identifierController.dispose();
     _codeController.dispose();
     _newPasswordController.dispose();
     super.dispose();
@@ -40,7 +41,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       _errorText = null;
     });
     try {
-      await ref.read(authRepositoryProvider).forgotPassword(identifier: _identifierController.text.trim());
+      await ref.read(authRepositoryProvider).forgotPassword(identifier: _identifier!);
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.forgotPasswordCodeSentMessage)));
@@ -61,7 +62,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     });
     try {
       await ref.read(authRepositoryProvider).resetPassword(
-            identifier: _identifierController.text.trim(),
+            identifier: _identifier!,
             code: _codeController.text.trim(),
             newPassword: _newPasswordController.text,
           );
@@ -93,12 +94,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 SizedBox(height: MediaQuery.of(context).size.height * 0.08),
                 Text(l10n.forgotPasswordTitle, style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: AppSpacing.xl),
-                TextFormField(
-                  controller: _identifierController,
+                PhoneNumberField(
+                  labelText: l10n.forgotPasswordIdentifierLabel,
+                  allowEmail: true,
                   enabled: _step == _Step.requestCode,
-                  decoration: InputDecoration(labelText: l10n.forgotPasswordIdentifierLabel),
-                  validator: (value) =>
-                      (value == null || value.trim().isEmpty) ? l10n.commonFieldRequired : null,
+                  textInputAction: TextInputAction.next,
+                  onChanged: (value) => _identifier = value,
                 ),
                 if (_step == _Step.resetPassword) ...[
                   const SizedBox(height: AppSpacing.lg),

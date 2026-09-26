@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/phone_number_field.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../data/real_tenant_repository.dart';
 
@@ -76,12 +75,9 @@ class _CreateCompanyScreenState extends ConsumerState<CreateCompanyScreen> {
                   validator: (value) => (value == null || value.trim().isEmpty) ? l10n.commonFieldRequired : null,
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                IntlPhoneField(
-                  initialCountryCode: 'TR',
-                  decoration: InputDecoration(labelText: l10n.createCompanyGymAdminPhoneLabel),
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  onChanged: (phone) => _gymAdminPhone = phone.completeNumber,
-                  validator: (phone) => (phone == null || phone.number.trim().isEmpty) ? l10n.commonFieldRequired : null,
+                PhoneNumberField(
+                  labelText: l10n.createCompanyGymAdminPhoneLabel,
+                  onChanged: (phone) => _gymAdminPhone = phone,
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: AppSpacing.xs),

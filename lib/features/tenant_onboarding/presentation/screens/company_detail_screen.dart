@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/phone_number_field.dart';
 import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../data/real_tenant_repository.dart';
@@ -28,6 +27,7 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
   bool _isTogglingActive = false;
   String? _errorText;
 
+  final _inviteFormKey = GlobalKey<FormState>();
   String? _inviteGymAdminPhone;
   bool _isInvitingGymAdmin = false;
   int? _removingAssignmentId;
@@ -99,8 +99,9 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
 
   Future<void> _inviteGymAdmin() async {
     final l10n = AppLocalizations.of(context)!;
+    if (!_inviteFormKey.currentState!.validate()) return;
     final phone = _inviteGymAdminPhone;
-    if (phone == null || phone.trim().isEmpty) return;
+    if (phone == null) return;
 
     setState(() => _isInvitingGymAdmin = true);
     try {
@@ -277,11 +278,12 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundFaint),
           ),
           const SizedBox(height: AppSpacing.sm),
-          IntlPhoneField(
-            initialCountryCode: 'TR',
-            decoration: InputDecoration(labelText: l10n.companyDetailInviteGymAdminPhoneLabel),
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            onChanged: (phone) => _inviteGymAdminPhone = phone.completeNumber,
+          Form(
+            key: _inviteFormKey,
+            child: PhoneNumberField(
+              labelText: l10n.companyDetailInviteGymAdminPhoneLabel,
+              onChanged: (phone) => _inviteGymAdminPhone = phone,
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           OutlinedButton(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/phone_number_field.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../data/real_auth_repository.dart';
 import '../../domain/auth_exceptions.dart';
@@ -17,7 +18,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _identifierController = TextEditingController();
+  // Telefon (E.164) veya e-posta - bkz. PhoneNumberField.allowEmail.
+  String? _identifier;
   final _passwordController = TextEditingController();
   final _networkErrorBarKey = GlobalKey();
   bool _isSubmitting = false;
@@ -42,7 +44,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   void dispose() {
-    _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -68,7 +69,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
     try {
       await ref.read(authRepositoryProvider).login(
-            identifier: _identifierController.text,
+            identifier: _identifier!,
             password: _passwordController.text,
           );
       if (!mounted) return;
@@ -150,20 +151,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            TextFormField(
-                              controller: _identifierController,
+                            PhoneNumberField(
+                              labelText: l10n.loginIdentifierLabel,
+                              allowEmail: true,
                               enabled: !_isSubmitting,
-                              decoration: InputDecoration(
-                                labelText: l10n.loginIdentifierLabel,
-                                // Boş string (null değil) — kırmızı hata-durumu stilini zorunlu kılar ve
-                                // aşağıdaki password alanıyla aynı hata satırı yüksekliğini ayırır,
-                                // mesajı iki alanda da tekrarlamadan. Gerçek mesaj, onaylanmış mockup'a
-                                // göre sadece password alanının altında gösterilir.
-                                errorText: _hasInvalidCredentialsError ? '' : null,
-                              ),
-                              validator: (value) => (value == null || value.trim().isEmpty)
-                                  ? l10n.commonFieldRequired
-                                  : null,
+                              textInputAction: TextInputAction.next,
+                              // Boş string (null değil) — kırmızı hata-durumu stilini zorunlu kılar ve
+                              // aşağıdaki password alanıyla aynı hata satırı yüksekliğini ayırır,
+                              // mesajı iki alanda da tekrarlamadan. Gerçek mesaj, onaylanmış mockup'a
+                              // göre sadece password alanının altında gösterilir.
+                              errorText: _hasInvalidCredentialsError ? '' : null,
+                              onChanged: (value) => _identifier = value,
                             ),
                             const SizedBox(height: AppSpacing.lg),
                             TextFormField(

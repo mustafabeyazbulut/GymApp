@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/phone_number_field.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../data/real_auth_repository.dart';
 import '../../domain/auth_exceptions.dart';
@@ -141,14 +141,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       (value == null || value.trim().isEmpty) ? l10n.commonFieldRequired : null,
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                IntlPhoneField(
+                PhoneNumberField(
                   enabled: inStep1,
-                  initialCountryCode: 'TR',
-                  decoration: InputDecoration(labelText: l10n.registerPhoneLabel),
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  onChanged: (phone) => _phone = phone.completeNumber,
-                  validator: (phone) =>
-                      (phone == null || phone.number.trim().isEmpty) ? l10n.commonFieldRequired : null,
+                  labelText: l10n.registerPhoneLabel,
+                  onChanged: (phone) => _phone = phone,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 TextFormField(

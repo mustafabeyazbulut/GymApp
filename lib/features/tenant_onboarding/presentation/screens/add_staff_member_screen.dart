@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/providers/active_staff_company_provider.dart';
+import '../../../../core/widgets/phone_number_field.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/presentation/providers/current_user_provider.dart';
 import '../../data/real_tenant_repository.dart';
@@ -115,12 +114,9 @@ class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                IntlPhoneField(
-                  initialCountryCode: 'TR',
-                  decoration: InputDecoration(labelText: l10n.addStaffMemberPhoneLabel),
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  onChanged: (phone) => _phone = phone.completeNumber,
-                  validator: (phone) => (phone == null || phone.number.trim().isEmpty) ? l10n.commonFieldRequired : null,
+                PhoneNumberField(
+                  labelText: l10n.addStaffMemberPhoneLabel,
+                  onChanged: (phone) => _phone = phone,
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: AppSpacing.xs),
