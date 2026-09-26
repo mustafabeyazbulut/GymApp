@@ -48,7 +48,27 @@ class HomeScreen extends ConsumerWidget {
             ),
             data: (memberships) {
               if (memberships.isEmpty) {
-                return const EmptyMembershipState();
+                // Paketsiz üye de platform özelliklerini kullanır (ana senaryo
+                // §5.1) - boş durumun altında bunlara kısayollar.
+                return ListView(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  children: [
+                    const EmptyMembershipState(),
+                    _ShortcutCard(
+                      icon: Icons.insights_outlined,
+                      title: l10n.personalTrackingTitle,
+                      body: l10n.homeShortcutPersonalTrackingBody,
+                      onTap: () => context.go('/progress'),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    _ShortcutCard(
+                      icon: Icons.video_library_outlined,
+                      title: l10n.homeShortcutGeneralContentTitle,
+                      body: l10n.homeShortcutGeneralContentBody,
+                      onTap: () => context.push('/content-library'),
+                    ),
+                  ],
+                );
               }
               final selectedId = ref.watch(selectedMembershipIdProvider) ?? memberships.first.id;
               final selected = memberships.firstWhere((m) => m.id == selectedId, orElse: () => memberships.first);
@@ -260,6 +280,54 @@ class _ErrorRetry extends StatelessWidget {
             const SizedBox(height: AppSpacing.lg),
             OutlinedButton(onPressed: onRetry, child: Text(l10n.commonRetry)),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Paketsiz üyenin Home'unda platform özelliklerine kısayol - mevcut kart
+/// stili (dolgu + ince çizgi), ek dekorasyon yok.
+class _ShortcutCard extends StatelessWidget {
+  const _ShortcutCard({required this.icon, required this.title, required this.body, required this.onTap});
+
+  final IconData icon;
+  final String title;
+  final String body;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            border: Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          ),
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Row(
+            children: [
+              Icon(icon, color: AppColors.onBackgroundMuted),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: textTheme.titleMedium),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(body, style: textTheme.bodyMedium),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: AppColors.onBackgroundFaint),
+            ],
+          ),
         ),
       ),
     );
