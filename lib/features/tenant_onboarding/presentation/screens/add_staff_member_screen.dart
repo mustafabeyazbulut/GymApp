@@ -21,7 +21,9 @@ class AddStaffMemberScreen extends ConsumerStatefulWidget {
 class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
   final _formKey = GlobalKey<FormState>();
   String? _phone;
-  String _role = 'Member';
+  // Gym üyeliği paketle oluşur (ana senaryo §3.2) - bu ekran sadece personel
+  // yetkisi verir, bu yüzden 'Member' rolü yok.
+  String _role = 'Trainer';
   int? _selectedBranchId;
   bool _isSubmitting = false;
   String? _errorText;
@@ -100,6 +102,8 @@ class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
     final activeCompanyId = ref.watch(activeStaffCompanyIdProvider);
     final myAssignment = ref.watch(currentUserProvider).asData?.value.staffAssignmentFor(activeCompanyId);
     final fixedBranchId = myAssignment?.branchId;
+    // Şube Müdürü atamak sadece aktif firmada GymAdmin olana açık.
+    final canAssignBranchManager = myAssignment?.role == 'GymAdmin';
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.addStaffMemberTitle)),
@@ -130,8 +134,9 @@ class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
                   initialValue: _role,
                   decoration: InputDecoration(labelText: l10n.addStaffMemberRoleLabel),
                   items: [
-                    DropdownMenuItem(value: 'Member', child: Text(l10n.addStaffMemberRoleMember)),
                     DropdownMenuItem(value: 'Trainer', child: Text(l10n.addStaffMemberRoleTrainer)),
+                    if (canAssignBranchManager)
+                      DropdownMenuItem(value: 'BranchManager', child: Text(l10n.addStaffMemberRoleBranchManager)),
                   ],
                   onChanged: (value) => setState(() => _role = value!),
                 ),

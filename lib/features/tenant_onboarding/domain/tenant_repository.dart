@@ -17,7 +17,7 @@ abstract interface class TenantRepository {
   });
 
   // Çağıranın kendi telefonuna gelen bir davet kodunu onaylar - hem
-  // createCompany (GymAdmin daveti) hem addStaffMember (Member/Trainer
+  // createCompany (GymAdmin daveti) hem addStaffMember (Trainer/BranchManager
   // daveti) hem de inviteGymAdmin'in ürettiği davetler için tek, ortak onay
   // noktası (POST /api/assignments/confirm).
   Future<void> confirmAssignmentInvitation(String code);
@@ -46,17 +46,18 @@ abstract interface class TenantRepository {
   // şubesi vardır ve buna hiçbir zaman ihtiyaç duymaz).
   Future<List<BranchOption>> listBranches();
 
-  // Bir şubeye ZATEN KAYITLI bir Member/Trainer'ı (telefon numarasıyla
-  // eşleştirilir, yeni kullanıcı oluşturulmaz) davet eder - sadece Gym
-  // Admin/Branch Manager/Super Admin, sunucu tarafında zorunlu kılınır (bir
-  // Branch Manager ayrıca kendi şubesiyle, bir Gym Admin ise kendi
-  // şirketiyle sınırlıdır - burada hangi branchId gönderilirse gönderilsin
-  // ikisi de sunucu tarafında yeniden kontrol edilir). Assignment hemen
-  // oluşmaz - davet edilen kişi kendi confirmAssignmentInvitation
-  // çağrısıyla onaylayana kadar sadece bekler.
+  // Bir şubeye ZATEN KAYITLI bir kullanıcıyı (telefon numarasıyla
+  // eşleştirilir, yeni kullanıcı oluşturulmaz) PERSONEL olarak davet eder -
+  // sadece Gym Admin/Branch Manager/Super Admin, sunucu tarafında zorunlu
+  // kılınır (bir Branch Manager ayrıca kendi şubesiyle, bir Gym Admin ise
+  // kendi şirketiyle sınırlıdır - burada hangi branchId gönderilirse
+  // gönderilsin ikisi de sunucu tarafında yeniden kontrol edilir). Gym
+  // üyeliği bu yolla verilmez; üyelik sadece paket tanımlayarak oluşur (ana
+  // senaryo §3.2). Assignment hemen oluşmaz - davet edilen kişi kendi
+  // confirmAssignmentInvitation çağrısıyla onaylayana kadar sadece bekler.
   Future<void> addStaffMember({
     required String phone,
-    required String role, // 'Member' veya 'Trainer'
+    required String role, // 'Trainer' veya 'BranchManager' (sadece GymAdmin)
     required int branchId,
   });
 
