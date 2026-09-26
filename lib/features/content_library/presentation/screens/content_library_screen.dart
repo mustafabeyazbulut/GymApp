@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/network/api_exception.dart';
+import '../../../../core/providers/membership_context_provider.dart';
+import '../../../../core/widgets/package_status_empty_state.dart';
+import '../../../membership/domain/membership_summary.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/media_player_screen.dart';
@@ -22,7 +25,8 @@ class ContentLibraryScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     // Yükleme/yayından kaldırma aktif görevdeki personel rolüne bağlı - menüyle
     // aynı yetki matrisi (bkz. StaffPermissions).
-    final canUpload = ref.watch(staffPermissionsProvider).canUploadContent;
+    final permissions = ref.watch(staffPermissionsProvider);
+    final canUpload = permissions.canUploadContent;
     final itemsAsync = ref.watch(contentItemsProvider);
 
     return Scaffold(
@@ -61,6 +65,16 @@ class ContentLibraryScreen extends ConsumerWidget {
           ),
           data: (items) {
             if (items.isEmpty) {
+              // Görevi olmayan (sadece üye) kullanıcıya backend geçerli paketi
+              // yoksa listeyi boş döndürüyor - "içerik yok" yerine asıl neden
+              // gösterilir. Personel içeriği görevi üzerinden görür.
+              if (permissions.activeAssignment == null) {
+                final memberships = ref.watch(membershipsProvider).asData?.value;
+                final availability = memberships == null ? null : membershipAvailability(memberships);
+                if (availability != null && availability.state != MembershipAvailabilityState.valid) {
+                  return PackageStatusEmptyState(availability: availability);
+                }
+              }
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.xl),
