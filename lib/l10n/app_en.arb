@@ -409,5 +409,7 @@
   "phoneCountryPickerTitle": "Select Country",
   "phoneCountrySearchHint": "Search country name or code",
   "phoneCountryEmptyMessage": "No matching country found.",
-  "phoneCountryButtonLabel": "Country code: {dialCode}"
+  "phoneCountryButtonLabel": "Country code: {dialCode}",
+  "staffAccessDeniedTitle": "You don't have access to this page",
+  "staffAccessDeniedBody": "This screen isn't available for your role in the selected company."
 }

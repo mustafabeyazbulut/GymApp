@@ -4,6 +4,7 @@ import '../../../../core/network/api_exception.dart';
 import '../../../../core/providers/active_staff_company_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/staff_permission_gate.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/presentation/providers/current_user_provider.dart';
 import '../../../tenant_onboarding/data/real_tenant_repository.dart';
@@ -193,7 +194,13 @@ class _ZonesList extends ConsumerWidget {
                     onPressed: () => _delete(context, ref, zone.id),
                   ),
                   onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => ZoneDetailScreen(zoneId: zone.id, zoneName: zone.name)),
+                    // Bölge detayı ayrı bir rota değil - aynı yetki koruması burada da.
+                    MaterialPageRoute(
+                      builder: (_) => StaffPermissionGate(
+                        isAllowed: (permissions) => permissions.canManageDoorAccess,
+                        child: ZoneDetailScreen(zoneId: zone.id, zoneName: zone.name),
+                      ),
+                    ),
                   ),
                 ),
               ),
