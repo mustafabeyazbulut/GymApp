@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/network/api_exception.dart';
+import '../../../../core/providers/active_staff_company_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/media_player_screen.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../auth/domain/staff_permissions.dart';
 import '../../../auth/presentation/providers/current_user_provider.dart';
 import '../../domain/content_item.dart';
 import '../providers/content_library_providers.dart';
@@ -21,7 +23,10 @@ class ContentLibraryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final currentUser = ref.watch(currentUserProvider).asData?.value;
-    final canUpload = currentUser?.isSuperAdmin == true || currentUser?.staffAssignment != null;
+    // Yükleme/yayından kaldırma aktif firmadaki personel rolüne bağlı - menüyle
+    // aynı yetki matrisi (bkz. StaffPermissions).
+    final canUpload =
+        StaffPermissions.of(currentUser, ref.watch(activeStaffCompanyIdProvider)).canUploadContent;
     final itemsAsync = ref.watch(contentItemsProvider);
 
     return Scaffold(

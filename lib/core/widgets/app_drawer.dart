@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/data/real_auth_repository.dart';
 import '../../features/auth/domain/auth_exceptions.dart';
 import '../../features/auth/domain/me_result.dart';
+import '../../features/auth/domain/staff_permissions.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
 import '../../features/auth/presentation/providers/current_user_provider.dart';
 import '../../l10n/generated/app_localizations.dart';
@@ -209,7 +210,10 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     final l10n = AppLocalizations.of(context)!;
     final currentUser = ref.watch(currentUserProvider).asData?.value;
     final activeCompanyId = ref.watch(activeStaffCompanyIdProvider);
-    final activeStaffAssignment = currentUser?.staffAssignmentFor(activeCompanyId);
+    // Menü görünürlüğü "herhangi bir yerde personel mi" sorusuna değil,
+    // AKTİF firmadaki role göre belirlenir (bkz. StaffPermissions).
+    final permissions = StaffPermissions.of(currentUser, activeCompanyId);
+    final activeStaffAssignment = permissions.activeAssignment;
     final hasMultipleStaffCompanies = (currentUser?.staffAssignments.length ?? 0) > 1;
 
     void closeThenPush(String location) {
@@ -290,7 +294,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
               child: ListView(
                 padding: const EdgeInsets.all(AppSpacing.sm),
                 children: [
-                  if (currentUser?.isSuperAdmin ?? false)
+                  if (permissions.canManageCompanies)
                     _DrawerItem(
                       icon: Icons.add_business_outlined,
                       label: l10n.drawerCompanyManagement,
@@ -305,13 +309,13 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       onTap: () =>
                           _pickActiveCompany(currentUser!.staffAssignments, activeStaffAssignment?.companyId),
                     ),
-                  if (currentUser?.staffAssignment != null)
+                  if (permissions.canViewBranches)
                     _DrawerItem(
                       icon: Icons.storefront_outlined,
                       label: l10n.drawerBranchManagement,
                       onTap: () => closeThenPush('/staff/branches'),
                     ),
-                  if (currentUser?.staffAssignment != null)
+                  if (permissions.canManageStaff)
                     _DrawerItem(
                       icon: Icons.person_add_alt_outlined,
                       label: l10n.drawerAddStaffMember,
@@ -322,43 +326,41 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       trailingText: hasMultipleStaffCompanies ? activeStaffAssignment?.companyName : null,
                       onTap: () => closeThenPush('/admin/add-staff-member'),
                     ),
-                  if (currentUser?.staffAssignment != null)
+                  if (permissions.canManageStaff)
                     _DrawerItem(
                       icon: Icons.groups_outlined,
                       label: l10n.drawerStaffManagement,
                       onTap: () => closeThenPush('/staff/members'),
                     ),
-                  if (currentUser?.staffAssignment != null)
+                  if (permissions.canManagePackages)
                     _DrawerItem(
                       icon: Icons.card_membership_outlined,
                       label: l10n.drawerPackageManagement,
                       onTap: () => closeThenPush('/staff/packages'),
                     ),
-                  if (currentUser?.staffAssignment != null)
+                  if (permissions.canCreateClassSession)
                     _DrawerItem(
                       icon: Icons.event_available_outlined,
                       label: l10n.drawerCreateClassSession,
                       onTap: () => closeThenPush('/staff/classes/create'),
                     ),
-                  if (currentUser?.staffAssignment != null)
+                  // Kapı/bölge kuralları firma geneli bir ayar - sadece GymAdmin.
+                  if (permissions.canManageDoorAccess)
                     _DrawerItem(
                       icon: Icons.sensor_door_outlined,
                       label: l10n.drawerDoorAccess,
                       onTap: () => closeThenPush('/staff/door-access'),
                     ),
-                  // Analiz ekranı SuperAdmin'i de kapsıyor (backend'in
-                  // StaffManagement policy'si zaten BranchManager/GymAdmin/
-                  // SuperAdmin'i kapsıyor) - sadece `staffAssignment != null`
-                  // koşulu SuperAdmin'i (staffAssignment'ı hep null döner)
-                  // dışarıda bırakırdı, bu yüzden isSuperAdmin ile OR'lanıyor
-                  // (üstteki "Yeni Firma Ekle" girişiyle aynı desen).
-                  if ((currentUser?.isSuperAdmin ?? false) || currentUser?.staffAssignment != null)
+                  // Analiz ve raporlar gym'e özel - Sistem Sahibi gym'lerin
+                  // günlük işlerine karışmadığı için (ana senaryo §4.6) sadece
+                  // aktif firmada personel olanlar görür.
+                  if (permissions.canViewGymReports)
                     _DrawerItem(
                       icon: Icons.analytics_outlined,
                       label: l10n.drawerAnalytics,
                       onTap: () => closeThenPush('/staff/analytics'),
                     ),
-                  if ((currentUser?.isSuperAdmin ?? false) || currentUser?.staffAssignment != null)
+                  if (permissions.canViewGymReports)
                     _DrawerItem(
                       icon: Icons.summarize_outlined,
                       label: l10n.drawerReports,
@@ -370,8 +372,8 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       label: l10n.drawerTrainerSchedule,
                       onTap: () => closeThenPush('/trainer/schedule'),
                     ),
-                  if ((currentUser?.isSuperAdmin ?? false) ||
-                      currentUser?.staffAssignment != null ||
+                  if (permissions.canManageCompanies ||
+                      permissions.hasActiveStaffRole ||
                       (currentUser?.isTrainer ?? false))
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
