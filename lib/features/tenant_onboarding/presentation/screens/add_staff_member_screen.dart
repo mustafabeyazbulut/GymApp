@@ -6,6 +6,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/providers/active_staff_company_provider.dart';
 import '../../../../core/widgets/phone_number_field.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../auth/domain/staff_permissions.dart';
 import '../../../auth/presentation/providers/current_user_provider.dart';
 import '../../data/real_tenant_repository.dart';
 import '../../domain/branch_option.dart';
@@ -98,11 +99,12 @@ class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final activeCompanyId = ref.watch(activeStaffCompanyIdProvider);
-    final myAssignment = ref.watch(currentUserProvider).asData?.value.staffAssignmentFor(activeCompanyId);
+    final permissions =
+        StaffPermissions.of(ref.watch(currentUserProvider).asData?.value, ref.watch(activeStaffCompanyIdProvider));
+    final myAssignment = permissions.activeAssignment;
     final fixedBranchId = myAssignment?.branchId;
     // Şube Müdürü atamak sadece aktif firmada GymAdmin olana açık.
-    final canAssignBranchManager = myAssignment?.role == 'GymAdmin';
+    final canAssignBranchManager = permissions.canAssignBranchManager;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.addStaffMemberTitle)),

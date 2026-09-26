@@ -163,11 +163,18 @@ class MeResult {
   // (ilk eşleşme) döner. Eşleşme bulunamazsa ise null döner - ilk atamaya
   // düşmek, kullanıcının farkında olmadan yanlış gym bağlamında işlem
   // yapmasına yol açabilir.
+  //
+  // Varsayım: aynı firmada bir kullanıcı hem GymAdmin hem BranchManager
+  // olamaz (backend bunu engelliyor). Yine de birden fazla eşleşme gelirse
+  // ucuz bir savunma olarak daha geniş yetkili GymAdmin seçilir.
   MeAssignment? staffAssignmentFor(int? companyId) {
     if (companyId == null) return staffAssignment;
+    MeAssignment? match;
     for (final assignment in staffAssignments) {
-      if (assignment.companyId == companyId) return assignment;
+      if (assignment.companyId != companyId) continue;
+      if (assignment.role == 'GymAdmin') return assignment;
+      match ??= assignment;
     }
-    return null;
+    return match;
   }
 }

@@ -83,6 +83,16 @@ void main() {
     expect(me.staffAssignmentFor(null), same(companyA));
   });
 
+  // Backend aynı firmada GymAdmin+BranchManager'ı engelliyor; yine de iki
+  // eşleşme gelirse daha geniş yetkili GymAdmin seçilmeli.
+  test('staffAssignmentFor prefers GymAdmin when the same company has several staff assignments', () {
+    final branchManager = const MeAssignment(companyId: 1, companyName: 'A', branchId: 9, role: 'BranchManager');
+    final gymAdmin = const MeAssignment(companyId: 1, companyName: 'A', branchId: null, role: 'GymAdmin');
+    final me = _withAssignments([branchManager, gymAdmin]);
+
+    expect(me.staffAssignmentFor(1), same(gymAdmin));
+  });
+
   // Eşleşmeyen bir aktif firma, ilk atamaya DÜŞMEMELİ - aksi halde kullanıcı
   // farkında olmadan yanlış gym bağlamında işlem yapabilir.
   test('staffAssignmentFor returns null when companyId matches none', () {
