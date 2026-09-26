@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_app/core/network/token_store.dart';
@@ -113,6 +114,28 @@ void main() {
 
     expect(container2.read(activeStaffAssignmentProvider), isNull);
     expect(assignmentStore.writes, [5, null]);
+  });
+
+  // flutter_secure_storage (ör. Android Keystore) silme sırasında
+  // PlatformException fırlatabiliyor - kullanıcı yine de çıkış yapabilmeli.
+  test('logOut() token deposu temizlenemese bile çıkışı tamamlar ve hata fırlatmaz', () async {
+    when(() => tokenStore.readAccessToken()).thenAnswer((_) async => 'stored-token');
+    when(() => tokenStore.readRefreshToken()).thenAnswer((_) async => 'stored-refresh-token');
+    when(() => tokenStore.clear()).thenThrow(PlatformException(code: 'keystore'));
+    final assignmentStore = _RecordingAssignmentStore();
+    final container2 = ProviderContainer(overrides: [
+      tokenStoreProvider.overrideWithValue(tokenStore),
+      activeAssignmentStoreProvider.overrideWithValue(assignmentStore),
+    ]);
+    addTearDown(container2.dispose);
+    await container2.read(authStateProvider.future);
+    container2.read(activeStaffAssignmentProvider.notifier).select(5);
+
+    await container2.read(authStateProvider.notifier).logOut();
+
+    // authState false -> router /login'e yönlendirir.
+    expect(container2.read(authStateProvider).value, isFalse);
+    expect(container2.read(activeStaffAssignmentProvider), isNull);
   });
 
   test('logIn() invalidates currentUserProvider - önceki kullanıcının önbelleğe alınmış '

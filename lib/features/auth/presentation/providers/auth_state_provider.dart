@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/network/secure_token_store.dart';
 import '../../../../core/providers/active_staff_assignment_provider.dart';
@@ -34,8 +35,17 @@ class AuthState extends _$AuthState {
     ref.invalidate(currentUserProvider);
   }
 
+  /// Hiçbir zaman hata fırlatmaz - çağıranlar (menü, hesap dondurma/silme,
+  /// şifre değiştirme) çıkışın her koşulda tamamlandığına güvenir.
   Future<void> logOut() async {
-    await ref.read(tokenStoreProvider).clear();
+    try {
+      await ref.read(tokenStoreProvider).clear();
+    } catch (error) {
+      // flutter_secure_storage silme sırasında PlatformException
+      // fırlatabiliyor (ör. Android Keystore). Kullanıcı yine de çıkış
+      // yapabilmeli: oturum durumu ve seçim aşağıda her koşulda sıfırlanır.
+      debugPrint('Token deposu temizlenemedi: $error');
+    }
     // Paylaşılan cihazda bir sonraki hesap, öncekinin aktif görev seçimiyle
     // değil kendi varsayılan göreviyle başlasın.
     ref.read(activeStaffAssignmentProvider.notifier).reset();

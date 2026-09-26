@@ -65,6 +65,7 @@ class PackageActions extends _$PackageActions {
 
   Future<void> assignPackage({required int packageId, required String memberPhone}) async {
     await ref.read(packageRepositoryProvider).assignPackage(packageId: packageId, memberPhone: memberPhone);
+    ref.invalidate(packageAssignmentsProvider);
   }
 
   Future<void> cancelPackageAssignment(int packageAssignmentId) async {
