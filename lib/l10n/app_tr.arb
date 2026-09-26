@@ -852,5 +852,17 @@
   "profileChangePasswordSubmitButton": "Şifreyi Değiştir",
   "@profileChangePasswordSubmitButton": {},
   "profileChangePasswordSuccessMessage": "Şifreniz değiştirildi. Yeni şifrenizle tekrar giriş yapmanız gerekiyor.",
-  "@profileChangePasswordSuccessMessage": {}
+  "@profileChangePasswordSuccessMessage": {},
+  "phoneInvalidError": "Geçerli bir telefon numarası girin.",
+  "@phoneInvalidError": {},
+  "phoneCountryPickerTitle": "Ülke Seç",
+  "@phoneCountryPickerTitle": {},
+  "phoneCountrySearchHint": "Ülke adı veya kodu ara",
+  "@phoneCountrySearchHint": {},
+  "phoneCountryEmptyMessage": "Eşleşen ülke bulunamadı.",
+  "@phoneCountryEmptyMessage": {},
+  "phoneCountryButtonLabel": "Ülke kodu: {dialCode}",
+  "@phoneCountryButtonLabel": {
+    "placeholders": { "dialCode": { "type": "String" } }
+  }
 }
