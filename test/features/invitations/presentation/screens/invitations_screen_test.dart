@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:gym_app/core/network/api_exception.dart';
 import 'package:gym_app/features/auth/data/real_auth_repository.dart';
 import 'package:gym_app/features/auth/domain/auth_repository.dart';
@@ -29,7 +30,7 @@ final _staff = Invitation(
   packageName: null,
   invitedByName: 'Yönetici Kadıköy',
   createdAt: DateTime.utc(2026, 9, 26, 10),
-  expiresAt: DateTime(2026, 9, 27, 18, 30),
+  expiresAt: DateTime.utc(2026, 9, 27, 15, 30),
 );
 
 final _package = Invitation(
@@ -41,7 +42,7 @@ final _package = Invitation(
   packageName: 'Aylık Fitness',
   invitedByName: null,
   createdAt: DateTime.utc(2026, 9, 26, 11),
-  expiresAt: DateTime(2026, 9, 28, 9),
+  expiresAt: DateTime.utc(2026, 9, 28, 6),
 );
 
 class _Harness {
@@ -111,7 +112,9 @@ void main() {
     expect(find.text('Kadıköy · ${_l10n.staffManagementRoleTrainer}'), findsOneWidget);
     expect(find.text('Beşiktaş · Aylık Fitness'), findsOneWidget);
     expect(find.text(_l10n.invitationsInvitedBy('Yönetici Kadıköy')), findsOneWidget);
-    expect(find.text(_l10n.invitationsExpiresAt('27.09.2026 18:30')), findsOneWidget);
+    // Sunucu UTC gönderir, ekran yerel saatle gösterir.
+    final expectedExpiry = DateFormat('dd.MM.yyyy HH:mm').format(_staff.expiresAt.toLocal());
+    expect(find.text(_l10n.invitationsExpiresAt(expectedExpiry)), findsOneWidget);
     expect(find.text(_l10n.invitationsAcceptButton), findsNWidgets(2));
     expect(find.text(_l10n.invitationsRejectButton), findsNWidgets(2));
     // SMS kodu kullananlar için ikincil yol.
@@ -128,7 +131,7 @@ void main() {
       packageName: null,
       invitedByName: 'Sistem Sahibi',
       createdAt: DateTime.utc(2026, 9, 26),
-      expiresAt: DateTime(2026, 9, 27, 12),
+      expiresAt: DateTime.utc(2026, 9, 27, 9),
     );
     await _pump(tester, load: () async => [gymAdmin]);
 
