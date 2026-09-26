@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../auth/domain/staff_permissions.dart';
 import '../../../auth/presentation/providers/current_user_provider.dart';
 import '../../data/real_tenant_repository.dart';
 import '../../domain/branch_summary.dart';
@@ -15,8 +16,8 @@ import '../widgets/branch_form_sheet.dart';
 /// adlandırması/kapatması için - backend'de uzun zamandır vardı
 /// (project-branch-ownership-flow.md'nin tarif ettiği "önce şube, sonra
 /// personel" akışı) ama hiçbir mobil giriş noktası yoktu. BranchManager da
-/// bu ekranı görebilir ama salt-okunur - şube oluşturma/kapatma backend'de
-/// zaten sadece GymAdmin/SuperAdmin'e açık.
+/// bu ekranı görebilir ama sadece kendi şubesini ve salt-okunur - şube
+/// oluşturma/kapatma backend'de zaten sadece GymAdmin/SuperAdmin'e açık.
 class BranchManagementScreen extends ConsumerStatefulWidget {
   const BranchManagementScreen({super.key});
 
@@ -100,9 +101,9 @@ class _BranchManagementScreenState extends ConsumerState<BranchManagementScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final activeCompanyId = ref.watch(activeStaffCompanyIdProvider);
-    final myAssignment = ref.watch(currentUserProvider).asData?.value.staffAssignmentFor(activeCompanyId);
-    final canManage = myAssignment?.role == 'GymAdmin';
-    final companyId = myAssignment?.companyId;
+    final permissions = StaffPermissions.of(ref.watch(currentUserProvider).asData?.value, activeCompanyId);
+    final canManage = permissions.canManageBranches;
+    final companyId = permissions.activeAssignment?.companyId;
 
     return Scaffold(
       appBar: AppBar(
@@ -116,11 +117,12 @@ class _BranchManagementScreenState extends ConsumerState<BranchManagementScreen>
             ),
         ],
       ),
-      body: SafeArea(child: _buildBody(context, l10n, canManage)),
+      body: SafeArea(child: _buildBody(context, l10n, permissions)),
     );
   }
 
-  Widget _buildBody(BuildContext context, AppLocalizations l10n, bool canManage) {
+  Widget _buildBody(BuildContext context, AppLocalizations l10n, StaffPermissions permissions) {
+    final canManage = permissions.canManageBranches;
     if (_isLoading && _branches == null) {
       return const Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
@@ -140,7 +142,10 @@ class _BranchManagementScreenState extends ConsumerState<BranchManagementScreen>
       );
     }
 
-    final branches = _branches ?? const <BranchSummary>[];
+    // Savunma katmanı: BranchManager sadece atandığı şubeyi görür (ana senaryo
+    // §4.4) - backend'in şube filtresine ek olarak istemci tarafında da
+    // uygulanır.
+    final branches = (_branches ?? const <BranchSummary>[]).where((b) => permissions.canSeeBranch(b.id)).toList();
     return RefreshIndicator(
       onRefresh: _load,
       color: AppColors.primary,
