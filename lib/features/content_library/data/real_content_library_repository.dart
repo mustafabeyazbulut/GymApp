@@ -89,6 +89,27 @@ class RealContentLibraryRepository implements ContentLibraryRepository {
   }
 
   @override
+  Future<void> ensureMediaAccessible(int mediaFileId) async {
+    try {
+      final response = await _dio.get<ResponseBody>(
+        '/api/media/$mediaFileId',
+        options: Options(responseType: ResponseType.stream),
+      );
+      // Erişim var - video gövdesini indirmeden bağlantıyı bırak.
+      await response.data?.stream.listen(null).cancel();
+    } on DioException catch (exception) {
+      // Akış olarak gelen (küçük) hata gövdesini okuyup JSON çözümlemesine
+      // bırak ki backend'in yerelleştirilmiş mesajı gösterilebilsin.
+      final response = exception.response;
+      final body = response?.data;
+      if (response != null && body is ResponseBody) {
+        response.data = await body.stream.expand((chunk) => chunk).toList();
+      }
+      throw ApiException.fromDioException(exception);
+    }
+  }
+
+  @override
   String mediaUrl(int mediaFileId) => '${_dio.options.baseUrl}/api/media/$mediaFileId';
 
   @override

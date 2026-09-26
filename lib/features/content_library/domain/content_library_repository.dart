@@ -28,4 +28,10 @@ abstract interface class ContentLibraryRepository {
   // header'ı ayrıca sağlanır.
   String mediaUrl(int mediaFileId);
   Future<Map<String, String>> mediaAuthHeaders();
+
+  // video_player erişim reddini (ör. 403 ForbiddenViewMedia) okunabilir bir
+  // hata olarak vermediği için oynatıcı başlatılmadan önce erişim dio
+  // üzerinden kontrol edilir. Erişim yoksa backend'in mesajıyla ApiException
+  // fırlatır; varsa gövdeyi indirmeden tamamlanır.
+  Future<void> ensureMediaAccessible(int mediaFileId);
 }

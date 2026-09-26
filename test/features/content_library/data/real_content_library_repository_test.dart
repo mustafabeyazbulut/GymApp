@@ -67,6 +67,46 @@ void main() {
     expect(repository.mediaUrl(5), 'https://test/api/media/5');
   });
 
+  group('ensureMediaAccessible', () {
+    test('erişim varsa gövdeyi indirmeden tamamlanır', () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+      RequestOptions? captured;
+      dio.httpClientAdapter = _PassThroughAdapter((options) {
+        captured = options;
+        return ResponseBody.fromBytes(List.filled(1024, 0), 200, headers: {
+          'content-type': ['video/mp4'],
+        });
+      });
+      final repository = RealContentLibraryRepository(dio, FakeTokenStore());
+
+      await repository.ensureMediaAccessible(5);
+
+      expect(captured!.path, '/api/media/5');
+      expect(captured!.responseType, ResponseType.stream);
+    });
+
+    test('403 gelirse backend\'in yerelleştirilmiş mesajıyla ApiException fırlatır', () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+      dio.httpClientAdapter = _PassThroughAdapter(
+        (options) => ResponseBody.fromString(
+          '{"Status":403,"Errors":["Bu medya dosyasını görüntüleme yetkiniz yok."]}',
+          403,
+          headers: {
+            'content-type': ['application/json'],
+          },
+        ),
+      );
+      final repository = RealContentLibraryRepository(dio, FakeTokenStore());
+
+      await expectLater(
+        repository.ensureMediaAccessible(5),
+        throwsA(isA<ApiException>()
+            .having((e) => e.statusCode, 'statusCode', 403)
+            .having((e) => e.errors, 'errors', ['Bu medya dosyasını görüntüleme yetkiniz yok.'])),
+      );
+    });
+  });
+
   test('mediaAuthHeaders returns a Bearer header from the stored access token', () async {
     final dio = Dio(BaseOptions(baseUrl: 'https://test'));
     final tokenStore = FakeTokenStore();
@@ -108,4 +148,23 @@ class _FakeAdapter implements HttpClientAdapter {
     }
     return body;
   }
+}
+
+// Gerçek adaptör gibi yanıtı olduğu gibi döner; 4xx'i Dio'nun kendisi
+// responseType'a göre DioException'a çevirir.
+class _PassThroughAdapter implements HttpClientAdapter {
+  _PassThroughAdapter(this._respond);
+
+  final _ResponseBuilder _respond;
+
+  @override
+  void close({bool force = false}) {}
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async =>
+      _respond(options);
 }

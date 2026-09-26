@@ -45,6 +45,14 @@ class MediaPlayerScreen extends ConsumerWidget {
   }
 }
 
+// Oynatıcıda gösterilecek tek satırlık hata: backend'in yerelleştirilmiş
+// mesajı; gövdesiz bir 403'te (erişim reddi) yerel yedek metin.
+String _mediaErrorMessage(Object error, BuildContext context, AppLocalizations l10n) {
+  if (error is! ApiException) return l10n.commonError;
+  if (error.errors.isEmpty && error.statusCode == 403) return l10n.mediaForbiddenMessage;
+  return error.localizedMessage(context);
+}
+
 class _VideoPlayerView extends ConsumerStatefulWidget {
   const _VideoPlayerView({required this.mediaFileId, required this.l10n});
 
@@ -68,6 +76,10 @@ class _VideoPlayerViewState extends ConsumerState<_VideoPlayerView> {
   Future<void> _initialize() async {
     try {
       final repository = ref.read(contentLibraryRepositoryProvider);
+      // video_player erişim reddini (403) ayırt edilebilir bir hata olarak
+      // vermiyor - önce erişim kontrol edilir ki yerelleştirilmiş mesaj
+      // gösterilebilsin.
+      await repository.ensureMediaAccessible(widget.mediaFileId);
       final headers = await repository.mediaAuthHeaders();
       final controller = VideoPlayerController.networkUrl(
         Uri.parse(repository.mediaUrl(widget.mediaFileId)),
@@ -80,12 +92,9 @@ class _VideoPlayerViewState extends ConsumerState<_VideoPlayerView> {
       }
       setState(() => _controller = controller);
       controller.play();
-    } on ApiException catch (exception) {
+    } catch (error) {
       if (!mounted) return;
-      setState(() => _errorMessage = exception.localizedMessage(context));
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _errorMessage = widget.l10n.commonError);
+      setState(() => _errorMessage = _mediaErrorMessage(error, context, widget.l10n));
     }
   }
 
@@ -169,9 +178,8 @@ class _ImageView extends ConsumerWidget {
           return const CircularProgressIndicator(color: AppColors.primary);
         }
         if (snapshot.hasError) {
-          final error = snapshot.error;
           return Text(
-            error is ApiException ? error.localizedMessage(context) : l10n.commonError,
+            _mediaErrorMessage(snapshot.error!, context, l10n),
             style: const TextStyle(color: Colors.white),
           );
         }

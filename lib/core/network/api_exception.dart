@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart' show BuildContext;
 
@@ -42,12 +44,24 @@ class ApiException implements Exception {
     // dal `statusCode: 0` (bağlantı hatası) döndürüyordu, bu da ör. yetkisiz
     // bir kullanıcının SuperAdmin'e özel bir ekrana girmeye çalışmasını
     // "bağlantı kurulamadı" gibi tamamen yanlış bir mesajla gösteriyordu.
-    final data = response.data;
+    final data = _decodeBytesBody(response.data);
     final errors = data is Map && data['Errors'] is List
         ? (data['Errors'] as List).map((e) => e.toString()).toList()
         : <String>[];
 
     return ApiException(statusCode: response.statusCode ?? 0, errors: errors);
+  }
+
+  // responseType.bytes ile yapılan isteklerde (ör. medya indirme) hata gövdesi
+  // de bayt olarak gelir - JSON'sa çözülür ki backend'in yerelleştirilmiş
+  // mesajı kaybolmasın. Çözülemezse gövdesiz yanıt gibi ele alınır.
+  static Object? _decodeBytesBody(Object? data) {
+    if (data is! List<int>) return data;
+    try {
+      return jsonDecode(utf8.decode(data));
+    } on FormatException {
+      return null;
+    }
   }
 
   @override

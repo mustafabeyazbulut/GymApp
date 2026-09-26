@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_app/core/network/api_exception.dart';
@@ -42,6 +44,40 @@ void main() {
 
       expect(result.statusCode, 403);
       expect(result.isConnectionError, isFalse);
+    });
+
+    // Medya uçları responseType.bytes ile çağrılıyor - hata gövdesi de bayt
+    // olarak geliyor; backend'in yerelleştirilmiş mesajı kaybolmamalı.
+    test('bayt olarak gelen JSON hata gövdesini de ayrıştırır', () {
+      final requestOptions = RequestOptions(path: '/api/media/5');
+      final dioException = DioException(
+        requestOptions: requestOptions,
+        response: Response(
+          requestOptions: requestOptions,
+          statusCode: 403,
+          data: utf8.encode('{"Status":403,"Errors":["Bu medya dosyasını görüntüleme yetkiniz yok."]}'),
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      final result = ApiException.fromDioException(dioException);
+
+      expect(result.statusCode, 403);
+      expect(result.errors, ['Bu medya dosyasını görüntüleme yetkiniz yok.']);
+    });
+
+    test('JSON olmayan bayt gövdede boş errors ile durum kodunu korur', () {
+      final requestOptions = RequestOptions(path: '/api/media/5');
+      final dioException = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 403, data: [0xff, 0x00]),
+        type: DioExceptionType.badResponse,
+      );
+
+      final result = ApiException.fromDioException(dioException);
+
+      expect(result.statusCode, 403);
+      expect(result.errors, isEmpty);
     });
 
     test('marks a connection error (no response body) with empty errors, resolved via AppLocalizations at display time', () {
