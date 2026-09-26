@@ -10,12 +10,16 @@ import 'package:gym_app/features/auth/domain/auth_repository.dart';
 import 'package:gym_app/features/auth/domain/me_result.dart';
 import 'package:gym_app/features/auth/presentation/providers/auth_state_provider.dart';
 import 'package:gym_app/features/door_access/presentation/screens/door_access_screen.dart';
+import 'package:gym_app/features/invitations/data/real_invitation_repository.dart';
+import 'package:gym_app/features/invitations/domain/invitation_repository.dart';
 import 'package:gym_app/features/notifications/presentation/providers/notifications_provider.dart';
 import 'package:gym_app/features/trainer_schedule/presentation/screens/trainer_schedule_screen.dart';
 import 'package:gym_app/l10n/generated/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
+
+class _MockInvitationRepository extends Mock implements InvitationRepository {}
 
 class _MemoryStore implements ActiveAssignmentStore {
   @override
@@ -42,8 +46,12 @@ Future<void> _pumpAppAndPush(WidgetTester tester, List<MeAssignment> assignments
         packageAssignments: const [],
       ));
 
+  final invitationRepository = _MockInvitationRepository();
+  when(() => invitationRepository.getMyInvitations()).thenAnswer((_) async => const []);
+
   final container = ProviderContainer(overrides: [
     tokenStoreProvider.overrideWithValue(tokenStore),
+    invitationRepositoryProvider.overrideWithValue(invitationRepository),
     authRepositoryProvider.overrideWithValue(repository),
     activeAssignmentStoreProvider.overrideWithValue(_MemoryStore()),
     hasUnreadNotificationsProvider.overrideWith((ref) => false),

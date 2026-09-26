@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/invitations/presentation/providers/invitations_provider.dart';
 import '../../features/notifications/presentation/providers/notifications_provider.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../theme/app_colors.dart';
@@ -27,6 +28,10 @@ class AppHeaderBar extends ConsumerWidget implements PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final hasUnreadNotifications = ref.watch(hasUnreadNotificationsProvider);
+    // Push/polling yok: bu çubuk her shell sekmesinde olduğu için davetler
+    // uygulama açılışında buradan çekilir; bekleyen davet varsa menü
+    // butonundaki nokta kullanıcıyı menüdeki Davetlerim'e yönlendirir.
+    final hasPendingInvitations = ref.watch(pendingInvitationCountProvider) > 0;
 
     return AppBar(
       backgroundColor: AppColors.background,
@@ -39,6 +44,8 @@ class AppHeaderBar extends ConsumerWidget implements PreferredSizeWidget {
         child: _HeaderIconButton(
           icon: Icons.menu,
           tooltip: l10n.drawerOpenMenuTooltip,
+          showDot: hasPendingInvitations,
+          dotKey: const ValueKey('appHeaderMenuDot'),
           onPressed: () => appShellScaffoldKey.currentState?.openDrawer(),
         ),
       ),
@@ -82,12 +89,14 @@ class _HeaderIconButton extends StatelessWidget {
     required this.tooltip,
     required this.onPressed,
     this.showDot = false,
+    this.dotKey,
   });
 
   final IconData icon;
   final String tooltip;
   final VoidCallback onPressed;
   final bool showDot;
+  final Key? dotKey;
 
   @override
   Widget build(BuildContext context) {
@@ -110,6 +119,7 @@ class _HeaderIconButton extends StatelessWidget {
         ),
         if (showDot)
           Positioned(
+            key: dotKey,
             top: 6,
             right: 6,
             child: Container(

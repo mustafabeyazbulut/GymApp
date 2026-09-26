@@ -7,6 +7,7 @@ import '../../features/auth/domain/me_result.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
 import '../../features/auth/presentation/providers/current_user_provider.dart';
 import '../../features/auth/presentation/providers/staff_permissions_provider.dart';
+import '../../features/invitations/presentation/providers/invitations_provider.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../locale/app_locale_provider.dart';
 import '../providers/active_staff_assignment_provider.dart';
@@ -244,6 +245,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     final activeTask = permissions.activeAssignment;
     final selectableContexts = currentUser?.selectableContexts ?? const <MeAssignment>[];
     final hasMultipleTasks = selectableContexts.length > 1;
+    final pendingInvitationCount = ref.watch(pendingInvitationCountProvider);
 
     void closeThenPush(String location) {
       // Drawer'ın GoRouter'ı: bu widget'ın kendi context'i degil, cunku
@@ -409,11 +411,12 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                   // veya pakete davet edilmiş olabilir; CreateCompany/
                   // AddStaffMember/CreatePackageAssignment hiçbiri Assignment/
                   // PackageAssignment'ı hemen oluşturmuyor, buradan onay
-                  // gerekiyor.
+                  // gerekiyor. SMS koduyla onay Davetlerim ekranında ikincil yol.
                   _DrawerItem(
                     icon: Icons.mark_email_read_outlined,
-                    label: l10n.drawerConfirmInvitation,
-                    onTap: () => closeThenPush('/confirm-invitation'),
+                    label: l10n.drawerInvitations,
+                    badgeCount: pendingInvitationCount,
+                    onTap: () => closeThenPush('/invitations'),
                   ),
                   // Herkese açık - liste, staff/Member görünürlüğünü kendi
                   // tarafında filtreliyor (bkz. GetContentItemsQueryHandler).
@@ -495,6 +498,7 @@ class _DrawerItem extends StatelessWidget {
     this.color,
     this.subtitle,
     this.trailingText,
+    this.badgeCount = 0,
     this.isLoading = false,
     this.showChevron = false,
   });
@@ -508,6 +512,9 @@ class _DrawerItem extends StatelessWidget {
   // değerler için.
   final String? subtitle;
   final String? trailingText;
+  // > 0 ise sağda yeşil sayı rozeti - bekleyen bir işlem (ör. onay bekleyen
+  // davet) olduğunu gösterir; yeşilin işlevsel kullanımı.
+  final int badgeCount;
   final bool isLoading;
   final bool showChevron;
 
@@ -554,6 +561,24 @@ class _DrawerItem extends StatelessWidget {
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onBackgroundFaint),
+                )
+              else if (badgeCount > 0)
+                Container(
+                  key: const ValueKey('drawerInvitationsBadge'),
+                  constraints: const BoxConstraints(minWidth: 22),
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                  ),
+                  child: Text(
+                    '$badgeCount',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context)
+                        .textTheme
+                        .labelSmall
+                        ?.copyWith(color: AppColors.onPrimary, fontWeight: FontWeight.w700),
+                  ),
                 )
               else if (trailingText != null || showChevron)
                 Row(

@@ -6,10 +6,15 @@ import 'package:gym_app/core/widgets/app_drawer.dart';
 import 'package:gym_app/features/auth/data/real_auth_repository.dart';
 import 'package:gym_app/features/auth/domain/auth_repository.dart';
 import 'package:gym_app/features/auth/domain/me_result.dart';
+import 'package:gym_app/features/invitations/data/real_invitation_repository.dart';
+import 'package:gym_app/features/invitations/domain/invitation.dart';
+import 'package:gym_app/features/invitations/domain/invitation_repository.dart';
 import 'package:gym_app/l10n/generated/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
+
+class _MockInvitationRepository extends Mock implements InvitationRepository {}
 
 class _MemoryStore implements ActiveAssignmentStore {
   _MemoryStore([this.stored]);
@@ -48,6 +53,7 @@ Future<ProviderContainer> _pumpOpenDrawer(
   WidgetTester tester, {
   required List<MeAssignment> assignments,
   int? storedSelection,
+  List<Invitation> invitations = const [],
 }) async {
   // Çekmece bir ListView - tüm satırların test sırasında gerçekten
   // oluşturulması için yüzeyi uzatıyoruz.
@@ -67,8 +73,12 @@ Future<ProviderContainer> _pumpOpenDrawer(
         packageAssignments: const [],
       ));
 
+  final invitationRepository = _MockInvitationRepository();
+  when(() => invitationRepository.getMyInvitations()).thenAnswer((_) async => invitations);
+
   final container = ProviderContainer(overrides: [
     authRepositoryProvider.overrideWithValue(repository),
+    invitationRepositoryProvider.overrideWithValue(invitationRepository),
     activeAssignmentStoreProvider.overrideWithValue(_MemoryStore(storedSelection)),
   ]);
   addTearDown(container.dispose);
@@ -173,8 +183,38 @@ void main() {
     expect(find.text(_l10n.drawerCompanyManagement), findsNothing);
     expect(find.text(_l10n.drawerTrainerSchedule), findsNothing);
     _expectNoGymOperations();
-    expect(find.text(_l10n.drawerConfirmInvitation), findsOneWidget);
+    expect(find.text(_l10n.drawerInvitations), findsOneWidget);
+    expect(find.text(_l10n.drawerConfirmInvitation), findsNothing);
     expect(find.text(_l10n.drawerContentLibrary), findsOneWidget);
+  });
+
+  group('Davetlerim', () {
+    Invitation invitation(int id) => Invitation(
+          id: id,
+          type: InvitationType.package,
+          companyName: 'Test Gym',
+          branchName: 'Kadıköy',
+          role: null,
+          packageName: 'Aylık',
+          invitedByName: null,
+          createdAt: DateTime.utc(2026, 9, 26),
+          expiresAt: DateTime.utc(2026, 9, 27),
+        );
+
+    testWidgets('bekleyen davet sayısı rozette görünür', (tester) async {
+      await _pumpOpenDrawer(tester, assignments: const [], invitations: [invitation(1), invitation(2)]);
+
+      final row = find.ancestor(of: find.text(_l10n.drawerInvitations), matching: find.byType(InkWell));
+      expect(find.descendant(of: row, matching: find.text('2')), findsOneWidget);
+    });
+
+    testWidgets('bekleyen davet yoksa rozet görünmez', (tester) async {
+      await _pumpOpenDrawer(tester, assignments: const []);
+
+      final row = find.ancestor(of: find.text(_l10n.drawerInvitations), matching: find.byType(InkWell));
+      expect(find.descendant(of: row, matching: find.text('0')), findsNothing);
+      expect(find.byKey(const ValueKey('drawerInvitationsBadge')), findsNothing);
+    });
   });
 
   group('Aktif Görev seçicisi', () {
