@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/domain/staff_permissions.dart';
 import '../../features/auth/presentation/providers/current_user_provider.dart';
+import '../../features/auth/presentation/providers/staff_permissions_provider.dart';
 import '../../l10n/generated/app_localizations.dart';
-import '../providers/active_staff_company_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
-/// Personel/yönetim ekranlarını aktif firmadaki role göre koruyan sarmalayıcı.
+/// Personel/yönetim ekranlarını aktif görevdeki role göre koruyan sarmalayıcı.
 ///
 /// Menü (AppDrawer) yetkisiz girişleri zaten gizliyor, ama bir rotaya
 /// doğrudan gidilirse (deep link, web URL, geri yığını) menü devre dışı
@@ -31,7 +31,7 @@ class StaffPermissionGate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUserAsync = ref.watch(currentUserProvider);
-    final activeCompanyId = ref.watch(activeStaffCompanyIdProvider);
+    final permissions = ref.watch(staffPermissionsProvider);
 
     final me = currentUserAsync.asData?.value;
     if (me == null) {
@@ -57,7 +57,7 @@ class StaffPermissionGate extends ConsumerWidget {
             : const Center(child: CircularProgressIndicator(color: AppColors.primary)),
       );
     }
-    if (!isAllowed(StaffPermissions.of(me, activeCompanyId))) {
+    if (!isAllowed(permissions)) {
       return Scaffold(appBar: AppBar(), body: const _AccessDeniedState());
     }
     return child;

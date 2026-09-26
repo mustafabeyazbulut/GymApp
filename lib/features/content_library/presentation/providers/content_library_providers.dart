@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/providers/active_staff_assignment_provider.dart';
 import '../../data/real_content_library_repository.dart';
 import '../../domain/content_item.dart';
 
@@ -7,7 +8,12 @@ part 'content_library_providers.g.dart';
 @riverpod
 class ContentItemsNotifier extends _$ContentItemsNotifier {
   @override
-  Future<List<ContentItem>> build() => ref.watch(contentLibraryRepositoryProvider).getContentItems();
+  Future<List<ContentItem>> build() {
+    // Personel kolu aktif görevin firma/şubesine göre listeleniyor - görev
+    // değişince yenilenir.
+    ref.watch(activeStaffAssignmentProvider);
+    return ref.watch(contentLibraryRepositoryProvider).getContentItems();
+  }
 
   Future<void> refresh() async {
     final repository = ref.read(contentLibraryRepositoryProvider);

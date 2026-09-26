@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/providers/active_staff_company_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/staff_permission_gate.dart';
 import '../../../../l10n/generated/app_localizations.dart';
-import '../../../auth/presentation/providers/current_user_provider.dart';
+import '../../../auth/presentation/providers/staff_permissions_provider.dart';
 import '../../../tenant_onboarding/data/real_tenant_repository.dart';
 import '../../../tenant_onboarding/domain/branch_option.dart';
 import '../providers/door_access_providers.dart';
@@ -31,10 +30,9 @@ class _DoorAccessScreenState extends ConsumerState<DoorAccessScreen> {
   @override
   void initState() {
     super.initState();
-    final activeCompanyId = ref.read(activeStaffCompanyIdProvider);
-    final myAssignment = ref.read(currentUserProvider).asData?.value.staffAssignmentFor(activeCompanyId);
-    if (myAssignment?.branchId != null) {
-      _selectedBranchId = myAssignment!.branchId;
+    final fixedBranchId = ref.read(staffPermissionsProvider).fixedBranchId;
+    if (fixedBranchId != null) {
+      _selectedBranchId = fixedBranchId;
     } else {
       _loadBranches();
     }
@@ -91,9 +89,7 @@ class _DoorAccessScreenState extends ConsumerState<DoorAccessScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final activeCompanyId = ref.watch(activeStaffCompanyIdProvider);
-    final myAssignment = ref.watch(currentUserProvider).asData?.value.staffAssignmentFor(activeCompanyId);
-    final fixedBranchId = myAssignment?.branchId;
+    final fixedBranchId = ref.watch(staffPermissionsProvider).fixedBranchId;
     final branchId = fixedBranchId ?? _selectedBranchId;
 
     return Scaffold(

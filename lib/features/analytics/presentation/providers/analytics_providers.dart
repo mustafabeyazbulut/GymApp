@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/providers/active_staff_assignment_provider.dart';
 import '../../data/real_analytics_repository.dart';
 import '../../domain/analytics_summary.dart';
 
@@ -7,7 +8,11 @@ part 'analytics_providers.g.dart';
 @riverpod
 class AnalyticsSummaryNotifier extends _$AnalyticsSummaryNotifier {
   @override
-  Future<AnalyticsSummary> build() => ref.watch(analyticsRepositoryProvider).getSummary();
+  Future<AnalyticsSummary> build() {
+    // Özet aktif görevin kapsamına göre - görev değişince yenilenir.
+    ref.watch(activeStaffAssignmentProvider);
+    return ref.watch(analyticsRepositoryProvider).getSummary();
+  }
 
   Future<void> refresh() async {
     final repository = ref.read(analyticsRepositoryProvider);

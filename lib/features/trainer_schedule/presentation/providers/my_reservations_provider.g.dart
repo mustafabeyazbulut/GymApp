@@ -33,7 +33,7 @@ final class MyReservationsProvider
   MyReservations create() => MyReservations();
 }
 
-String _$myReservationsHash() => r'742e06db2fdcc7ac8ca944943ee4d95345a3ee89';
+String _$myReservationsHash() => r'7402dd19a5ee378dedb29c0d4e053437623dabdf';
 
 abstract class _$MyReservations extends $AsyncNotifier<List<MyReservation>> {
   FutureOr<List<MyReservation>> build();

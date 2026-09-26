@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/providers/active_staff_assignment_provider.dart';
 import '../../data/real_trainer_schedule_repository.dart';
 import '../../domain/my_reservation.dart';
 
@@ -8,6 +9,8 @@ part 'my_reservations_provider.g.dart';
 class MyReservations extends _$MyReservations {
   @override
   Future<List<MyReservation>> build() {
+    // Antrenörün programı aktif göreve (şubeye) özel - görev değişince yenilenir.
+    ref.watch(activeStaffAssignmentProvider);
     return ref.watch(trainerScheduleRepositoryProvider).getMyReservations();
   }
 

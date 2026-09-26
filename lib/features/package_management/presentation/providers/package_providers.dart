@@ -1,16 +1,24 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/providers/active_staff_assignment_provider.dart';
 import '../../data/real_package_repository.dart';
 import '../../domain/package_assignment_summary.dart';
 import '../../domain/package_summary.dart';
 
 part 'package_providers.g.dart';
 
+// Listeler aktif göreve özel (backend X-Active-Assignment-Id'ye göre
+// filtreliyor) - görev değişince yeniden yüklenmeleri için izleniyor.
 @riverpod
-Future<List<PackageSummary>> packages(Ref ref) => ref.watch(packageRepositoryProvider).getPackages();
+Future<List<PackageSummary>> packages(Ref ref) {
+  ref.watch(activeStaffAssignmentProvider);
+  return ref.watch(packageRepositoryProvider).getPackages();
+}
 
 @riverpod
-Future<List<PackageAssignmentSummary>> packageAssignments(Ref ref, {String? memberPhone}) =>
-    ref.watch(packageRepositoryProvider).getPackageAssignments(memberPhone: memberPhone);
+Future<List<PackageAssignmentSummary>> packageAssignments(Ref ref, {String? memberPhone}) {
+  ref.watch(activeStaffAssignmentProvider);
+  return ref.watch(packageRepositoryProvider).getPackageAssignments(memberPhone: memberPhone);
+}
 
 // Kendi state'i yok, sadece mutasyonları sunuyor - her biri başarı sonrası
 // ilgili liste provider'larını invalidate ederek ekranların taze veriyle

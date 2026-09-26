@@ -25,86 +25,127 @@ void main() {
     expect(me.isSuperAdmin, isFalse);
   });
 
-  test('isTrainer is true when any assignment is Trainer', () {
+  test('MeAssignment.fromJson id ve branchName alanlarını okur', () {
+    final assignment = MeAssignment.fromJson({
+      'id': 42,
+      'companyId': 1,
+      'companyName': 'Test Gym',
+      'branchId': 7,
+      'branchName': 'Kadıköy',
+      'role': 'BranchManager',
+    });
+
+    expect(assignment.id, 42);
+    expect(assignment.branchName, 'Kadıköy');
+  });
+
+  // Backend id/branchName'i henüz göndermiyorsa (eski sürüm) ayrıştırma
+  // patlamamalı.
+  test('MeAssignment.fromJson id ve branchName yoksa null döner', () {
+    final assignment = MeAssignment.fromJson({
+      'companyId': 1,
+      'companyName': 'Test Gym',
+      'branchId': null,
+      'role': 'GymAdmin',
+    });
+
+    expect(assignment.id, isNull);
+    expect(assignment.branchName, isNull);
+  });
+
+  test('staffAssignments Trainer dahil tüm personel atamalarını döner, SuperAdmin hariç', () {
+    const gymAdminA = MeAssignment(id: 1, companyId: 1, companyName: 'A', branchId: null, role: 'GymAdmin');
+    const trainerA = MeAssignment(id: 2, companyId: 1, companyName: 'A', branchId: 3, role: 'Trainer');
+    const branchManagerB = MeAssignment(id: 3, companyId: 2, companyName: 'B', branchId: 9, role: 'BranchManager');
     final me = _withAssignments([
-      const MeAssignment(companyId: 1, companyName: 'Co', branchId: 2, role: 'Trainer'),
-    ]);
-    expect(me.isTrainer, isTrue);
-  });
-
-  test('isTrainer is false for a user without any assignment', () {
-    final me = _withAssignments(const []);
-    expect(me.isTrainer, isFalse);
-  });
-
-  test('staffAssignment returns the GymAdmin assignment', () {
-    final gymAdmin = const MeAssignment(companyId: 1, companyName: 'Co', branchId: null, role: 'GymAdmin');
-    final me = _withAssignments([gymAdmin]);
-    expect(me.staffAssignment, same(gymAdmin));
-  });
-
-  test('staffAssignment returns the BranchManager assignment', () {
-    final branchManager = const MeAssignment(companyId: 1, companyName: 'Co', branchId: 5, role: 'BranchManager');
-    final me = _withAssignments([branchManager]);
-    expect(me.staffAssignment, same(branchManager));
-  });
-
-  test('staffAssignment is null for a Trainer-only user', () {
-    final me = _withAssignments([
-      const MeAssignment(companyId: 1, companyName: 'Co', branchId: 2, role: 'Trainer'),
-    ]);
-    expect(me.staffAssignment, isNull);
-  });
-
-  test('staffAssignments returns every GymAdmin/BranchManager assignment across companies', () {
-    final gymAdminA = const MeAssignment(companyId: 1, companyName: 'A', branchId: null, role: 'GymAdmin');
-    final branchManagerB = const MeAssignment(companyId: 2, companyName: 'B', branchId: 9, role: 'BranchManager');
-    final me = _withAssignments([
+      const MeAssignment(id: 4, companyId: null, companyName: null, branchId: null, role: 'SuperAdmin'),
       gymAdminA,
-      const MeAssignment(companyId: 1, companyName: 'A', branchId: 3, role: 'Trainer'),
+      trainerA,
       branchManagerB,
     ]);
-    expect(me.staffAssignments, [gymAdminA, branchManagerB]);
+
+    expect(me.staffAssignments, [gymAdminA, trainerA, branchManagerB]);
   });
 
-  test('staffAssignmentFor returns the assignment matching the given companyId', () {
-    final companyA = const MeAssignment(companyId: 1, companyName: 'A', branchId: null, role: 'GymAdmin');
-    final companyB = const MeAssignment(companyId: 2, companyName: 'B', branchId: 9, role: 'BranchManager');
-    final me = _withAssignments([companyA, companyB]);
-
-    expect(me.staffAssignmentFor(2), same(companyB));
+  test('staffAssignments personel ataması olmayan kullanıcı için boş', () {
+    expect(_withAssignments(const []).staffAssignments, isEmpty);
   });
 
-  test('staffAssignmentFor falls back to the first staff assignment when companyId is null', () {
-    final companyA = const MeAssignment(companyId: 1, companyName: 'A', branchId: null, role: 'GymAdmin');
-    final companyB = const MeAssignment(companyId: 2, companyName: 'B', branchId: 9, role: 'BranchManager');
-    final me = _withAssignments([companyA, companyB]);
+  test('selectableContexts Sistem Sahibi\'ni en üstte, ardından personel görevlerini döner', () {
+    const superAdmin = MeAssignment(id: 4, companyId: null, companyName: null, branchId: null, role: 'SuperAdmin');
+    const gymAdminA = MeAssignment(id: 1, companyId: 1, companyName: 'A', branchId: null, role: 'GymAdmin');
+    final me = _withAssignments([gymAdminA, superAdmin]);
 
-    expect(me.staffAssignmentFor(null), same(companyA));
+    expect(me.selectableContexts, [superAdmin, gymAdminA]);
+    expect(me.staffAssignments, [gymAdminA]);
   });
 
-  // Backend aynı firmada GymAdmin+BranchManager'ı engelliyor; yine de iki
-  // eşleşme gelirse daha geniş yetkili GymAdmin seçilmeli.
-  test('staffAssignmentFor prefers GymAdmin when the same company has several staff assignments', () {
-    final branchManager = const MeAssignment(companyId: 1, companyName: 'A', branchId: 9, role: 'BranchManager');
-    final gymAdmin = const MeAssignment(companyId: 1, companyName: 'A', branchId: null, role: 'GymAdmin');
-    final me = _withAssignments([branchManager, gymAdmin]);
+  group('defaultActiveAssignment', () {
+    test('tek atama varsa onu seçer (Trainer dahil)', () {
+      const trainer = MeAssignment(id: 5, companyId: 1, companyName: 'A', branchId: 3, role: 'Trainer');
+      expect(_withAssignments([trainer]).defaultActiveAssignment, same(trainer));
+    });
 
-    expect(me.staffAssignmentFor(1), same(gymAdmin));
+    test('GymAdmin > BranchManager > Trainer önceliğini uygular', () {
+      const trainer = MeAssignment(id: 1, companyId: 1, companyName: 'A', branchId: 3, role: 'Trainer');
+      const branchManager = MeAssignment(id: 2, companyId: 2, companyName: 'B', branchId: 9, role: 'BranchManager');
+      const gymAdmin = MeAssignment(id: 3, companyId: 3, companyName: 'C', branchId: null, role: 'GymAdmin');
+
+      expect(_withAssignments([trainer, branchManager, gymAdmin]).defaultActiveAssignment, same(gymAdmin));
+      expect(_withAssignments([trainer, branchManager]).defaultActiveAssignment, same(branchManager));
+    });
+
+    test('SuperAdmin için varsayılan Sistem Sahibi\'dir', () {
+      const gymAdmin = MeAssignment(id: 1, companyId: 3, companyName: 'C', branchId: null, role: 'GymAdmin');
+      const superAdmin = MeAssignment(id: 9, companyId: null, companyName: null, branchId: null, role: 'SuperAdmin');
+
+      expect(_withAssignments([gymAdmin, superAdmin]).defaultActiveAssignment, same(superAdmin));
+    });
+
+    test('aynı rolde en küçük Id seçilir', () {
+      const kadikoy = MeAssignment(id: 12, companyId: 1, companyName: 'A', branchId: 3, role: 'BranchManager');
+      const besiktas = MeAssignment(id: 8, companyId: 1, companyName: 'A', branchId: 4, role: 'BranchManager');
+
+      expect(_withAssignments([kadikoy, besiktas]).defaultActiveAssignment, same(besiktas));
+    });
+
+    test('id gelmeyen atamalar id taşıyanlardan sonra gelir', () {
+      const withoutId = MeAssignment(companyId: 1, companyName: 'A', branchId: 3, role: 'Trainer');
+      const withId = MeAssignment(id: 99, companyId: 2, companyName: 'B', branchId: 4, role: 'Trainer');
+
+      expect(_withAssignments([withoutId, withId]).defaultActiveAssignment, same(withId));
+    });
+
+    test('hiç görev yoksa null', () {
+      expect(_withAssignments(const []).defaultActiveAssignment, isNull);
+    });
   });
 
-  // Eşleşmeyen bir aktif firma, ilk atamaya DÜŞMEMELİ - aksi halde kullanıcı
-  // farkında olmadan yanlış gym bağlamında işlem yapabilir.
-  test('staffAssignmentFor returns null when companyId matches none', () {
-    final companyA = const MeAssignment(companyId: 1, companyName: 'A', branchId: null, role: 'GymAdmin');
-    final me = _withAssignments([companyA]);
+  group('activeAssignment', () {
+    const trainerA = MeAssignment(id: 1, companyId: 1, companyName: 'A', branchId: 3, role: 'Trainer');
+    const branchManagerB = MeAssignment(id: 2, companyId: 2, companyName: 'B', branchId: 9, role: 'BranchManager');
 
-    expect(me.staffAssignmentFor(999), isNull);
-  });
+    test('seçilen Id görevlerden biriyse onu döner', () {
+      expect(_withAssignments([trainerA, branchManagerB]).activeAssignment(1), same(trainerA));
+    });
 
-  test('staffAssignments is empty for a user without any assignment', () {
-    final me = _withAssignments(const []);
-    expect(me.staffAssignments, isEmpty);
+    test('seçim yoksa varsayılan kuralı uygular', () {
+      expect(_withAssignments([trainerA, branchManagerB]).activeAssignment(null), same(branchManagerB));
+    });
+
+    // Atama kaldırıldıysa veya cihazda başka bir kullanıcının seçimi kaldıysa
+    // aynı kuralla yeniden seçilir.
+    test('seçilen Id artık geçerli değilse varsayılan kurala döner', () {
+      expect(_withAssignments([trainerA, branchManagerB]).activeAssignment(999), same(branchManagerB));
+    });
+
+    test('SuperAdmin personel görevini seçebilir ve Sistem Sahibi\'ne geri dönebilir', () {
+      const superAdmin = MeAssignment(id: 7, companyId: null, companyName: null, branchId: null, role: 'SuperAdmin');
+      final me = _withAssignments([superAdmin, branchManagerB]);
+
+      expect(me.activeAssignment(2), same(branchManagerB));
+      expect(me.activeAssignment(7), same(superAdmin));
+    });
   });
 
   test('MePackageAssignment.fromJson parses all fields including nullable ones', () {

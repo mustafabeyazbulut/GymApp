@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/providers/active_staff_assignment_provider.dart';
 import '../../data/real_door_access_repository.dart';
 import '../../domain/zone.dart';
 
@@ -7,7 +8,11 @@ part 'door_access_providers.g.dart';
 @riverpod
 class ZonesNotifier extends _$ZonesNotifier {
   @override
-  Future<List<Zone>> build(int branchId) => ref.watch(doorAccessRepositoryProvider).getZones(branchId);
+  Future<List<Zone>> build(int branchId) {
+    // Aktif görev değişince (backend yetkiyi göreve göre kontrol ediyor) yenilenir.
+    ref.watch(activeStaffAssignmentProvider);
+    return ref.watch(doorAccessRepositoryProvider).getZones(branchId);
+  }
 
   Future<void> refresh() async {
     final repository = ref.read(doorAccessRepositoryProvider);

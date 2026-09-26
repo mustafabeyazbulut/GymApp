@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/providers/active_staff_assignment_provider.dart';
 import '../../data/real_class_scheduling_repository.dart';
 import '../../domain/class_enrollment.dart';
 import '../../domain/class_session.dart';
@@ -17,6 +18,8 @@ part 'class_scheduling_providers.g.dart';
 class WeeklyClassSessions extends _$WeeklyClassSessions {
   @override
   Future<List<ClassSession>> build() {
+    // Personelin gördüğü program aktif göreve özel - görev değişince yenilenir.
+    ref.watch(activeStaffAssignmentProvider);
     final (from, to) = _thisWeekRange();
     return ref.watch(classSchedulingRepositoryProvider).getClassSessions(from: from, to: to);
   }

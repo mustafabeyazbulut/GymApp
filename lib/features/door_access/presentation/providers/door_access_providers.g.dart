@@ -50,7 +50,7 @@ final class ZonesNotifierProvider
   }
 }
 
-String _$zonesNotifierHash() => r'8fbd063e6af00795565848421b923915aede681d';
+String _$zonesNotifierHash() => r'8d012e0c59c2242a2c3057350e9386853f5a89e4';
 
 final class ZonesNotifierFamily extends $Family
     with

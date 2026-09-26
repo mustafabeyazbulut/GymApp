@@ -3,18 +3,26 @@ import 'dart:ui' show PlatformDispatcher;
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../features/auth/domain/me_result.dart';
+import '../../features/auth/presentation/providers/current_user_provider.dart';
 import '../locale/app_locale_provider.dart';
-import '../providers/active_staff_company_provider.dart';
+import '../providers/active_staff_assignment_provider.dart';
 import 'api_config.dart';
 import 'token_store.dart';
 import 'secure_token_store.dart';
 
 part 'dio_client.g.dart';
 
-// Backend'in TenantContextMiddleware'inin okuduğu header adıyla birebir
+// Backend'in TenantContextMiddleware'inin okuduğu header adlarıyla birebir
 // aynı olmalı (bkz. GymAppApi Presentation/GymAppApi.WebApi/Middleware/
-// TenantContextMiddleware.cs'deki ActiveCompanyHeaderName sabiti).
+// TenantContextMiddleware.cs). Aktif görev asıl bağlamdır; firma header'ı
+// geriye dönük uyumluluk için seçili görevin firmasıyla gönderilmeye devam eder.
+const activeAssignmentHeaderName = 'X-Active-Assignment-Id';
 const activeCompanyHeaderName = 'X-Active-Company-Id';
+
+// Backend'in geçersiz/başkasına ait/pasif bir X-Active-Assignment-Id için
+// döndüğü 403'ün hata kodu.
+const invalidActiveAssignmentCode = 'InvalidActiveAssignment';
 
 // Kendisine Authorization başlığı eklenmemesi gereken ve 401 durumunda
 // refresh-and-retry'ı TETİKLEMEMESİ gereken uç noktalar (/login'den gelen
@@ -117,8 +125,32 @@ void addAuthInterceptor(Dio dio, TokenStore tokenStore) {
   );
 }
 
+// Çözümlenmiş aktif görev: seçim + /me'deki atamalar. Kullanıcı henüz
+// yüklenmemişse null döner - ref.read'in currentUserProvider'ı burada
+// başlatması, ör. /login isteği sırasında token'sız bir /me isteği atıp
+// giriş-yönlendirme yarışını yeniden doğururdu (bkz. main.dart'taki not).
+// Auth uçları aktif görev bağlamına ihtiyaç duymaz; /me'nin header'sız
+// gitmesi, geçersiz bir seçimin kendi düzeltmesini (GetMe yenilemesi)
+// engellemesini de önler.
+MeAssignment? _activeAssignmentFor(Ref ref, String path) {
+  if (path.startsWith('/api/auth/')) return null;
+  if (!ref.exists(currentUserProvider)) return null;
+  final active = ref.read(currentUserProvider).value?.activeAssignment(ref.read(activeStaffAssignmentProvider));
+  // Sistem Sahibi olarak hareket ederken header gönderilmez - backend
+  // header'sız isteği SuperAdmin olarak işler.
+  return (active?.isStaffRole ?? false) ? active : null;
+}
+
+bool _isInvalidActiveAssignment(Response<dynamic>? response) {
+  if (response?.statusCode != 403) return false;
+  final data = response!.data;
+  // Hata DTO'su PascalCase (bkz. ApiException.fromDioException); yine de
+  // camelCase'e karşı dayanıklı.
+  return data is Map && (data['Code'] ?? data['code']) == invalidActiveAssignmentCode;
+}
+
 // keepAlive: interceptor'lar her istekte bu provider'ın kendi `ref`'ini
-// kullanıyor (ref.read(activeStaffCompanyIdProvider) vb.). autoDispose iken,
+// kullanıyor (ref.read(activeStaffAssignmentProvider) vb.). autoDispose iken,
 // o an provider'ı dinleyen kimse yoksa (ör. /login ekranı) bir istek
 // sürerken provider dispose ediliyor ve ref.read "dispose edilmiş Ref"
 // hatası fırlatıyordu - Dio bunu yanıtsız bir DioException'a çevirdiği için
@@ -142,9 +174,12 @@ Dio dio(Ref ref) {
   dio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) {
-        final companyId = ref.read(activeStaffCompanyIdProvider);
-        if (companyId != null) {
-          options.headers[activeCompanyHeaderName] = companyId.toString();
+        final activeAssignment = _activeAssignmentFor(ref, options.path);
+        if (activeAssignment?.id != null) {
+          options.headers[activeAssignmentHeaderName] = activeAssignment!.id.toString();
+        }
+        if (activeAssignment?.companyId != null) {
+          options.headers[activeCompanyHeaderName] = activeAssignment!.companyId.toString();
         }
         // Backend'in kendi mesajlarını (hata/uyarı metinleri) hangi dilde
         // döneceğine bu header karar veriyor (bkz. GymAppApi
@@ -157,6 +192,18 @@ Dio dio(Ref ref) {
         final locale = ref.read(appLocaleProvider) ?? PlatformDispatcher.instance.locale;
         options.headers['Accept-Language'] = locale.languageCode == 'tr' ? 'tr' : 'en';
         handler.next(options);
+      },
+      // Seçili görev artık geçerli değil (atama kaldırıldı/pasif): seçimi
+      // varsayılan kurala sıfırla ve /me'yi yenile ki çözümleme güncel
+      // atamalarla yapılsın. İstek TEKRARLANMAZ - hata çağırana iletilir;
+      // /me header'sız gittiği için bu yenileme kendisi 403'e düşüp döngü
+      // oluşturamaz.
+      onError: (error, handler) {
+        if (_isInvalidActiveAssignment(error.response)) {
+          ref.read(activeStaffAssignmentProvider.notifier).reset();
+          if (ref.exists(currentUserProvider)) ref.invalidate(currentUserProvider);
+        }
+        handler.next(error);
       },
     ),
   );

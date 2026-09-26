@@ -34,7 +34,7 @@ final class ContentItemsNotifierProvider
 }
 
 String _$contentItemsNotifierHash() =>
-    r'47d9ec16e8a0953f6159240df995905e34a4b8e1';
+    r'28909f622bafe50be6692e115252b44dd7df3fe1';
 
 abstract class _$ContentItemsNotifier
     extends $AsyncNotifier<List<ContentItem>> {

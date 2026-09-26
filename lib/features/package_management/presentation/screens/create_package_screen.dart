@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/providers/active_staff_company_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../l10n/generated/app_localizations.dart';
-import '../../../auth/presentation/providers/current_user_provider.dart';
+import '../../../auth/presentation/providers/staff_permissions_provider.dart';
 import '../../../tenant_onboarding/data/real_tenant_repository.dart';
 import '../../../tenant_onboarding/domain/branch_option.dart';
 import '../providers/package_providers.dart';
@@ -37,10 +36,9 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   @override
   void initState() {
     super.initState();
-    final activeCompanyId = ref.read(activeStaffCompanyIdProvider);
-    final myAssignment = ref.read(currentUserProvider).asData?.value.staffAssignmentFor(activeCompanyId);
-    if (myAssignment?.branchId != null) {
-      _selectedBranchId = myAssignment!.branchId;
+    final fixedBranchId = ref.read(staffPermissionsProvider).fixedBranchId;
+    if (fixedBranchId != null) {
+      _selectedBranchId = fixedBranchId;
     } else {
       _loadBranches();
     }
@@ -75,9 +73,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
     final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
 
-    final activeCompanyId = ref.read(activeStaffCompanyIdProvider);
-    final myAssignment = ref.read(currentUserProvider).asData?.value.staffAssignmentFor(activeCompanyId);
-    final companyId = myAssignment?.companyId;
+    final companyId = ref.read(staffPermissionsProvider).activeAssignment?.companyId;
     if (companyId == null) {
       setState(() => _errorText = l10n.commonError);
       return;
@@ -113,9 +109,8 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final activeCompanyId = ref.watch(activeStaffCompanyIdProvider);
-    final myAssignment = ref.watch(currentUserProvider).asData?.value.staffAssignmentFor(activeCompanyId);
-    final fixedBranchId = myAssignment?.branchId;
+    final permissions = ref.watch(staffPermissionsProvider);
+    final fixedBranchId = permissions.fixedBranchId;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.createPackageTitle)),
@@ -195,7 +190,7 @@ class _CreatePackageScreenState extends ConsumerState<CreatePackageScreen> {
                 if (fixedBranchId != null)
                   TextFormField(
                     enabled: false,
-                    initialValue: myAssignment?.companyName ?? l10n.addStaffMemberBranchLabel,
+                    initialValue: permissions.activeAssignment?.branchName ?? l10n.addStaffMemberBranchLabel,
                     decoration: InputDecoration(labelText: l10n.addStaffMemberBranchLabel),
                   )
                 else if (_isLoadingBranches)

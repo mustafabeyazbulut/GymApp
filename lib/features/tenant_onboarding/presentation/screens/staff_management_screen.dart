@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/network/api_exception.dart';
+import '../../../../core/providers/active_staff_assignment_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -88,6 +89,8 @@ class _StaffManagementScreenState extends ConsumerState<StaffManagementScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // Aktif görev değişince liste o görevin personeliyle yeniden yüklenir.
+    ref.listen(activeStaffAssignmentProvider, (_, _) => _load());
 
     return Scaffold(
       appBar: AppBar(

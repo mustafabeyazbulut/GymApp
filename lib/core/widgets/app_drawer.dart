@@ -4,15 +4,37 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/data/real_auth_repository.dart';
 import '../../features/auth/domain/auth_exceptions.dart';
 import '../../features/auth/domain/me_result.dart';
-import '../../features/auth/domain/staff_permissions.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
 import '../../features/auth/presentation/providers/current_user_provider.dart';
+import '../../features/auth/presentation/providers/staff_permissions_provider.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../locale/app_locale_provider.dart';
-import '../providers/active_staff_company_provider.dart';
+import '../providers/active_staff_assignment_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import 'otp_code_dialog.dart';
+
+/// "Aktif Görev" seçicisindeki satır metni: "Firma · Şube · Rol". GymAdmin
+/// firma genelinde çalıştığı için şube yerine "Firma geneli" yazılır; Sistem
+/// Sahibi tek başına gösterilir. Şube adı gelmezse (eski backend) o parça
+/// atlanır.
+String activeTaskLabel(MeAssignment assignment, AppLocalizations l10n) {
+  final String role;
+  switch (assignment.role) {
+    case 'SuperAdmin':
+      return l10n.drawerActiveTaskSystemOwner;
+    case 'GymAdmin':
+      role = l10n.staffManagementRoleGymAdmin;
+    case 'BranchManager':
+      role = l10n.staffManagementRoleBranchManager;
+    case 'Trainer':
+      role = l10n.staffManagementRoleTrainer;
+    default:
+      role = assignment.role;
+  }
+  final branch = assignment.role == 'GymAdmin' ? l10n.drawerActiveTaskCompanyWide : assignment.branchName;
+  return [assignment.companyName, branch, role].whereType<String>().where((part) => part.isNotEmpty).join(' · ');
+}
 
 /// Uygulamanın yan navigasyon çekmecesi; her shell dalında ortak kullanılır
 /// (bkz. `appShellScaffoldKey`) ve header'daki menü butonundan açılır.
@@ -75,33 +97,40 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     }
   }
 
-  // Çok şirketli bir GymAdmin/BranchManager'ın şu an personel yönetimi
-  // için hangi şirketi "aktif" olarak kullandığını seçmesi - seçim
-  // dioProvider'ın her isteğe eklediği X-Active-Company-Id header'ını
-  // besler (bkz. core/providers/active_staff_company_provider.dart).
-  Future<void> _pickActiveCompany(List<MeAssignment> staffAssignments, int? currentCompanyId) async {
-    final selected = await showDialog<int>(
+  // Birden fazla görevi olan kullanıcının (çok şubeli/çok firmalı personel,
+  // personel ataması da olan Sistem Sahibi) şu an hangi görevle hareket
+  // ettiğini seçmesi - seçim dioProvider'ın her isteğe eklediği
+  // X-Active-Assignment-Id header'ını besler (bkz.
+  // core/providers/active_staff_assignment_provider.dart). Menü, rota
+  // korumaları ve personel ekranlarının verileri seçime göre yenilenir.
+  Future<void> _pickActiveTask(List<MeAssignment> contexts, MeAssignment? current) async {
+    final selected = await showDialog<MeAssignment>(
       context: context,
-      builder: (dialogContext) => SimpleDialog(
-        title: Text(AppLocalizations.of(dialogContext)!.drawerActiveCompanyPickerTitle),
-        children: [
-          for (final assignment in staffAssignments)
-            SimpleDialogOption(
-              onPressed: () => Navigator.of(dialogContext).pop(assignment.companyId),
-              child: Row(
-                children: [
-                  Expanded(child: Text(assignment.companyName ?? '')),
-                  if (assignment.companyId == currentCompanyId)
-                    const Icon(Icons.check, size: 18, color: AppColors.primary),
-                ],
+      builder: (dialogContext) {
+        final l10n = AppLocalizations.of(dialogContext)!;
+        return SimpleDialog(
+          title: Text(l10n.drawerActiveTaskPickerTitle),
+          children: [
+            for (final assignment in contexts)
+              SimpleDialogOption(
+                onPressed: () => Navigator.of(dialogContext).pop(assignment),
+                child: Row(
+                  children: [
+                    Expanded(child: Text(activeTaskLabel(assignment, l10n))),
+                    if (identical(assignment, current))
+                      const Icon(Icons.check, size: 18, color: AppColors.primary),
+                  ],
+                ),
               ),
-            ),
-        ],
-      ),
+          ],
+        );
+      },
     );
 
-    if (selected == null || !mounted) return;
-    ref.read(activeStaffCompanyIdProvider.notifier).select(selected);
+    // Id'siz atama (eski backend) seçim olarak saklanamaz.
+    final selectedId = selected?.id;
+    if (selectedId == null || !mounted) return;
+    ref.read(activeStaffAssignmentProvider.notifier).select(selectedId);
   }
 
   Future<void> _confirmAndFreezeAccount() async {
@@ -209,12 +238,12 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final currentUser = ref.watch(currentUserProvider).asData?.value;
-    final activeCompanyId = ref.watch(activeStaffCompanyIdProvider);
     // Menü görünürlüğü "herhangi bir yerde personel mi" sorusuna değil,
-    // AKTİF firmadaki role göre belirlenir (bkz. StaffPermissions).
-    final permissions = StaffPermissions.of(currentUser, activeCompanyId);
-    final activeStaffAssignment = permissions.activeAssignment;
-    final hasMultipleStaffCompanies = (currentUser?.staffAssignments.length ?? 0) > 1;
+    // AKTİF görevdeki role göre belirlenir (bkz. StaffPermissions).
+    final permissions = ref.watch(staffPermissionsProvider);
+    final activeTask = permissions.activeAssignment;
+    final selectableContexts = currentUser?.selectableContexts ?? const <MeAssignment>[];
+    final hasMultipleTasks = selectableContexts.length > 1;
 
     void closeThenPush(String location) {
       // Drawer'ın GoRouter'ı: bu widget'ın kendi context'i degil, cunku
@@ -300,14 +329,13 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       label: l10n.drawerCompanyManagement,
                       onTap: () => closeThenPush('/admin/companies'),
                     ),
-                  if (hasMultipleStaffCompanies)
+                  if (hasMultipleTasks)
                     _DrawerItem(
-                      icon: Icons.apartment_outlined,
-                      label: l10n.drawerActiveCompanyLabel,
-                      trailingText: activeStaffAssignment?.companyName,
+                      icon: Icons.badge_outlined,
+                      label: l10n.drawerActiveTaskLabel,
+                      subtitle: activeTask == null ? null : activeTaskLabel(activeTask, l10n),
                       showChevron: true,
-                      onTap: () =>
-                          _pickActiveCompany(currentUser!.staffAssignments, activeStaffAssignment?.companyId),
+                      onTap: () => _pickActiveTask(selectableContexts, activeTask),
                     ),
                   if (permissions.canViewBranches)
                     _DrawerItem(
@@ -319,11 +347,6 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                     _DrawerItem(
                       icon: Icons.person_add_alt_outlined,
                       label: l10n.drawerAddStaffMember,
-                      // Birden fazla şirket varsa hangi şirketi hedeflediğini
-                      // görünür kıl - artık gerçekten yukarıdaki "Aktif
-                      // Şirket" seçimini yansıtıyor (bkz.
-                      // MeResult.staffAssignmentFor, X-Active-Company-Id).
-                      trailingText: hasMultipleStaffCompanies ? activeStaffAssignment?.companyName : null,
                       onTap: () => closeThenPush('/admin/add-staff-member'),
                     ),
                   if (permissions.canManageStaff)
@@ -366,15 +389,18 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       label: l10n.drawerReports,
                       onTap: () => closeThenPush('/staff/reports'),
                     ),
-                  if (currentUser?.isTrainer ?? false)
+                  // Sadece aktif görev antrenörlük iken - başka bir görevdeki
+                  // antrenörlük bu görevin programını açmaz.
+                  if (permissions.canViewTrainerSchedule)
                     _DrawerItem(
                       icon: Icons.event_note_outlined,
                       label: l10n.drawerTrainerSchedule,
                       onTap: () => closeThenPush('/trainer/schedule'),
                     ),
-                  if (permissions.canManageCompanies ||
-                      permissions.hasActiveStaffRole ||
-                      (currentUser?.isTrainer ?? false))
+                  if (hasMultipleTasks ||
+                      permissions.canManageCompanies ||
+                      permissions.hasManagementRole ||
+                      permissions.canViewTrainerSchedule)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
                       child: Divider(color: AppColors.border, height: 1),
@@ -467,6 +493,7 @@ class _DrawerItem extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.color,
+    this.subtitle,
     this.trailingText,
     this.isLoading = false,
     this.showChevron = false,
@@ -476,6 +503,10 @@ class _DrawerItem extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
   final Color? color;
+  // Etiketin altında tek satır, soluk ikincil bilgi (ör. aktif görevin
+  // "Firma · Şube · Rol" metni) - sağdaki trailingText'e sığmayacak kadar uzun
+  // değerler için.
+  final String? subtitle;
   final String? trailingText;
   final bool isLoading;
   final bool showChevron;
@@ -494,11 +525,28 @@ class _DrawerItem extends StatelessWidget {
               Icon(icon, size: 20, color: color ?? AppColors.onBackgroundMuted),
               const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: Text(
-                  label,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500, color: color ?? AppColors.onBackground),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge
+                          ?.copyWith(fontWeight: FontWeight.w500, color: color ?? AppColors.onBackground),
+                    ),
+                    if (subtitle != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          subtitle!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onBackgroundFaint),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               if (isLoading)

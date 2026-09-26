@@ -34,7 +34,7 @@ final class RevenueReportNotifierProvider
 }
 
 String _$revenueReportNotifierHash() =>
-    r'8b6a68a2737977e8007ff9655e4038ed9c4f37b3';
+    r'6213093a2d9eb25d7e1679209e3479b7450b3a81';
 
 abstract class _$RevenueReportNotifier extends $AsyncNotifier<RevenueReport> {
   FutureOr<RevenueReport> build();
@@ -83,7 +83,7 @@ final class OutstandingBalancesNotifierProvider
 }
 
 String _$outstandingBalancesNotifierHash() =>
-    r'd1a4c45e01a9a15b90f5ceefb6c1ff20fcde032f';
+    r'6276e6c80d608f5f72b5e42e5255e7c965b676c1';
 
 abstract class _$OutstandingBalancesNotifier
     extends $AsyncNotifier<List<OutstandingBalance>> {
@@ -141,7 +141,7 @@ final class ExpiringMembershipsNotifierProvider
 }
 
 String _$expiringMembershipsNotifierHash() =>
-    r'7850c02f1671a487dca29a3ae5400f1ae6afdbcc';
+    r'4e6580fdc3a3852c91976ea7a0bf888bd5b5ba4e';
 
 abstract class _$ExpiringMembershipsNotifier
     extends $AsyncNotifier<List<ExpiringMembership>> {

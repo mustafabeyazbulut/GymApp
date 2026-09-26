@@ -34,7 +34,7 @@ final class WeeklyClassSessionsProvider
 }
 
 String _$weeklyClassSessionsHash() =>
-    r'bed6567953e255224b5a8ee1b60d474c66d539e3';
+    r'f8ac1d9f3d285437522366c00df34caa7d982cc1';
 
 abstract class _$WeeklyClassSessions
     extends $AsyncNotifier<List<ClassSession>> {

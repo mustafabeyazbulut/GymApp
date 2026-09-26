@@ -117,7 +117,7 @@ GoRouter appRouter(Ref ref) {
       ),
       GoRoute(
         path: '/trainer/schedule',
-        builder: (context, state) => const TrainerScheduleScreen(),
+        builder: (context, state) => _guard((p) => p.canViewTrainerSchedule, const TrainerScheduleScreen()),
       ),
       GoRoute(
         path: '/staff/classes/create',

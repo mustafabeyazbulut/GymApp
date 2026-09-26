@@ -1,24 +1,40 @@
 class MeAssignment {
   const MeAssignment({
+    this.id,
     required this.companyId,
     required this.companyName,
     required this.branchId,
+    this.branchName,
     required this.role,
   });
 
   factory MeAssignment.fromJson(Map<String, dynamic> json) => MeAssignment(
+        id: json['id'] as int?,
         companyId: json['companyId'] as int?,
         companyName: json['companyName'] as String?,
         branchId: json['branchId'] as int?,
+        branchName: json['branchName'] as String?,
         role: json['role'] as String,
       );
 
+  // Atamanın kendi Id'si - X-Active-Assignment-Id header'ının değeri. Eski
+  // backend sürümleri göndermediği için null olabilir.
+  final int? id;
   // Platform genelinde bir atama için null olur (ör. SuperAdmin); tek bir şirkete bağlı değildir.
   final int? companyId;
   final String? companyName;
   final int? branchId;
+  // GymAdmin (firma geneli) atamasında ve eski backend sürümlerinde null.
+  final String? branchName;
   final String role;
+
+  /// Bir gym'deki personel görevi (GymAdmin, BranchManager, Trainer).
+  bool get isStaffRole => role != 'SuperAdmin' && _contextRolePriority.containsKey(role);
 }
+
+// Aktif görev olarak seçilebilen roller ve varsayılan seçimdeki öncelikleri
+// (küçük olan önce) - backend'in header'sız istekte uyguladığı kuralla aynı.
+const _contextRolePriority = {'SuperAdmin': 0, 'GymAdmin': 1, 'BranchManager': 2, 'Trainer': 3};
 
 class MePackageAssignment {
   const MePackageAssignment({
@@ -129,52 +145,47 @@ class MeResult {
 
   bool get isSuperAdmin => assignments.any((a) => a.role == 'SuperAdmin');
 
-  // Bir Trainer'ın kendi programını görebileceği drawer girişini göstermek
-  // için (bkz. TrainerScheduleScreen, GET /api/reservations/mine).
-  bool get isTrainer => assignments.any((a) => a.role == 'Trainer');
+  /// Kullanıcının gym'lerdeki tüm personel görevleri (GymAdmin, BranchManager,
+  /// Trainer).
+  List<MeAssignment> get staffAssignments => assignments.where((a) => a.isStaffRole).toList();
 
-  // Bu kullanıcının personel yönetmesine izin veren tek Assignment (varsa) - bir
-  // GymAdmin şirketinin her şubesini denetler (kendi atamasında branchId null'dur);
-  // bir BranchManager ise tam olarak tek bir şubeyle sınırlıdır. Sıradan bir
-  // Member/Trainer için ve herhangi bir yerde AYRICA personel olmayan bir
-  // SuperAdmin için null döner (SuperAdmin bunun yerine "Yeni Firma Ekle"
-  // kullanır, bkz. AppDrawer).
-  MeAssignment? get staffAssignment {
-    for (final assignment in assignments) {
-      if (assignment.role == 'GymAdmin' || assignment.role == 'BranchManager') {
-        return assignment;
-      }
+  /// Menüdeki "Aktif Görev" seçicisinin listelediği görevler: Sistem Sahibi
+  /// (varsa, en üstte) + personel görevleri (backend'in döndüğü sırayla).
+  /// Seçici bunlardan birden fazlası varsa görünür.
+  List<MeAssignment> get selectableContexts => [
+        ...assignments.where((a) => a.role == 'SuperAdmin'),
+        ...staffAssignments,
+      ];
+
+  /// Kullanıcı henüz bir görev seçmediyse (veya seçimi geçersizleştiyse)
+  /// kullanılacak görev: SuperAdmin > GymAdmin > BranchManager > Trainer; aynı
+  /// rolde en küçük Id. Id'si gelmeyen atamalar (eski backend) sona düşer.
+  MeAssignment? get defaultActiveAssignment {
+    MeAssignment? best;
+    for (final candidate in selectableContexts) {
+      if (best == null || _comesBefore(candidate, best)) best = candidate;
     }
-    return null;
+    return best;
   }
 
-  // Aynı [staffAssignment] mantığının çoklu-şirket farkındalıklı sürümü -
-  // GymAdmin/BranchManager olduğu HER şirketi döner (sadece ilkini değil).
-  // AppDrawer'ın "Aktif Şirket" seçicisini doldurmak için kullanılır.
-  List<MeAssignment> get staffAssignments =>
-      assignments.where((a) => a.role == 'GymAdmin' || a.role == 'BranchManager').toList();
-
-  // [staffAssignments] içinden [companyId]'ye eşleşen olanı döner - backend
-  // artık X-Active-Company-Id header'ını (bkz.
-  // core/providers/active_staff_company_provider.dart) çağıranın gerçekten
-  // sahip olduğu bir şirketle eşleştiği sürece onurlandırıyor, bu yüzden bir
-  // ekranın hangi şirket için işlem yaptığını göstermesi de aynı seçimi
-  // yansıtmalı. companyId null'sa (henüz seçim yapılmadı) [staffAssignment]
-  // (ilk eşleşme) döner. Eşleşme bulunamazsa ise null döner - ilk atamaya
-  // düşmek, kullanıcının farkında olmadan yanlış gym bağlamında işlem
-  // yapmasına yol açabilir.
-  //
-  // Varsayım: aynı firmada bir kullanıcı hem GymAdmin hem BranchManager
-  // olamaz (backend bunu engelliyor). Yine de birden fazla eşleşme gelirse
-  // ucuz bir savunma olarak daha geniş yetkili GymAdmin seçilir.
-  MeAssignment? staffAssignmentFor(int? companyId) {
-    if (companyId == null) return staffAssignment;
-    MeAssignment? match;
-    for (final assignment in staffAssignments) {
-      if (assignment.companyId != companyId) continue;
-      if (assignment.role == 'GymAdmin') return assignment;
-      match ??= assignment;
+  /// [selectedAssignmentId] seçilebilir görevlerden biriyse onu, değilse
+  /// (seçim yok, atama kaldırılmış, başka kullanıcıdan kalmış)
+  /// [defaultActiveAssignment]'ı döner. Sonuç SuperAdmin ise kullanıcı Sistem
+  /// Sahibi olarak hareket ediyordur (aktif görev header'ı gönderilmez).
+  MeAssignment? activeAssignment(int? selectedAssignmentId) {
+    if (selectedAssignmentId != null) {
+      for (final assignment in selectableContexts) {
+        if (assignment.id == selectedAssignmentId) return assignment;
+      }
     }
-    return match;
+    return defaultActiveAssignment;
+  }
+
+  static bool _comesBefore(MeAssignment a, MeAssignment b) {
+    final byRole = _contextRolePriority[a.role]!.compareTo(_contextRolePriority[b.role]!);
+    if (byRole != 0) return byRole < 0;
+    if (a.id == null) return false;
+    if (b.id == null) return true;
+    return a.id! < b.id!;
   }
 }

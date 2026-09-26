@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/providers/active_staff_company_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../l10n/generated/app_localizations.dart';
-import '../../../auth/presentation/providers/current_user_provider.dart';
+import '../../../auth/presentation/providers/staff_permissions_provider.dart';
 import '../../../tenant_onboarding/data/real_tenant_repository.dart';
 import '../../../tenant_onboarding/domain/branch_option.dart';
 import '../providers/content_library_providers.dart';
@@ -34,10 +33,9 @@ class _UploadContentItemScreenState extends ConsumerState<UploadContentItemScree
   @override
   void initState() {
     super.initState();
-    final activeCompanyId = ref.read(activeStaffCompanyIdProvider);
-    final myAssignment = ref.read(currentUserProvider).asData?.value.staffAssignmentFor(activeCompanyId);
-    if (myAssignment?.role != 'GymAdmin') {
-      _selectedBranchId = myAssignment?.branchId;
+    final permissions = ref.read(staffPermissionsProvider);
+    if (!permissions.isGymAdmin) {
+      _selectedBranchId = permissions.fixedBranchId;
     } else {
       _loadBranches();
     }
@@ -119,9 +117,8 @@ class _UploadContentItemScreenState extends ConsumerState<UploadContentItemScree
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final activeCompanyId = ref.watch(activeStaffCompanyIdProvider);
-    final myAssignment = ref.watch(currentUserProvider).asData?.value.staffAssignmentFor(activeCompanyId);
-    final isGymAdmin = myAssignment?.role == 'GymAdmin';
+    final permissions = ref.watch(staffPermissionsProvider);
+    final isGymAdmin = permissions.isGymAdmin;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.contentLibraryUploadTitle)),
@@ -158,7 +155,7 @@ class _UploadContentItemScreenState extends ConsumerState<UploadContentItemScree
                 if (!isGymAdmin)
                   TextFormField(
                     enabled: false,
-                    initialValue: myAssignment?.companyName ?? l10n.addStaffMemberBranchLabel,
+                    initialValue: permissions.activeAssignment?.branchName ?? l10n.addStaffMemberBranchLabel,
                     decoration: InputDecoration(labelText: l10n.addStaffMemberBranchLabel),
                   )
                 else if (_isLoadingBranches)

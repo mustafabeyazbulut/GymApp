@@ -48,7 +48,7 @@ final class PackagesProvider
   }
 }
 
-String _$packagesHash() => r'b761c207055911c82edce1e17773f27b77af3d56';
+String _$packagesHash() => r'd90150cde4e8b5ec35ddb5ba75b27a2f6f10d758';
 
 @ProviderFor(packageAssignments)
 final packageAssignmentsProvider = PackageAssignmentsFamily._();
@@ -108,7 +108,7 @@ final class PackageAssignmentsProvider
 }
 
 String _$packageAssignmentsHash() =>
-    r'059906cd4ecdc243c1ba9d5569c32d46cae6e6ec';
+    r'7189a1f21f62877627f0db0c907f055f9a31ebdf';
 
 final class PackageAssignmentsFamily extends $Family
     with

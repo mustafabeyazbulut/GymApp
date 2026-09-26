@@ -13,13 +13,24 @@ MeResult _withAssignments(List<MeAssignment> assignments) => MeResult(
       packageAssignments: const [],
     );
 
-const _gymAdminA = MeAssignment(companyId: 1, companyName: 'A', branchId: null, role: 'GymAdmin');
-const _branchManagerB = MeAssignment(companyId: 2, companyName: 'B', branchId: 9, role: 'BranchManager');
-const _superAdmin = MeAssignment(companyId: null, companyName: null, branchId: null, role: 'SuperAdmin');
-const _trainer = MeAssignment(companyId: 1, companyName: 'A', branchId: 3, role: 'Trainer');
+const _gymAdminA = MeAssignment(id: 1, companyId: 1, companyName: 'A', branchId: null, role: 'GymAdmin');
+const _branchManagerB = MeAssignment(id: 2, companyId: 2, companyName: 'B', branchId: 9, role: 'BranchManager');
+const _superAdmin = MeAssignment(id: 3, companyId: null, companyName: null, branchId: null, role: 'SuperAdmin');
+const _trainerA = MeAssignment(id: 4, companyId: 1, companyName: 'A', branchId: 3, role: 'Trainer');
+
+void _expectNoGymOperations(StaffPermissions permissions) {
+  expect(permissions.hasManagementRole, isFalse);
+  expect(permissions.canViewBranches, isFalse);
+  expect(permissions.canManageStaff, isFalse);
+  expect(permissions.canManagePackages, isFalse);
+  expect(permissions.canCreateClassSession, isFalse);
+  expect(permissions.canManageDoorAccess, isFalse);
+  expect(permissions.canViewGymReports, isFalse);
+  expect(permissions.canUploadContent, isFalse);
+}
 
 void main() {
-  test('GymAdmin aktif firmada tüm personel yetkilerine sahip', () {
+  test('GymAdmin aktif görevde tüm personel yetkilerine sahip', () {
     final permissions = StaffPermissions.of(_withAssignments([_gymAdminA]), null);
 
     expect(permissions.isGymAdmin, isTrue);
@@ -33,6 +44,7 @@ void main() {
     expect(permissions.canViewGymReports, isTrue);
     expect(permissions.canUploadContent, isTrue);
     expect(permissions.canManageCompanies, isFalse);
+    expect(permissions.canViewTrainerSchedule, isFalse);
   });
 
   test('BranchManager kapı erişimi, şube yönetimi ve şube müdürü atamasını göremez', () {
@@ -48,72 +60,100 @@ void main() {
     expect(permissions.canManageDoorAccess, isFalse);
     expect(permissions.canViewGymReports, isTrue);
     expect(permissions.canUploadContent, isTrue);
+    expect(permissions.canViewTrainerSchedule, isFalse);
+  });
+
+  // Aktif görev Trainer iken backend yönetim uçlarında 403 döner.
+  test('aktif görev Trainer ise sadece antrenör programı açılır', () {
+    final permissions = StaffPermissions.of(_withAssignments([_trainerA]), null);
+
+    expect(permissions.isTrainer, isTrue);
+    expect(permissions.canViewTrainerSchedule, isTrue);
+    expect(permissions.canManageCompanies, isFalse);
+    _expectNoGymOperations(permissions);
+  });
+
+  test('antrenör programı sadece aktif görev Trainer iken görünür', () {
+    final me = _withAssignments([_gymAdminA, _trainerA]);
+
+    // Varsayılan GymAdmin - başka bir görevdeki antrenörlük programı açmaz.
+    expect(StaffPermissions.of(me, null).canViewTrainerSchedule, isFalse);
+    expect(StaffPermissions.of(me, _trainerA.id).canViewTrainerSchedule, isTrue);
+    expect(StaffPermissions.of(me, _trainerA.id).canManagePackages, isFalse);
   });
 
   test('personel ataması olmayan SuperAdmin sadece firma yönetimini görür', () {
     final permissions = StaffPermissions.of(_withAssignments([_superAdmin]), null);
 
+    expect(permissions.isSuperAdmin, isTrue);
     expect(permissions.canManageCompanies, isTrue);
-    expect(permissions.canViewBranches, isFalse);
-    expect(permissions.canManageStaff, isFalse);
-    expect(permissions.canManagePackages, isFalse);
-    expect(permissions.canCreateClassSession, isFalse);
-    expect(permissions.canManageDoorAccess, isFalse);
-    expect(permissions.canViewGymReports, isFalse);
-    expect(permissions.canUploadContent, isFalse);
+    expect(permissions.canViewTrainerSchedule, isFalse);
+    _expectNoGymOperations(permissions);
   });
 
-  test('SuperAdmin aynı zamanda bir firmada GymAdmin ise o firmanın yetkilerini de alır', () {
-    final permissions = StaffPermissions.of(_withAssignments([_superAdmin, _gymAdminA]), null);
+  test('SuperAdmin + GymAdmin: varsayılan Sistem Sahibi, GymAdmin seçilince sadece o firmanın yetkileri', () {
+    final me = _withAssignments([_superAdmin, _gymAdminA]);
 
-    expect(permissions.canManageCompanies, isTrue);
-    expect(permissions.canManagePackages, isTrue);
-    expect(permissions.canManageDoorAccess, isTrue);
+    final asSystemOwner = StaffPermissions.of(me, null);
+    expect(asSystemOwner.canManageCompanies, isTrue);
+    _expectNoGymOperations(asSystemOwner);
+
+    final asGymAdmin = StaffPermissions.of(me, _gymAdminA.id);
+    expect(asGymAdmin.canManageCompanies, isFalse);
+    expect(asGymAdmin.isSuperAdmin, isFalse);
+    expect(asGymAdmin.canManagePackages, isTrue);
+    expect(asGymAdmin.canManageDoorAccess, isTrue);
+
+    expect(StaffPermissions.of(me, _superAdmin.id).canManageCompanies, isTrue);
   });
 
-  test('rolsüz üye veya sadece antrenör hiçbir personel yetkisine sahip değil', () {
-    for (final me in [_withAssignments(const []), _withAssignments([_trainer])]) {
-      final permissions = StaffPermissions.of(me, null);
-      expect(permissions.hasActiveStaffRole, isFalse);
-      expect(permissions.canManageCompanies, isFalse);
-      expect(permissions.canViewBranches, isFalse);
-      expect(permissions.canManagePackages, isFalse);
-      expect(permissions.canUploadContent, isFalse);
-    }
+  test('rolsüz üye hiçbir personel yetkisine sahip değil', () {
+    final permissions = StaffPermissions.of(_withAssignments(const []), null);
+
+    expect(permissions.activeAssignment, isNull);
+    expect(permissions.canManageCompanies, isFalse);
+    expect(permissions.canViewTrainerSchedule, isFalse);
+    _expectNoGymOperations(permissions);
   });
 
   test('kullanıcı henüz yüklenmediyse hiçbir yetki yok', () {
     final permissions = StaffPermissions.of(null, null);
 
-    expect(permissions.hasActiveStaffRole, isFalse);
+    expect(permissions.hasManagementRole, isFalse);
     expect(permissions.canManageCompanies, isFalse);
   });
 
-  test('yetkiler aktif firmadaki role göre belirlenir', () {
+  test('yetkiler seçili göreve göre belirlenir', () {
     final me = _withAssignments([_gymAdminA, _branchManagerB]);
 
-    expect(StaffPermissions.of(me, 1).canManageDoorAccess, isTrue);
-    expect(StaffPermissions.of(me, 2).canManageDoorAccess, isFalse);
-    expect(StaffPermissions.of(me, 2).isBranchManager, isTrue);
+    expect(StaffPermissions.of(me, _gymAdminA.id).canManageDoorAccess, isTrue);
+    expect(StaffPermissions.of(me, _branchManagerB.id).canManageDoorAccess, isFalse);
+    expect(StaffPermissions.of(me, _branchManagerB.id).isBranchManager, isTrue);
   });
 
-  test('aktif firma hiçbir atamayla eşleşmezse hiçbir personel yetkisi yok', () {
-    final permissions = StaffPermissions.of(_withAssignments([_gymAdminA]), 999);
+  test('seçili görev geçersizse varsayılan kurala döner', () {
+    final permissions = StaffPermissions.of(_withAssignments([_trainerA, _branchManagerB]), 999);
 
-    expect(permissions.activeAssignment, isNull);
-    expect(permissions.canManagePackages, isFalse);
-    expect(permissions.canViewBranches, isFalse);
+    expect(permissions.activeAssignment, same(_branchManagerB));
   });
 
-  test('GymAdmin firmadaki her şubeyi, BranchManager sadece kendi şubesini görür', () {
+  test('GymAdmin firmadaki her şubeyi, BranchManager ve Trainer sadece kendi şubesini görür', () {
     final gymAdmin = StaffPermissions.of(_withAssignments([_gymAdminA]), null);
     final branchManager = StaffPermissions.of(_withAssignments([_branchManagerB]), null);
+    final trainer = StaffPermissions.of(_withAssignments([_trainerA]), null);
     final member = StaffPermissions.of(_withAssignments(const []), null);
 
     expect(gymAdmin.canSeeBranch(3), isTrue);
     expect(gymAdmin.canSeeBranch(9), isTrue);
     expect(branchManager.canSeeBranch(9), isTrue);
     expect(branchManager.canSeeBranch(3), isFalse);
+    expect(trainer.canSeeBranch(3), isTrue);
+    expect(trainer.canSeeBranch(9), isFalse);
     expect(member.canSeeBranch(9), isFalse);
+  });
+
+  test('sabit şube: BranchManager kendi şubesi, GymAdmin için yok', () {
+    expect(StaffPermissions.of(_withAssignments([_branchManagerB]), null).fixedBranchId, 9);
+    expect(StaffPermissions.of(_withAssignments([_gymAdminA]), null).fixedBranchId, isNull);
   });
 }

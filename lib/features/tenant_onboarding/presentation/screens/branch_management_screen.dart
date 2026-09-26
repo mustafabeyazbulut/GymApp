@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_exception.dart';
-import '../../../../core/providers/active_staff_company_provider.dart';
+import '../../../../core/providers/active_staff_assignment_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/status_pill.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../auth/domain/staff_permissions.dart';
-import '../../../auth/presentation/providers/current_user_provider.dart';
+import '../../../auth/presentation/providers/staff_permissions_provider.dart';
 import '../../data/real_tenant_repository.dart';
 import '../../domain/branch_summary.dart';
 import '../widgets/branch_form_sheet.dart';
@@ -100,8 +100,9 @@ class _BranchManagementScreenState extends ConsumerState<BranchManagementScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final activeCompanyId = ref.watch(activeStaffCompanyIdProvider);
-    final permissions = StaffPermissions.of(ref.watch(currentUserProvider).asData?.value, activeCompanyId);
+    final permissions = ref.watch(staffPermissionsProvider);
+    // Aktif görev değişince liste o görevin şubeleriyle yeniden yüklenir.
+    ref.listen(activeStaffAssignmentProvider, (_, _) => _load());
     final canManage = permissions.canManageBranches;
     final companyId = permissions.activeAssignment?.companyId;
 

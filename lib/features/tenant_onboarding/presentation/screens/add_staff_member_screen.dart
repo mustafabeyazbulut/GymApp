@@ -3,11 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/providers/active_staff_company_provider.dart';
 import '../../../../core/widgets/phone_number_field.dart';
 import '../../../../l10n/generated/app_localizations.dart';
-import '../../../auth/domain/staff_permissions.dart';
-import '../../../auth/presentation/providers/current_user_provider.dart';
+import '../../../auth/presentation/providers/staff_permissions_provider.dart';
 import '../../data/real_tenant_repository.dart';
 import '../../domain/branch_option.dart';
 
@@ -33,17 +31,13 @@ class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
   @override
   void initState() {
     super.initState();
-    // Bir Branch Manager'ın kendi şubesi sabittir; bir Gym Admin (kendi
-    // assignment'ında branchId == null) kendi şirketinin şubeleri arasından
-    // seçim yapar. staffAssignmentFor, çok şirketli bir GymAdmin'in
-    // drawer'dan seçtiği "Aktif Şirket"i yansıtır (bkz.
-    // active_staff_company_provider.dart) - aynı seçim dioProvider
-    // tarafından X-Active-Company-Id header'ı olarak zaten gönderiliyor, bu
-    // yüzden listBranches()'ın döndürdüğü şubeler de bu şirkete ait olacak.
-    final activeCompanyId = ref.read(activeStaffCompanyIdProvider);
-    final myAssignment = ref.read(currentUserProvider).asData?.value.staffAssignmentFor(activeCompanyId);
-    if (myAssignment?.branchId != null) {
-      _selectedBranchId = myAssignment!.branchId;
+    // Aktif görev BranchManager ise şubesi sabittir; GymAdmin (firma geneli)
+    // firmasının şubeleri arasından seçim yapar. Aktif görev dioProvider
+    // tarafından X-Active-Assignment-Id olarak da gönderildiği için
+    // listBranches()'ın döndürdüğü şubeler de bu göreve ait olur.
+    final fixedBranchId = ref.read(staffPermissionsProvider).fixedBranchId;
+    if (fixedBranchId != null) {
+      _selectedBranchId = fixedBranchId;
     } else {
       _loadBranches();
     }
@@ -99,11 +93,9 @@ class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final permissions =
-        StaffPermissions.of(ref.watch(currentUserProvider).asData?.value, ref.watch(activeStaffCompanyIdProvider));
-    final myAssignment = permissions.activeAssignment;
-    final fixedBranchId = myAssignment?.branchId;
-    // Şube Müdürü atamak sadece aktif firmada GymAdmin olana açık.
+    final permissions = ref.watch(staffPermissionsProvider);
+    final fixedBranchId = permissions.fixedBranchId;
+    // Şube Müdürü atamak sadece aktif görevi GymAdmin olana açık.
     final canAssignBranchManager = permissions.canAssignBranchManager;
 
     return Scaffold(
@@ -142,7 +134,7 @@ class _AddStaffMemberScreenState extends ConsumerState<AddStaffMemberScreen> {
                 if (fixedBranchId != null)
                   TextFormField(
                     enabled: false,
-                    initialValue: myAssignment?.companyName ?? l10n.addStaffMemberBranchLabel,
+                    initialValue: permissions.activeAssignment?.branchName ?? l10n.addStaffMemberBranchLabel,
                     decoration: InputDecoration(labelText: l10n.addStaffMemberBranchLabel),
                   )
                 else if (_isLoadingBranches)
