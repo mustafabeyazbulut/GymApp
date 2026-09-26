@@ -288,6 +288,7 @@
   "invitationsAcceptedMessage": "Invitation accepted.",
   "invitationsRejectedMessage": "Invitation rejected.",
   "invitationsConfirmWithCode": "Confirm with SMS code",
+  "confirmInvitationExpiredCodeHint": "If your code has expired (10 min), you can accept the invitation from My Invitations.",
   "packageStatusNoPackageTitle": "You have no package",
   "packageStatusNoPackageBody": "A gym needs to assign you a package before you can see its classes and content.",
   "packageStatusInvalidTitle": "Your package isn't valid",

@@ -580,6 +580,8 @@
   "@invitationsRejectedMessage": {},
   "invitationsConfirmWithCode": "SMS koduyla onayla",
   "@invitationsConfirmWithCode": {},
+  "confirmInvitationExpiredCodeHint": "Kodun süresi dolduysa (10 dk) davetini Davetlerim'den onaylayabilirsin.",
+  "@confirmInvitationExpiredCodeHint": {},
   "packageStatusNoPackageTitle": "Paketin yok",
   "@packageStatusNoPackageTitle": {},
   "packageStatusNoPackageBody": "Dersleri ve salon içeriklerini görmek için bir salonun sana paket tanımlaması gerekiyor.",

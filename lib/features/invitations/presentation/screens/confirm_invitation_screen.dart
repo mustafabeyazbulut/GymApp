@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -114,6 +115,15 @@ class _ConfirmInvitationScreenState extends ConsumerState<ConfirmInvitationScree
                         child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary),
                       )
                     : Text(l10n.confirmInvitationSubmitButton),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              // SMS kodu 10 dakika geçerli, davet ise 7 gün Davetlerim'de
+              // kalıyor - süresi dolmuş kodu olan kullanıcıya diğer yol.
+              TextButton(
+                // Bu ekrana normalde Davetlerim'den gelinir - oraya geri dön;
+                // doğrudan açıldıysa (deep link) Davetlerim'e git.
+                onPressed: () => context.canPop() ? context.pop() : context.go('/invitations'),
+                child: Text(l10n.confirmInvitationExpiredCodeHint, textAlign: TextAlign.center),
               ),
             ],
           ),
