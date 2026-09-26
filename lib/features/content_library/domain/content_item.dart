@@ -1,6 +1,11 @@
+/// İçeriğin kaynağı: platformun herkese açık genel içeriği ya da bir gym'in
+/// kendi içeriği (paket/personel kurallarıyla gelir).
+enum ContentSource { platform, gym }
+
 class ContentItem {
   const ContentItem({
     required this.id,
+    this.source = ContentSource.gym,
     required this.companyId,
     required this.branchId,
     required this.title,
@@ -15,7 +20,9 @@ class ContentItem {
 
   factory ContentItem.fromJson(Map<String, dynamic> json) => ContentItem(
         id: json['id'] as int,
-        companyId: json['companyId'] as int,
+        // Alan gelmezse (eski backend) gym içeriği sayılır.
+        source: json['source'] == 'Platform' ? ContentSource.platform : ContentSource.gym,
+        companyId: json['companyId'] as int?,
         branchId: json['branchId'] as int?,
         title: json['title'] as String,
         description: json['description'] as String?,
@@ -28,7 +35,9 @@ class ContentItem {
       );
 
   final int id;
-  final int companyId;
+  final ContentSource source;
+  // Platform içeriğinde null.
+  final int? companyId;
   final int? branchId;
   final String title;
   final String? description;
@@ -46,6 +55,7 @@ class ContentItem {
   // sadece kilit ikonunu göstermek için.
   final bool hasAccess;
 
+  bool get isPlatform => source == ContentSource.platform;
   bool get isPremium => requiredAccessTier == 'Premium';
   bool get isVideo => mediaContentType.startsWith('video/');
 }

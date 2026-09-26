@@ -17,11 +17,20 @@ import '../providers/content_library_providers.dart';
 /// kilitli olarak gösterir; gerçek erişim kontrolü oynatma sırasında
 /// backend'de (GET /api/media/{id}) yeniden yapılır (bkz.
 /// docs/superpowers/specs/2026-09-20-content-library-design.md).
-class ContentLibraryScreen extends ConsumerWidget {
+class ContentLibraryScreen extends ConsumerStatefulWidget {
   const ContentLibraryScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ContentLibraryScreen> createState() => _ContentLibraryScreenState();
+}
+
+class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
+  // "Genel" (platform içeriği, herkese açık) varsayılan: paketsiz üye de
+  // ekrana girer girmez bir şey görsün.
+  ContentSource _source = ContentSource.platform;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     // Yükleme/yayından kaldırma aktif görevdeki personel rolüne bağlı - menüyle
     // aynı yetki matrisi (bkz. StaffPermissions).
@@ -42,68 +51,102 @@ class ContentLibraryScreen extends ConsumerWidget {
         ],
       ),
       body: SafeArea(
-        child: itemsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-          error: (error, stackTrace) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
+              child: Row(
                 children: [
-                  Text(
-                    error is ApiException ? error.localizedMessage(context) : l10n.commonError,
-                    textAlign: TextAlign.center,
+                  ChoiceChip(
+                    label: Text(l10n.contentLibraryTabPlatform),
+                    selected: _source == ContentSource.platform,
+                    onSelected: (_) => setState(() => _source = ContentSource.platform),
                   ),
-                  const SizedBox(height: AppSpacing.lg),
-                  OutlinedButton(
-                    onPressed: () => ref.read(contentItemsProvider.notifier).refresh(),
-                    child: Text(l10n.commonRetry),
+                  const SizedBox(width: AppSpacing.sm),
+                  ChoiceChip(
+                    label: Text(l10n.contentLibraryTabGym),
+                    selected: _source == ContentSource.gym,
+                    onSelected: (_) => setState(() => _source = ContentSource.gym),
                   ),
                 ],
               ),
             ),
-          ),
-          data: (items) {
-            if (items.isEmpty) {
-              // Görevi olmayan (sadece üye) kullanıcıya backend geçerli paketi
-              // yoksa listeyi boş döndürüyor - "içerik yok" yerine asıl neden
-              // gösterilir. Personel içeriği görevi üzerinden görür.
-              if (permissions.activeAssignment == null) {
-                final memberships = ref.watch(membershipsProvider).asData?.value;
-                final availability = memberships == null ? null : membershipAvailability(memberships);
-                if (availability != null && availability.state != MembershipAvailabilityState.valid) {
-                  return PackageStatusEmptyState(availability: availability);
-                }
-              }
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.xl),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.video_library_outlined, size: 40, color: AppColors.onBackgroundFaint),
-                      const SizedBox(height: AppSpacing.md),
-                      Text(l10n.contentLibraryEmptyMessage, style: Theme.of(context).textTheme.bodyMedium),
-                    ],
+            Expanded(
+              child: itemsAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+                error: (error, stackTrace) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.xl),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          error is ApiException ? error.localizedMessage(context) : l10n.commonError,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        OutlinedButton(
+                          onPressed: () => ref.read(contentItemsProvider.notifier).refresh(),
+                          child: Text(l10n.commonRetry),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              );
-            }
+                data: (allItems) {
+                  final items = allItems.where((item) => item.source == _source).toList();
+                  if (items.isEmpty) return _emptyState(context, l10n, permissions.activeAssignment == null);
 
-            return RefreshIndicator(
-              onRefresh: () => ref.read(contentItemsProvider.notifier).refresh(),
-              child: ListView.separated(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                itemCount: items.length,
-                separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
-                itemBuilder: (context, index) => _ContentItemTile(
-                  item: items[index],
-                  canManage: canUpload,
-                  l10n: l10n,
-                ),
+                  return RefreshIndicator(
+                    onRefresh: () => ref.read(contentItemsProvider.notifier).refresh(),
+                    child: ListView.separated(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      itemCount: items.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+                      itemBuilder: (context, index) => _ContentItemTile(
+                        item: items[index],
+                        // Gym içeriğini personel, platform içeriğini (bir
+                        // sonraki adımda) Sistem Sahibi yönetir.
+                        canManage: canUpload && !items[index].isPlatform,
+                        l10n: l10n,
+                      ),
+                    ),
+                  );
+                },
               ),
-            );
-          },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _emptyState(BuildContext context, AppLocalizations l10n, bool isMemberOnly) {
+    if (_source == ContentSource.gym && isMemberOnly) {
+      // Görevi olmayan (sadece üye) kullanıcıya backend geçerli paketi yoksa
+      // gym içeriğini boş döndürüyor - "içerik yok" yerine asıl neden
+      // gösterilir. Personel içeriği görevi üzerinden görür.
+      final memberships = ref.watch(membershipsProvider).asData?.value;
+      final availability = memberships == null ? null : membershipAvailability(memberships);
+      if (availability != null && availability.state != MembershipAvailabilityState.valid) {
+        return PackageStatusEmptyState(availability: availability);
+      }
+    }
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.video_library_outlined, size: 40, color: AppColors.onBackgroundFaint),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              _source == ContentSource.platform
+                  ? l10n.contentLibraryPlatformEmptyMessage
+                  : l10n.contentLibraryEmptyMessage,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
         ),
       ),
     );

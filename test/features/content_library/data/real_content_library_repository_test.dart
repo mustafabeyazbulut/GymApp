@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_app/core/network/api_exception.dart';
 import 'package:gym_app/core/network/fake_token_store.dart';
 import 'package:gym_app/features/content_library/data/real_content_library_repository.dart';
+import 'package:gym_app/features/content_library/domain/content_item.dart';
 
 void main() {
   test('getContentItems parses the list from GET /api/content-items', () async {
@@ -33,6 +34,30 @@ void main() {
     expect(items.single.mediaFileId, 5);
     expect(items.single.hasAccess, isTrue);
     expect(items.single.isVideo, isTrue);
+  });
+
+  test('getContentItems source alanını ayrıştırır; platform içeriğinde companyId null olabilir', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://test'));
+    dio.httpClientAdapter = _FakeAdapter((options) => ResponseBody.fromString(
+          '[{"id":1,"source":"Platform","companyId":null,"branchId":null,"title":"Isınma","description":null,'
+          '"requiredAccessTier":"Standard","mediaFileId":5,"mediaContentType":"video/mp4","isActive":true,'
+          '"createdAt":"2026-09-20T10:00:00Z","hasAccess":true},'
+          '{"id":2,"source":"Gym","companyId":3,"branchId":9,"title":"Squat","description":null,'
+          '"requiredAccessTier":"Standard","mediaFileId":6,"mediaContentType":"video/mp4","isActive":true,'
+          '"createdAt":"2026-09-20T10:00:00Z","hasAccess":true}]',
+          200,
+          headers: {
+            'content-type': ['application/json'],
+          },
+        ));
+
+    final items = await RealContentLibraryRepository(dio, FakeTokenStore()).getContentItems();
+
+    expect(items[0].source, ContentSource.platform);
+    expect(items[0].isPlatform, isTrue);
+    expect(items[0].companyId, isNull);
+    expect(items[1].source, ContentSource.gym);
+    expect(items[1].companyId, 3);
   });
 
   test('getContentItems rethrows a DioException as ApiException', () async {
